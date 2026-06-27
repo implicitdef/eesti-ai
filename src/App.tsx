@@ -8,6 +8,9 @@ function App() {
     return <ApiKeyScreen onSubmit={setApiKey} />;
   }
 
+  const maskedKey =
+    apiKey.slice(0, 6) + "*".repeat(Math.max(0, apiKey.length - 10)) + apiKey.slice(-4);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-blue-700 text-white p-4 shadow">
@@ -19,6 +22,9 @@ function App() {
           <p className="text-gray-500 text-center">Chat coming soon...</p>
         </div>
       </main>
+      <footer className="text-center py-2 text-sm text-gray-400">
+        API key: {maskedKey}
+      </footer>
     </div>
   );
 }
