@@ -1,4 +1,13 @@
+import { useState } from "react";
+import ApiKeyScreen from "./ApiKeyScreen";
+
 function App() {
+  const [apiKey, setApiKey] = useState("");
+
+  if (!apiKey) {
+    return <ApiKeyScreen onSubmit={setApiKey} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-blue-700 text-white p-4 shadow">

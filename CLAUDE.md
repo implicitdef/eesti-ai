@@ -15,6 +15,7 @@ npm run preview          # Preview production build locally
 npm run deploy           # Build and deploy to GitHub Pages
 npm run pretty           # Format code with Prettier
 npm run pretty-check     # Check if code needs formatting (CI)
+npm run checktypes       # Typescript check
 ```
 
 ## Architecture
