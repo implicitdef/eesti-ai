@@ -1,11 +1,23 @@
 import { useState } from "react";
 import ApiKeyScreen from "./ApiKeyScreen";
 
+const STORAGE_KEY = "eesti-ai-api-key";
+
 function App() {
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem(STORAGE_KEY) ?? "");
+
+  function handleSetApiKey(key: string) {
+    localStorage.setItem(STORAGE_KEY, key);
+    setApiKey(key);
+  }
+
+  function handleClearApiKey() {
+    localStorage.removeItem(STORAGE_KEY);
+    setApiKey("");
+  }
 
   if (!apiKey) {
-    return <ApiKeyScreen onSubmit={setApiKey} />;
+    return <ApiKeyScreen onSubmit={handleSetApiKey} />;
   }
 
   const maskedKey =
@@ -22,8 +34,14 @@ function App() {
           <p className="text-gray-500 text-center">Chat coming soon...</p>
         </div>
       </main>
-      <footer className="text-center py-2 text-sm text-gray-400">
-        API key: {maskedKey}
+      <footer className="flex items-center justify-center gap-3 py-2 text-sm text-gray-400">
+        <span>API key: {maskedKey}</span>
+        <button
+          onClick={handleClearApiKey}
+          className="text-xs underline hover:text-gray-600 transition-colors"
+        >
+          clear
+        </button>
       </footer>
     </div>
   );

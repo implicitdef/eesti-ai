@@ -21,8 +21,8 @@ function ApiKeyScreen({ onSubmit }: Props) {
           <p className="text-blue-500 text-sm mt-1">Learn Estonian with AI</p>
         </div>
         <p className="text-gray-600 text-sm">
-          Enter your Anthropic API key to get started. It will only be stored in
-          memory for this session.
+          Enter your Anthropic API key to get started. It will be saved in your
+          browser's local storage and can be cleared at any time.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
