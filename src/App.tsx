@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { X } from "lucide-react";
 import ApiKeyScreen from "./ApiKeyScreen";
 
 const STORAGE_KEY = "eesti-ai-api-key";
 
 function App() {
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem(STORAGE_KEY) ?? "");
+  const [apiKey, setApiKey] = useState(
+    () => localStorage.getItem(STORAGE_KEY) ?? "",
+  );
 
   function handleSetApiKey(key: string) {
     localStorage.setItem(STORAGE_KEY, key);
@@ -21,7 +24,9 @@ function App() {
   }
 
   const maskedKey =
-    apiKey.slice(0, 6) + "*".repeat(Math.max(0, apiKey.length - 10)) + apiKey.slice(-4);
+    apiKey.slice(0, 6) +
+    "*".repeat(Math.max(0, apiKey.length - 10)) +
+    apiKey.slice(-4);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -34,12 +39,13 @@ function App() {
           <p className="text-gray-500 text-center">Chat coming soon...</p>
         </div>
       </main>
-      <footer className="flex items-center justify-center gap-3 py-2 text-sm text-gray-400">
+      <footer className="flex items-center justify-end gap-2 border-t border-gray-200 bg-white px-4 py-2 text-sm text-gray-400">
         <span>API key: {maskedKey}</span>
         <button
           onClick={handleClearApiKey}
-          className="text-xs underline hover:text-gray-600 transition-colors"
+          className="flex items-center gap-1 rounded px-2 py-1 hover:bg-red-50 hover:text-red-500 transition-colors"
         >
+          <X size={14} />
           clear
         </button>
       </footer>
