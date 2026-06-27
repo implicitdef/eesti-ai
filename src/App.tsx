@@ -46,7 +46,7 @@ function App() {
           className="flex items-center gap-1 rounded px-2 py-1 hover:bg-red-50 hover:text-red-500 transition-colors"
         >
           <X size={14} />
-          clear
+          <span>clear</span>
         </button>
       </footer>
     </div>
