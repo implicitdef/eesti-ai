@@ -6,10 +6,8 @@ import {
   getCorrectVersions,
 } from "./practice-api";
 import HistoryPanel from "./HistoryPanel";
-import SidebarLayout, {
-  useCollapsibleSidebar,
-  SidebarToggleButton,
-} from "./SidebarLayout";
+import ModeToolbar from "./ModeToolbar";
+import SidebarLayout, { useCollapsibleSidebar } from "./SidebarLayout";
 import PracticeConversationView from "./PracticeConversationView";
 
 const PRACTICE_HISTORY_KEY = "eesti-ai-practice-history";
@@ -131,33 +129,17 @@ function PracticeMode() {
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden">
-      <div
-        className={`px-6 py-4 border-b border-gray-200 ${!hasConversations ? "flex justify-center" : ""}`}
-      >
-        <div className={`flex items-center gap-3 ${!hasConversations ? "w-full max-w-2xl" : ""}`}>
-          {hasConversations && <SidebarToggleButton onClick={toggle} />}
-          <form
-            onSubmit={handleGenerate}
-            className="flex-1 flex gap-3"
-          >
-            <input
-              type="text"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-              placeholder="Enter a theme (e.g. fruits, work, flirting at the gym…)"
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <button
-              type="submit"
-              disabled={!theme.trim() || loadingGenerate}
-              className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
-            >
-              {loadingGenerate ? "Generating…" : "New sentence"}
-            </button>
-          </form>
-        </div>
-      </div>
+      <ModeToolbar
+        hasHistory={hasConversations}
+        onToggleHistory={toggle}
+        value={theme}
+        onChange={setTheme}
+        onSubmit={handleGenerate}
+        placeholder="Enter a theme (e.g. fruits, work, flirting at the gym…)"
+        disabled={!theme.trim() || loadingGenerate}
+        error={error}
+        submitLabel={loadingGenerate ? "Generating…" : "New sentence"}
+      />
 
       {hasConversations && (
         <SidebarLayout
