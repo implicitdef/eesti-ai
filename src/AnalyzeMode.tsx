@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Menu } from "lucide-react";
 import AnalysisView from "./AnalysisView";
 import HistoryPanel from "./HistoryPanel";
 import { analyzeEstonian } from "./api";
@@ -24,6 +25,7 @@ function AnalyzeMode() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
@@ -55,38 +57,63 @@ function AnalyzeMode() {
       <div
         className={`px-6 py-4 border-b border-gray-200 ${!hasEntries ? "flex justify-center" : ""}`}
       >
-        <form
-          onSubmit={handleAnalyze}
-          className={`flex gap-3 ${!hasEntries ? "w-full max-w-2xl" : ""}`}
-        >
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Paste Estonian text here…"
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <button
-            type="submit"
-            disabled={!input.trim() || loading}
-            className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
+        <div className={`flex items-center gap-3 ${!hasEntries ? "w-full max-w-2xl" : ""}`}>
+          {hasEntries && (
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="md:hidden flex items-center gap-1.5 shrink-0 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600"
+            >
+              <Menu size={16} />
+              History
+            </button>
+          )}
+          <form
+            onSubmit={handleAnalyze}
+            className="flex-1 flex gap-3"
           >
-            {loading ? "Analyzing…" : "Analyze"}
-          </button>
-        </form>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Paste Estonian text here…"
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <button
+              type="submit"
+              disabled={!input.trim() || loading}
+              className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
+            >
+              {loading ? "Analyzing…" : "Analyze"}
+            </button>
+          </form>
+        </div>
       </div>
 
       {hasEntries && (
-        <div className="flex-1 flex overflow-hidden">
-          <div>
+        <div className="flex-1 flex overflow-hidden relative">
+          {isHistoryOpen && (
+            <div
+              className="absolute inset-0 bg-black/30 z-10 md:hidden"
+              onClick={() => setIsHistoryOpen(false)}
+            />
+          )}
+          <div
+            className={`absolute md:static inset-y-0 left-0 z-20 transition-transform duration-200 ${
+              isHistoryOpen ? "translate-x-0" : "-translate-x-full"
+            } md:translate-x-0`}
+          >
             <HistoryPanel
               entries={entries}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={(id) => {
+                setSelectedId(id);
+                setIsHistoryOpen(false);
+              }}
               onClear={() => {
                 setEntries([]);
                 setSelectedId(null);
+                setIsHistoryOpen(false);
               }}
             />
           </div>

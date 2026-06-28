@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Menu } from "lucide-react";
 import type { PracticeConversation } from "./types";
 import {
   generateSentence,
@@ -31,6 +32,7 @@ function PracticeMode() {
   const [loadingGenerate, setLoadingGenerate] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(PRACTICE_HISTORY_KEY, JSON.stringify(conversations));
@@ -129,38 +131,63 @@ function PracticeMode() {
       <div
         className={`px-6 py-4 border-b border-gray-200 ${!hasConversations ? "flex justify-center" : ""}`}
       >
-        <form
-          onSubmit={handleGenerate}
-          className={`flex gap-3 ${!hasConversations ? "w-full max-w-2xl" : ""}`}
-        >
-          <input
-            type="text"
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            placeholder="Enter a theme (e.g. fruits, work, flirting at the gym…)"
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <button
-            type="submit"
-            disabled={!theme.trim() || loadingGenerate}
-            className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
+        <div className={`flex items-center gap-3 ${!hasConversations ? "w-full max-w-2xl" : ""}`}>
+          {hasConversations && (
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="md:hidden flex items-center gap-1.5 shrink-0 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600"
+            >
+              <Menu size={16} />
+              History
+            </button>
+          )}
+          <form
+            onSubmit={handleGenerate}
+            className="flex-1 flex gap-3"
           >
-            {loadingGenerate ? "Generating…" : "New sentence"}
-          </button>
-        </form>
+            <input
+              type="text"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              placeholder="Enter a theme (e.g. fruits, work, flirting at the gym…)"
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <button
+              type="submit"
+              disabled={!theme.trim() || loadingGenerate}
+              className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
+            >
+              {loadingGenerate ? "Generating…" : "New sentence"}
+            </button>
+          </form>
+        </div>
       </div>
 
       {hasConversations && (
-        <div className="flex-1 flex overflow-hidden">
-          <div>
+        <div className="flex-1 flex overflow-hidden relative">
+          {isHistoryOpen && (
+            <div
+              className="absolute inset-0 bg-black/30 z-10 md:hidden"
+              onClick={() => setIsHistoryOpen(false)}
+            />
+          )}
+          <div
+            className={`absolute md:static inset-y-0 left-0 z-20 transition-transform duration-200 ${
+              isHistoryOpen ? "translate-x-0" : "-translate-x-full"
+            } md:translate-x-0`}
+          >
             <PracticeHistoryPanel
               conversations={conversations}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={(id) => {
+                setSelectedId(id);
+                setIsHistoryOpen(false);
+              }}
               onClear={() => {
                 setConversations([]);
                 setSelectedId(null);
+                setIsHistoryOpen(false);
               }}
             />
           </div>
