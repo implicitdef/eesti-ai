@@ -40,7 +40,7 @@ function AnalysisView({ entry }: Props) {
   const hasGrammaticalInfo = entry.words.some((w) => w.grammaticalInfo);
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-6">
+    <div className="bg-white rounded-xl shadow-md p-6 flex flex-col gap-6">
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
           Original
@@ -66,7 +66,7 @@ function AnalysisView({ entry }: Props) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b border-gray-100">
+              <tr className="border-b border-gray-300">
                 <th className="text-left py-2 pr-4 font-semibold text-gray-500 whitespace-nowrap">
                   Word
                 </th>
@@ -90,11 +90,11 @@ function AnalysisView({ entry }: Props) {
             </thead>
             <tbody>
               {entry.words.map((w, i) => (
-                <tr key={i} className="border-b border-gray-50">
+                <tr key={i} className="border-b border-gray-200">
                   <td className="py-2 pr-4 font-medium text-gray-800 whitespace-nowrap">
                     {w.word}
                   </td>
-                  <td className="py-2 pr-4 text-gray-400 text-xs whitespace-nowrap">
+                  <td className="py-2 pr-4 text-gray-500 text-xs whitespace-nowrap">
                     {w.wordType}
                   </td>
                   {hasBaseForm && (
@@ -126,7 +126,7 @@ function AnalysisView({ entry }: Props) {
             {entry.compoundExpressions.map((expr, i) => (
               <div
                 key={i}
-                className="bg-blue-50 rounded-lg px-4 py-3 flex flex-col gap-1"
+                className="bg-blue-100 rounded-lg px-4 py-3 flex flex-col gap-1"
               >
                 <div className="flex items-baseline gap-2">
                   <span className="font-semibold text-gray-800">

@@ -73,14 +73,14 @@ function App() {
   const hasEntries = entries.length > 0;
 
   const inputCard = (
-    <div className="bg-white rounded-xl shadow p-6">
+    <div className="bg-white rounded-xl shadow-md p-6">
       <form onSubmit={handleAnalyze} className="flex gap-3">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste Estonian text here…"
-          className="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 border border-gray-400 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button
@@ -95,7 +95,7 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-300 flex flex-col">
       <header className="bg-blue-700 text-white p-4 shadow">
         <h1 className="text-2xl font-bold">Eesti AI</h1>
         <p className="text-sm text-blue-200">Learn Estonian with AI</p>
@@ -125,17 +125,17 @@ function App() {
         )}
       </main>
 
-      <footer className="border-t border-gray-200 bg-white">
+      <footer className="border-t border-gray-300 bg-white">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-blue-700 tracking-tight">
               Eesti AI
             </span>
-            <span className="text-gray-200 select-none">|</span>
-            <span className="text-xs text-gray-400">Learn Estonian with AI</span>
+            <span className="text-gray-400 select-none">|</span>
+            <span className="text-xs text-gray-500">Learn Estonian with AI</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50 px-3 py-1">
+            <div className="flex items-center gap-2 rounded-full border border-gray-300 bg-gray-100 px-3 py-1">
               <span className="text-xs text-gray-400">API key</span>
               <code className="font-mono text-xs text-gray-600">{maskedKey}</code>
             </div>
