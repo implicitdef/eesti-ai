@@ -40,13 +40,13 @@ export async function generateSentence(
 
 Requirements:
 - Short: 6 to 12 words
-- Simple, everyday vocabulary — no rare or literary words
+- Only use the most common, everyday verbs: go, come, eat, drink, see, hear, say, want, need, like, love, take, give, buy, sell, know, think, feel, get, put, make, do, have, be, walk, run, sit, stand, wait, call, ask, tell, look, work, play, sleep, open, close, stop, start, help, try, etc. Avoid any verb that feels unusual, literary, or descriptive (e.g. never use: dart, nibble, gaze, linger, wander, clutch, murmur, tremble, peer, glance, crouch, slumber, stride, shudder, gleam, etc.)
 - Concrete and visual — describe real actions, objects, or feelings
 - Grammatically simple: one or two clauses at most
 - Natural spoken or written English, not academic
 
-Good examples: "The rabbit fled from the hunter.", "You have the most beautiful eyes I've ever seen.", "They recognized each other right away.", "She forgot her keys on the kitchen table."
-Bad examples (too complex or abstract): "The implementation of the new policy was met with considerable resistance from the workforce."${avoidClause}`,
+Good examples: "The cat ran out of the house.", "You have the most beautiful eyes I've ever seen.", "They recognized each other right away.", "She forgot her keys on the kitchen table.", "He drinks coffee every morning.", "We need to buy some bread."
+Bad examples (unusual verbs): "The fox darts away into the bushes.", "She nibbles on a piece of bread.", "He gazes at the horizon."${avoidClause}`,
       },
       { role: "user", content: `Theme: ${theme}` },
     ],
