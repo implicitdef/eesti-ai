@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import ApiKeyScreen from "./ApiKeyScreen";
 import AnalysisView from "./AnalysisView";
 import HistoryPanel from "./HistoryPanel";
-import { analyzeEstonian } from "./anthropic";
+import { analyzeEstonian } from "./api";
 import type { AnalysisEntry } from "./types";
 
 const STORAGE_KEY = "eesti-ai-api-key";

@@ -1,8 +1,8 @@
 export interface WordAnalysis {
   word: string;
-  baseForm?: string;
+  baseForm: string | null;
   translation: string;
-  grammaticalInfo?: string;
+  grammaticalInfo: string | null;
 }
 
 export interface CompoundExpression {
