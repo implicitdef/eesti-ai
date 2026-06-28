@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import ApiKeyScreen from "./ApiKeyScreen";
 import AnalysisView from "./AnalysisView";
@@ -7,14 +7,28 @@ import { analyzeEstonian } from "./api";
 import type { AnalysisEntry } from "./types";
 
 const STORAGE_KEY = "eesti-ai-api-key";
+const HISTORY_KEY = "eesti-ai-history";
 
 function App() {
   const [apiKey, setApiKey] = useState(
     () => localStorage.getItem(STORAGE_KEY) ?? "",
   );
   const [input, setInput] = useState("");
-  const [entries, setEntries] = useState<AnalysisEntry[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [entries, setEntries] = useState<AnalysisEntry[]>(() => {
+    try {
+      const stored = localStorage.getItem(HISTORY_KEY);
+      return stored ? (JSON.parse(stored) as AnalysisEntry[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => entries[0]?.id ?? null,
+  );
+
+  useEffect(() => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+  }, [entries]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
