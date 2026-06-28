@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import { SidebarToggleButton } from "./SidebarLayout";
 
 interface Props {
@@ -28,7 +29,11 @@ function ModeToolbar({
       className={`px-6 py-4 border-b border-gray-200 ${!hasHistory ? "flex justify-center" : ""}`}
     >
       <div
-        className={`flex items-center gap-3 ${!hasHistory ? "w-full max-w-2xl" : ""}`}
+        className={`flex gap-3 ${
+          !hasHistory
+            ? "items-center w-full max-w-2xl"
+            : "flex-col md:flex-row md:items-center"
+        }`}
       >
         {hasHistory && <SidebarToggleButton onClick={onToggleHistory} />}
         <form onSubmit={onSubmit} className="flex-1 flex gap-3">
@@ -43,9 +48,10 @@ function ModeToolbar({
           <button
             type="submit"
             disabled={disabled}
-            className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
+            className="bg-blue-700 text-white rounded-lg px-2.5 md:px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
           >
-            {submitLabel}
+            <ArrowRight size={18} className="md:hidden" />
+            <span className="hidden md:inline whitespace-nowrap">{submitLabel}</span>
           </button>
         </form>
       </div>
