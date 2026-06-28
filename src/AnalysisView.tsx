@@ -40,7 +40,7 @@ function AnalysisView({ entry }: Props) {
   const hasGrammaticalInfo = entry.words.some((w) => w.grammaticalInfo);
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
           Original
@@ -126,7 +126,7 @@ function AnalysisView({ entry }: Props) {
             {entry.compoundExpressions.map((expr, i) => (
               <div
                 key={i}
-                className="bg-blue-100 rounded-lg px-4 py-3 flex flex-col gap-1"
+                className="border-l-2 border-blue-400 pl-4 py-1 flex flex-col gap-1"
               >
                 <div className="flex items-baseline gap-2">
                   <span className="font-semibold text-gray-800">

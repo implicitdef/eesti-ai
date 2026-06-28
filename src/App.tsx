@@ -72,60 +72,54 @@ function App() {
   const selectedEntry = entries.find((e) => e.id === selectedId) ?? null;
   const hasEntries = entries.length > 0;
 
-  const inputCard = (
-    <div className="bg-white rounded-xl shadow-md p-6">
-      <form onSubmit={handleAnalyze} className="flex gap-3">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Paste Estonian text here…"
-          className="flex-1 border border-gray-400 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        <button
-          type="submit"
-          disabled={!input.trim() || loading}
-          className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
-        >
-          {loading ? "Analyzing…" : "Analyze"}
-        </button>
-      </form>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-slate-300 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <header className="bg-blue-700 text-white p-4 shadow">
         <h1 className="text-2xl font-bold">Eesti AI</h1>
         <p className="text-sm text-blue-200">Learn Estonian with AI</p>
       </header>
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="p-4 pb-0">
-          {hasEntries ? (
-            inputCard
-          ) : (
-            <div className="flex justify-center">
-              <div className="w-full max-w-2xl">{inputCard}</div>
-            </div>
-          )}
-        </div>
-        {hasEntries && (
-          <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-            <HistoryPanel
-              entries={entries}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
+        <div className={`px-6 py-4 border-b border-gray-200 ${!hasEntries ? "flex justify-center" : ""}`}>
+          <form
+            onSubmit={handleAnalyze}
+            className={`flex gap-3 ${!hasEntries ? "w-full max-w-2xl" : ""}`}
+          >
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Paste Estonian text here…"
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <div className="flex-1 overflow-y-auto">
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <button
+              type="submit"
+              disabled={!input.trim() || loading}
+              className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
+            >
+              {loading ? "Analyzing…" : "Analyze"}
+            </button>
+          </form>
+        </div>
+
+        {hasEntries && (
+          <div className="flex-1 flex overflow-hidden">
+            <div className="border-r border-gray-200">
+              <HistoryPanel
+                entries={entries}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto px-8 py-6">
               {selectedEntry && <AnalysisView entry={selectedEntry} />}
             </div>
           </div>
         )}
       </main>
 
-      <footer className="border-t border-gray-300 bg-white">
+      <footer className="border-t border-gray-200">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-blue-700 tracking-tight">
