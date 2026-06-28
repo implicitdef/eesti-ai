@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import type { PracticeAttempt, CorrectVersion } from "./types";
+import type { CorrectVersion, PracticeAttempt } from "./types";
 
 function formatAcceptedVersions(versions: CorrectVersion[]): string {
   if (versions.length === 0) return "";
@@ -44,17 +44,16 @@ export async function generateSentence(
     messages: [
       {
         role: "system",
-        content: `You are an Estonian language teacher creating translation practice exercises. Generate a single short, natural English sentence based on the given theme.
+        content: `Generate a single short, natural English sentence based on the given theme. Around B1 level.
 
 Requirements:
 - Short: 6 to 12 words
-- Only use the most common, everyday verbs: go, come, eat, drink, see, hear, say, want, need, like, love, take, give, buy, sell, know, think, feel, get, put, make, do, have, be, walk, run, sit, stand, wait, call, ask, tell, look, work, play, sleep, open, close, stop, start, help, try, etc. Avoid any verb that feels unusual, literary, or descriptive (e.g. never use: dart, nibble, gaze, linger, wander, clutch, murmur, tremble, peer, glance, crouch, slumber, stride, shudder, gleam, etc.)
-- Concrete and visual — describe real actions, objects, or feelings
+- Only use the most common, everyday verbs: go, come, eat, drink, see, hear, say, want, need, like, love, take, give, buy, sell, know, think, feel, get, put, make, do, have, be, walk, run, sit, stand, wait, call, ask, tell, look, work, play, sleep, open, close, stop, start, help, try, etc. NEVER use any verb that feels unusual, literary, or descriptive (e.g. never use: dart, nibble, gaze, linger, wander, clutch, murmur, tremble, peer, glance, crouch, slumber, stride, shudder, gleam, etc.)
 - Grammatically simple: one or two clauses at most
-- Natural spoken or written English, not academic
+- Natural spoken or written English, not academic or literary.
 
-Good examples: "The cat ran out of the house.", "You have the most beautiful eyes I've ever seen.", "They recognized each other right away.", "She forgot her keys on the kitchen table.", "He drinks coffee every morning.", "We need to buy some bread."
-Bad examples (unusual verbs): "The fox darts away into the bushes.", "She nibbles on a piece of bread.", "He gazes at the horizon."${avoidClause}`,
+Good examples: "The cat ran out of the house.", "You have the most beautiful eyes I've ever seen.", "They recognized each other right away.", "She forgot her keys on the kitchen table.", "He drinks coffee every morning.", "We need to buy some bread." "Hey, how are you?"
+Bad examples: "The fox darts away into the bushes." (rare verb), "She nibbles on a piece of bread." (rare verb), "Though in all lands love is now mingled with grief, it grows perhaps the greater." (too literary, not B1)${avoidClause}`,
       },
       { role: "user", content: `Theme: ${theme}` },
     ],
@@ -135,8 +134,7 @@ export async function evaluateTranslation(
     messages: [
       {
         role: "system",
-        content:
-          `You are an expert Estonian linguistics teacher evaluating a student's translation. Follow these rules strictly:
+        content: `You are an expert Estonian linguistics teacher evaluating a student's translation. Follow these rules strictly:
 
 1. LENIENCY: Accept ANY correct, natural Estonian translation — there are many valid ways to express the same sentence. Do NOT penalise valid alternative phrasings, word choices, or word orders.
 2. REAL ERRORS ONLY: Only flag genuine mistakes — wrong grammatical case, wrong word form, a word that loses or distorts the meaning, or clearly unnatural phrasing that a native speaker would not say.
