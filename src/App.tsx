@@ -110,23 +110,29 @@ function App() {
         <p className="text-sm text-blue-200">Learn Estonian with AI</p>
       </header>
 
-      {hasEntries ? (
-        <main className="flex-1 flex gap-4 p-4 overflow-hidden">
-          <HistoryPanel
-            entries={entries}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
-          <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
-            {inputCard}
-            {selectedEntry && <AnalysisView entry={selectedEntry} />}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="p-4 pb-0">
+          {hasEntries ? (
+            inputCard
+          ) : (
+            <div className="flex justify-center">
+              <div className="w-full max-w-2xl">{inputCard}</div>
+            </div>
+          )}
+        </div>
+        {hasEntries && (
+          <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+            <HistoryPanel
+              entries={entries}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
+            <div className="flex-1 overflow-y-auto">
+              {selectedEntry && <AnalysisView entry={selectedEntry} />}
+            </div>
           </div>
-        </main>
-      ) : (
-        <main className="flex-1 flex flex-col items-center justify-center p-4">
-          <div className="w-full max-w-2xl">{inputCard}</div>
-        </main>
-      )}
+        )}
+      </main>
 
       <footer className="border-t border-gray-200 bg-white">
         <div className="flex items-center justify-between px-6 py-3">
