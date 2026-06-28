@@ -1,0 +1,110 @@
+import type { AnalysisEntry } from "./types";
+
+interface Props {
+  entry: AnalysisEntry;
+}
+
+function AnalysisView({ entry }: Props) {
+  const hasBaseForm = entry.words.some((w) => w.baseForm);
+  const hasGrammaticalInfo = entry.words.some((w) => w.grammaticalInfo);
+
+  return (
+    <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-6">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+          Original
+        </p>
+        <p className="text-lg font-semibold text-gray-800">
+          {entry.originalText}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+          Translation
+        </p>
+        <p className="text-base text-blue-700 font-medium">
+          {entry.fullTranslation}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+          Word Analysis
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="text-left py-2 pr-4 font-semibold text-gray-500 whitespace-nowrap">
+                  Word
+                </th>
+                {hasBaseForm && (
+                  <th className="text-left py-2 pr-4 font-semibold text-gray-500 whitespace-nowrap">
+                    Base form
+                  </th>
+                )}
+                <th className="text-left py-2 pr-4 font-semibold text-gray-500 whitespace-nowrap">
+                  Translation
+                </th>
+                {hasGrammaticalInfo && (
+                  <th className="text-left py-2 font-semibold text-gray-500 whitespace-nowrap">
+                    Grammatical info
+                  </th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {entry.words.map((w, i) => (
+                <tr key={i} className="border-b border-gray-50">
+                  <td className="py-2 pr-4 font-medium text-gray-800 whitespace-nowrap">
+                    {w.word}
+                  </td>
+                  {hasBaseForm && (
+                    <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">
+                      {w.baseForm ?? "—"}
+                    </td>
+                  )}
+                  <td className="py-2 pr-4 text-gray-700">{w.translation}</td>
+                  {hasGrammaticalInfo && (
+                    <td className="py-2 text-gray-500 text-xs">
+                      {w.grammaticalInfo ?? ""}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {entry.compoundExpressions.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+            Compound Expressions
+          </p>
+          <div className="flex flex-col gap-3">
+            {entry.compoundExpressions.map((expr, i) => (
+              <div
+                key={i}
+                className="bg-blue-50 rounded-lg px-4 py-3 flex flex-col gap-1"
+              >
+                <div className="flex items-baseline gap-2">
+                  <span className="font-semibold text-gray-800">
+                    {expr.expression}
+                  </span>
+                  <span className="text-blue-700 text-sm">
+                    — {expr.translation}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600">{expr.explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AnalysisView;
