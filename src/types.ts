@@ -36,6 +36,7 @@ export interface PracticeConversation {
   theme: string;
   englishSentence: string;
   attempts: PracticeAttempt[];
+  acceptedVersions: CorrectVersion[] | null;
   correctVersions: CorrectVersion[] | null;
   status: "in_progress" | "completed";
   createdAt: number;

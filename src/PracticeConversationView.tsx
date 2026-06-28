@@ -111,7 +111,9 @@ function PracticeConversationView({
       {conversation.correctVersions && (
         <div className="flex flex-col gap-4">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
-            Correct versions
+            {succeededOnLastAttempt
+              ? "Other ways to say it"
+              : "Correct versions"}
           </p>
           {conversation.correctVersions.map((v, i) => (
             <div

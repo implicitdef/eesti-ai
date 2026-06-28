@@ -1,6 +1,14 @@
 import OpenAI from "openai";
 import type { PracticeAttempt, CorrectVersion } from "./types";
 
+function formatAcceptedVersions(versions: CorrectVersion[]): string {
+  if (versions.length === 0) return "";
+  return (
+    "\n\nPre-validated correct translations (reference — not exhaustive):\n" +
+    versions.map((v, i) => `${i + 1}. ${v.translation}`).join("\n")
+  );
+}
+
 export async function generateSentence(
   theme: string,
   previousSentences: string[],
@@ -61,6 +69,7 @@ Bad examples (unusual verbs): "The fox darts away into the bushes.", "She nibble
 export async function evaluateTranslation(
   englishSentence: string,
   userTranslation: string,
+  acceptedVersions: CorrectVersion[],
   apiKey: string,
 ): Promise<Omit<PracticeAttempt, "userTranslation">> {
   const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
@@ -78,12 +87,11 @@ export async function evaluateTranslation(
             isCorrect: {
               type: "boolean",
               description:
-                "True only if the translation has zero meaningful mistakes and sounds natural",
+                "True if the translation is correct and natural — even if it differs from the pre-validated versions",
             },
             isUnderstandable: {
               type: "boolean",
-              description:
-                "The meaning is clear despite possible errors",
+              description: "The meaning is clear despite possible errors",
             },
             isGrammaticallyCorrect: {
               type: "boolean",
@@ -128,11 +136,16 @@ export async function evaluateTranslation(
       {
         role: "system",
         content:
-          "You are an expert Estonian linguistics teacher. Evaluate the student's Estonian translation of the given English sentence. Be precise: isCorrect must be true only if there are zero meaningful mistakes. List every error clearly with a concrete suggestion for correction.",
+          `You are an expert Estonian linguistics teacher evaluating a student's translation. Follow these rules strictly:
+
+1. LENIENCY: Accept ANY correct, natural Estonian translation — there are many valid ways to express the same sentence. Do NOT penalise valid alternative phrasings, word choices, or word orders.
+2. REAL ERRORS ONLY: Only flag genuine mistakes — wrong grammatical case, wrong word form, a word that loses or distorts the meaning, or clearly unnatural phrasing that a native speaker would not say.
+3. CONSISTENCY: If the student is not yet correct, identify which pre-validated version they are closest to, and give feedback nudging them toward THAT specific version — not toward a different target than previous hints.
+4. DO NOT invent new "correct" targets that differ from the pre-validated versions when giving suggestions.${formatAcceptedVersions(acceptedVersions)}`,
       },
       {
         role: "user",
-        content: `English sentence: "${englishSentence}"\nStudent's Estonian translation: "${userTranslation}"`,
+        content: `English: "${englishSentence}"\nStudent's Estonian: "${userTranslation}"`,
       },
     ],
   });
@@ -189,7 +202,7 @@ export async function getCorrectVersions(
       {
         role: "system",
         content:
-          "You are an expert Estonian language teacher. Provide 2–3 correct Estonian translations of the given English sentence, covering different styles or registers where meaningful (e.g. more formal vs. more colloquial, different word order). For each, add a short commentary explaining what makes it good, how it differs from the others, or any nuance worth noting.",
+          "You are an expert Estonian language teacher. Generate 4–5 correct Estonian translations of the given English sentence, covering the full range of natural phrasings — different word orders, vocabulary choices, and registers (formal/colloquial). Be inclusive: capture all the common ways a fluent speaker might naturally say this. These serve as reference answers for evaluating student work, so err on the side of breadth. For each, add a short commentary on its style or how it differs from the others.",
       },
       { role: "user", content: englishSentence },
     ],

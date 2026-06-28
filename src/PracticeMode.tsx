@@ -61,11 +61,13 @@ function PracticeMode() {
         previousSentences,
         apiKey,
       );
+      const acceptedVersions = await getCorrectVersions(sentence, apiKey);
       const newConv: PracticeConversation = {
         id: crypto.randomUUID(),
         theme: trimmed,
         englishSentence: sentence,
         attempts: [],
+        acceptedVersions,
         correctVersions: null,
         status: "in_progress",
         createdAt: Date.now(),
@@ -89,6 +91,7 @@ function PracticeMode() {
       const result = await evaluateTranslation(
         conv.englishSentence,
         translation,
+        conv.acceptedVersions ?? [],
         apiKey,
       );
       const attempt = { userTranslation: translation, ...result };
@@ -96,6 +99,9 @@ function PracticeMode() {
         ...conv,
         attempts: [...conv.attempts, attempt],
         status: result.isCorrect ? "completed" : "in_progress",
+        correctVersions: result.isCorrect
+          ? (conv.acceptedVersions ?? conv.correctVersions)
+          : conv.correctVersions,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -107,20 +113,11 @@ function PracticeMode() {
   async function handleShowAnswer() {
     const conv = conversations.find((c) => c.id === selectedId);
     if (!conv) return;
-    setLoadingAction(true);
-    setError(null);
-    try {
-      const versions = await getCorrectVersions(conv.englishSentence, apiKey);
-      updateConversation({
-        ...conv,
-        correctVersions: versions,
-        status: "completed",
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoadingAction(false);
-    }
+    updateConversation({
+      ...conv,
+      correctVersions: conv.acceptedVersions,
+      status: "completed",
+    });
   }
 
   const selectedConv = conversations.find((c) => c.id === selectedId) ?? null;
