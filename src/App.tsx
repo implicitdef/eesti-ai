@@ -74,31 +74,22 @@ function App() {
 
   const inputCard = (
     <div className="bg-white rounded-xl shadow p-6">
-      <form onSubmit={handleAnalyze} className="flex flex-col gap-3">
-        <textarea
+      <form onSubmit={handleAnalyze} className="flex gap-3">
+        <input
+          type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste Estonian text here…"
-          rows={3}
-          className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-              e.preventDefault();
-              void handleAnalyze(e as unknown as React.FormEvent);
-            }
-          }}
+          className="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">⌘↵ to submit</span>
-          <button
-            type="submit"
-            disabled={!input.trim() || loading}
-            className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
-          >
-            {loading ? "Analyzing…" : "Analyze"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={!input.trim() || loading}
+          className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
+        >
+          {loading ? "Analyzing…" : "Analyze"}
+        </button>
       </form>
     </div>
   );
