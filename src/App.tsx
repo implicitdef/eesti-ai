@@ -105,7 +105,7 @@ function App() {
 
         {hasEntries && (
           <div className="flex-1 flex overflow-hidden">
-            <div className="border-r border-gray-200">
+            <div>
               <HistoryPanel
                 entries={entries}
                 selectedId={selectedId}
@@ -119,7 +119,7 @@ function App() {
         )}
       </main>
 
-      <footer className="border-t border-gray-200">
+      <footer className="border-t border-gray-400">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-blue-700 tracking-tight">

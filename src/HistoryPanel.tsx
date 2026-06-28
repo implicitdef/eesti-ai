@@ -8,7 +8,7 @@ interface Props {
 
 function HistoryPanel({ entries, selectedId, onSelect }: Props) {
   return (
-    <div className="w-52 flex-shrink-0 overflow-y-auto flex flex-col">
+    <div className="w-52 flex-shrink-0 overflow-y-auto flex flex-col bg-slate-200 h-full">
       <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 px-4 pt-5 pb-2">
         History
       </p>
