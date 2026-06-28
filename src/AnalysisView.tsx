@@ -70,6 +70,9 @@ function AnalysisView({ entry }: Props) {
                 <th className="text-left py-2 pr-4 font-semibold text-gray-500 whitespace-nowrap">
                   Word
                 </th>
+                <th className="text-left py-2 pr-4 font-semibold text-gray-500 whitespace-nowrap">
+                  Type
+                </th>
                 {hasBaseForm && (
                   <th className="text-left py-2 pr-4 font-semibold text-gray-500 whitespace-nowrap">
                     Base form
@@ -90,6 +93,9 @@ function AnalysisView({ entry }: Props) {
                 <tr key={i} className="border-b border-gray-50">
                   <td className="py-2 pr-4 font-medium text-gray-800 whitespace-nowrap">
                     {w.word}
+                  </td>
+                  <td className="py-2 pr-4 text-gray-400 text-xs whitespace-nowrap">
+                    {w.wordType}
                   </td>
                   {hasBaseForm && (
                     <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">

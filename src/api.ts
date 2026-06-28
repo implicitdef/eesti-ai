@@ -3,12 +3,18 @@ import type { AnalysisEntry } from "./types";
 
 const SYSTEM_PROMPT = `You are an expert in Estonian linguistics and translation. When given Estonian text (a word, expression, or sentence), you will:
 1. Provide a complete, natural English translation of the entire input
-2. Break down each word with its English translation and relevant grammatical information (case, tense, person, number, mood, voice, etc.)
+2. Break down each word with its part of speech, translation, and grammatical information
 3. Identify any idiomatic or compound expressions that are best understood as a unit rather than word by word
 
-For grammaticalInfo, be specific and concise — for example: "genitive singular", "3rd person singular present", "past participle". Use null only for words that carry no grammatical inflection (e.g. interjections, conjunctions, uninflected particles).
-Always determine case from syntactic context, not just word form: postpositions and prepositions govern specific cases in Estonian (e.g. "üle" governs the genitive), and the same surface form can belong to different cases depending on context. Commit to exactly one case — never hedge with parenthetical alternatives, slashes, or multiple options.
-For baseForm: if grammaticalInfo is non-null (i.e. the word is inflected in any way), you MUST provide the base form — the dictionary/nominative singular form for nouns, adjectives, and pronouns (including compound and reciprocal pronouns), or the ma-infinitive for verbs. Use null only when the word already appears in its base form and grammaticalInfo is null.`;
+For wordType: always provide the part of speech — one of: noun, verb, adjective, adverb, pronoun, numeral, conjunction, preposition, postposition, particle, interjection.
+
+For grammaticalInfo, use these exact formats:
+- Nouns, adjectives, pronouns: case name only, with "plural" appended if plural, omitting "singular". Examples: "nominative", "genitive", "partitive plural", "allative", "comitative plural". Always determine case from syntactic context (e.g. the postposition "üle" governs the genitive, "koos" governs the comitative). Commit to exactly one case — never use parenthetical alternatives or slashes.
+- Verbs (finite forms): "tense (person number)". Examples: "present (1st person singular)", "simple past (3rd person plural)", "conditional (2nd person singular)".
+- Verbs (non-finite forms): include the suffix. Examples: "past participle (-nud)", "passive past participle (-tud)", "supine (-ma form)".
+- Uninflected words (adverbs, conjunctions, prepositions, postpositions, particles, interjections): use null.
+
+For baseForm: if grammaticalInfo is non-null, you MUST provide the base form — nominative singular for nouns/adjectives/pronouns (including compound and reciprocal pronouns), or the ma-infinitive for verbs. Use null only when the word is already in its base form and grammaticalInfo is null.`;
 
 export async function analyzeEstonian(
   text: string,
@@ -41,6 +47,11 @@ export async function analyzeEstonian(
                     description:
                       "The word as it appears in the original text",
                   },
+                  wordType: {
+                    type: "string",
+                    description:
+                      "Part of speech: noun, verb, adjective, adverb, pronoun, numeral, conjunction, preposition, postposition, particle, or interjection",
+                  },
                   baseForm: {
                     anyOf: [{ type: "string" }, { type: "null" }],
                     description:
@@ -56,7 +67,7 @@ export async function analyzeEstonian(
                       "Grammatical details: case, tense, person, number, mood, etc. — null if not applicable",
                   },
                 },
-                required: ["word", "baseForm", "translation", "grammaticalInfo"],
+                required: ["word", "wordType", "baseForm", "translation", "grammaticalInfo"],
                 additionalProperties: false,
               },
             },
@@ -101,6 +112,7 @@ export async function analyzeEstonian(
     fullTranslation: string;
     words: Array<{
       word: string;
+      wordType: string;
       baseForm: string | null;
       translation: string;
       grammaticalInfo: string | null;

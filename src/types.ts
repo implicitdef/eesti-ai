@@ -1,5 +1,6 @@
 export interface WordAnalysis {
   word: string;
+  wordType: string;
   baseForm: string | null;
   translation: string;
   grammaticalInfo: string | null;
