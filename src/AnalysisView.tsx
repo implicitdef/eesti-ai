@@ -4,6 +4,30 @@ interface Props {
   entry: AnalysisEntry;
 }
 
+const CASE_ENDINGS: Record<string, string> = {
+  illative: "-sse",
+  inessive: "-s",
+  elative: "-st",
+  allative: "-le",
+  adessive: "-l",
+  ablative: "-lt",
+  translative: "-ks",
+  terminative: "-ni",
+  essive: "-na",
+  abessive: "-ta",
+  comitative: "-ga",
+};
+
+function annotateGrammaticalInfo(info: string): string {
+  const lower = info.toLowerCase();
+  for (const [caseName, ending] of Object.entries(CASE_ENDINGS)) {
+    if (lower.includes(caseName)) {
+      return `${info} (${ending})`;
+    }
+  }
+  return info;
+}
+
 function displayBaseForm(word: string, baseForm: string | null): string | null {
   if (!baseForm) return null;
   return baseForm.toLowerCase() === word.toLowerCase() ? null : baseForm;
@@ -75,7 +99,9 @@ function AnalysisView({ entry }: Props) {
                   <td className="py-2 pr-4 text-gray-700">{w.translation}</td>
                   {hasGrammaticalInfo && (
                     <td className="py-2 text-gray-500 text-xs">
-                      {w.grammaticalInfo ?? ""}
+                      {w.grammaticalInfo
+                        ? annotateGrammaticalInfo(w.grammaticalInfo)
+                        : ""}
                     </td>
                   )}
                 </tr>
