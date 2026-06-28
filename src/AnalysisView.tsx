@@ -4,8 +4,15 @@ interface Props {
   entry: AnalysisEntry;
 }
 
+function displayBaseForm(word: string, baseForm: string | null): string | null {
+  if (!baseForm) return null;
+  return baseForm.toLowerCase() === word.toLowerCase() ? null : baseForm;
+}
+
 function AnalysisView({ entry }: Props) {
-  const hasBaseForm = entry.words.some((w) => w.baseForm);
+  const hasBaseForm = entry.words.some(
+    (w) => displayBaseForm(w.word, w.baseForm) !== null,
+  );
   const hasGrammaticalInfo = entry.words.some((w) => w.grammaticalInfo);
 
   return (
@@ -62,7 +69,7 @@ function AnalysisView({ entry }: Props) {
                   </td>
                   {hasBaseForm && (
                     <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">
-                      {w.baseForm ?? "—"}
+                      {displayBaseForm(w.word, w.baseForm) ?? "—"}
                     </td>
                   )}
                   <td className="py-2 pr-4 text-gray-700">{w.translation}</td>
