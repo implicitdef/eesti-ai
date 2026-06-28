@@ -138,8 +138,9 @@ export async function evaluateTranslation(
 
 1. LENIENCY: Accept ANY correct, natural Estonian translation — there are many valid ways to express the same sentence. Do NOT penalise valid alternative phrasings, word choices, or word orders.
 2. REAL ERRORS ONLY: Only flag genuine mistakes — wrong grammatical case, wrong word form, a word that loses or distorts the meaning, or clearly unnatural phrasing that a native speaker would not say.
-3. CONSISTENCY: If the student is not yet correct, identify which pre-validated version they are closest to, and give feedback nudging them toward THAT specific version — not toward a different target than previous hints.
-4. DO NOT invent new "correct" targets that differ from the pre-validated versions when giving suggestions.${formatAcceptedVersions(acceptedVersions)}`,
+3. IGNORE capitalisation and final punctuation (period, exclamation mark, question mark at the end of the sentence) — never flag these as mistakes. Do care about commas within the sentence.
+4. CONSISTENCY: If the student is not yet correct, identify which pre-validated version they are closest to, and give feedback nudging them toward THAT specific version — not toward a different target than previous hints.
+5. DO NOT invent new "correct" targets that differ from the pre-validated versions when giving suggestions.${formatAcceptedVersions(acceptedVersions)}`,
       },
       {
         role: "user",
