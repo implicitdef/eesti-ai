@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Menu } from "lucide-react";
 import AnalysisView from "./AnalysisView";
 import HistoryPanel from "./HistoryPanel";
+import SidebarLayout from "./SidebarLayout";
 import { analyzeEstonian } from "./api";
 import type { AnalysisEntry } from "./types";
 
@@ -91,20 +92,12 @@ function AnalyzeMode() {
       </div>
 
       {hasEntries && (
-        <div className="flex-1 flex overflow-hidden relative">
-          {isHistoryOpen && (
-            <div
-              className="absolute inset-0 bg-black/30 z-10 md:hidden"
-              onClick={() => setIsHistoryOpen(false)}
-            />
-          )}
-          <div
-            className={`absolute md:static inset-y-0 left-0 z-20 transition-transform duration-200 ${
-              isHistoryOpen ? "translate-x-0" : "-translate-x-full"
-            } md:translate-x-0`}
-          >
+        <SidebarLayout
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          sidebar={
             <HistoryPanel
-              entries={entries}
+              items={entries.map((e) => ({ id: e.id, label: e.originalText }))}
               selectedId={selectedId}
               onSelect={(id) => {
                 setSelectedId(id);
@@ -116,11 +109,10 @@ function AnalyzeMode() {
                 setIsHistoryOpen(false);
               }}
             />
-          </div>
-          <div className="flex-1 overflow-y-auto px-8 py-6">
-            {selectedEntry && <AnalysisView entry={selectedEntry} />}
-          </div>
-        </div>
+          }
+        >
+          {selectedEntry && <AnalysisView entry={selectedEntry} />}
+        </SidebarLayout>
       )}
     </main>
   );

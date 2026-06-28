@@ -1,15 +1,13 @@
-import type { AnalysisEntry } from "./types";
-
 interface Props {
-  entries: AnalysisEntry[];
+  items: { id: string; label: string }[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onClear: () => void;
 }
 
-function HistoryPanel({ entries, selectedId, onSelect, onClear }: Props) {
+function HistoryPanel({ items, selectedId, onSelect, onClear }: Props) {
   return (
-    <div className="w-52 flex-shrink-0 overflow-y-auto flex flex-col bg-slate-200 h-full">
+    <div className="w-52 shrink-0 overflow-y-auto flex flex-col bg-slate-200 h-full">
       <div className="flex items-center justify-between px-4 pt-5 pb-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
           History
@@ -23,17 +21,17 @@ function HistoryPanel({ entries, selectedId, onSelect, onClear }: Props) {
         </button>
       </div>
       <ul className="flex flex-col pb-2">
-        {entries.map((entry) => (
-          <li key={entry.id}>
+        {items.map((item) => (
+          <li key={item.id}>
             <button
-              onClick={() => onSelect(entry.id)}
+              onClick={() => onSelect(item.id)}
               className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                entry.id === selectedId
+                item.id === selectedId
                   ? "bg-blue-50 text-blue-700 font-medium"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              <span className="block truncate">{entry.originalText}</span>
+              <span className="block truncate">{item.label}</span>
             </button>
           </li>
         ))}

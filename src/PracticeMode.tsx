@@ -6,7 +6,8 @@ import {
   evaluateTranslation,
   getCorrectVersions,
 } from "./practice-api";
-import PracticeHistoryPanel from "./PracticeHistoryPanel";
+import HistoryPanel from "./HistoryPanel";
+import SidebarLayout from "./SidebarLayout";
 import PracticeConversationView from "./PracticeConversationView";
 
 const PRACTICE_HISTORY_KEY = "eesti-ai-practice-history";
@@ -165,20 +166,12 @@ function PracticeMode() {
       </div>
 
       {hasConversations && (
-        <div className="flex-1 flex overflow-hidden relative">
-          {isHistoryOpen && (
-            <div
-              className="absolute inset-0 bg-black/30 z-10 md:hidden"
-              onClick={() => setIsHistoryOpen(false)}
-            />
-          )}
-          <div
-            className={`absolute md:static inset-y-0 left-0 z-20 transition-transform duration-200 ${
-              isHistoryOpen ? "translate-x-0" : "-translate-x-full"
-            } md:translate-x-0`}
-          >
-            <PracticeHistoryPanel
-              conversations={conversations}
+        <SidebarLayout
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          sidebar={
+            <HistoryPanel
+              items={conversations.map((c) => ({ id: c.id, label: c.theme }))}
               selectedId={selectedId}
               onSelect={(id) => {
                 setSelectedId(id);
@@ -190,18 +183,17 @@ function PracticeMode() {
                 setIsHistoryOpen(false);
               }}
             />
-          </div>
-          <div className="flex-1 overflow-y-auto px-8 py-6">
-            {selectedConv && (
-              <PracticeConversationView
-                conversation={selectedConv}
-                onSubmitAttempt={handleSubmitAttempt}
-                onShowAnswer={handleShowAnswer}
-                loading={loadingAction}
-              />
-            )}
-          </div>
-        </div>
+          }
+        >
+          {selectedConv && (
+            <PracticeConversationView
+              conversation={selectedConv}
+              onSubmitAttempt={handleSubmitAttempt}
+              onShowAnswer={handleShowAnswer}
+              loading={loadingAction}
+            />
+          )}
+        </SidebarLayout>
       )}
     </main>
   );
