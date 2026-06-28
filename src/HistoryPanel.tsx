@@ -4,14 +4,24 @@ interface Props {
   entries: AnalysisEntry[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onClear: () => void;
 }
 
-function HistoryPanel({ entries, selectedId, onSelect }: Props) {
+function HistoryPanel({ entries, selectedId, onSelect, onClear }: Props) {
   return (
     <div className="w-52 flex-shrink-0 overflow-y-auto flex flex-col bg-slate-200 h-full">
-      <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 px-4 pt-5 pb-2">
-        History
-      </p>
+      <div className="flex items-center justify-between px-4 pt-5 pb-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+          History
+        </p>
+        <button
+          onClick={onClear}
+          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+          title="Clear history"
+        >
+          Clear
+        </button>
+      </div>
       <ul className="flex flex-col pb-2">
         {entries.map((entry) => (
           <li key={entry.id}>

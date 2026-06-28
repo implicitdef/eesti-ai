@@ -110,6 +110,7 @@ function App() {
                 entries={entries}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
+                onClear={() => { setEntries([]); setSelectedId(null); }}
               />
             </div>
             <div className="flex-1 overflow-y-auto px-8 py-6">
