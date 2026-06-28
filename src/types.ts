@@ -12,6 +12,35 @@ export interface CompoundExpression {
   explanation: string;
 }
 
+export interface PracticeMistake {
+  issue: string;
+  suggestion: string;
+}
+
+export interface PracticeAttempt {
+  userTranslation: string;
+  isCorrect: boolean;
+  isUnderstandable: boolean;
+  isGrammaticallyCorrect: boolean;
+  isNatural: boolean;
+  mistakes: PracticeMistake[];
+}
+
+export interface CorrectVersion {
+  translation: string;
+  commentary: string;
+}
+
+export interface PracticeConversation {
+  id: string;
+  theme: string;
+  englishSentence: string;
+  attempts: PracticeAttempt[];
+  correctVersions: CorrectVersion[] | null;
+  status: "in_progress" | "completed";
+  createdAt: number;
+}
+
 export interface AnalysisEntry {
   id: string;
   originalText: string;

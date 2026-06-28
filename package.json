@@ -13,6 +13,7 @@
     "pretty-check": "prettier --check ."
   },
   "dependencies": {
+    "@tanstack/react-router": "^1.170.16",
     "lucide-react": "^1.21.0",
     "openai": "^6.45.0",
     "react": "^19.0.0",
