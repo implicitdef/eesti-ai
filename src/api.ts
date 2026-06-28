@@ -7,6 +7,7 @@ const SYSTEM_PROMPT = `You are an expert in Estonian linguistics and translation
 3. Identify any idiomatic or compound expressions that are best understood as a unit rather than word by word
 
 For grammaticalInfo, be specific and concise — for example: "genitive singular", "3rd person singular present", "past participle". Use null only for words that carry no grammatical inflection (e.g. interjections, conjunctions, uninflected particles).
+Always determine case from syntactic context, not just word form: postpositions and prepositions govern specific cases in Estonian (e.g. "üle" governs the genitive), and the same surface form can belong to different cases depending on context. Commit to exactly one case — never hedge with parenthetical alternatives, slashes, or multiple options.
 For baseForm: if grammaticalInfo is non-null (i.e. the word is inflected in any way), you MUST provide the base form — the dictionary/nominative singular form for nouns, adjectives, and pronouns (including compound and reciprocal pronouns), or the ma-infinitive for verbs. Use null only when the word already appears in its base form and grammaticalInfo is null.`;
 
 export async function analyzeEstonian(
@@ -115,7 +116,11 @@ export async function analyzeEstonian(
     id: crypto.randomUUID(),
     originalText: text,
     fullTranslation: raw.fullTranslation,
-    words: raw.words,
+    words: raw.words.map((w) => ({
+      ...w,
+      baseForm: w.baseForm === "null" ? null : w.baseForm,
+      grammaticalInfo: w.grammaticalInfo === "null" ? null : w.grammaticalInfo,
+    })),
     compoundExpressions: raw.compoundExpressions,
     createdAt: Date.now(),
   };
