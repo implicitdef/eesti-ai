@@ -29,10 +29,7 @@ function RootLayout() {
     return <ApiKeyScreen onSubmit={handleSetApiKey} />;
   }
 
-  const maskedKey =
-    apiKey.slice(0, 6) +
-    "*".repeat(Math.max(0, apiKey.length - 10)) +
-    apiKey.slice(-4);
+  const keyTail = apiKey.slice(-5);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -62,8 +59,8 @@ function RootLayout() {
       <Outlet />
 
       <footer className="border-t border-gray-400">
-        <div className="flex items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end sm:justify-between px-4 sm:px-6 py-3">
+          <div className="hidden sm:flex items-center gap-2">
             <span className="text-sm font-bold text-blue-700 tracking-tight">
               Eesti AI
             </span>
@@ -71,11 +68,9 @@ function RootLayout() {
             <span className="text-xs text-gray-500">Learn Estonian with AI</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-full border border-gray-300 bg-gray-100 px-3 py-1">
-              <span className="text-xs text-gray-400">API key</span>
-              <code className="font-mono text-xs text-gray-600">
-                {maskedKey}
-              </code>
+            <div className="flex items-center gap-1.5 rounded-full border border-gray-300 bg-gray-100 px-3 py-1">
+              <span className="text-xs text-gray-400">API key ending in</span>
+              <code className="font-mono text-xs text-gray-600">{keyTail}</code>
             </div>
             <button
               onClick={handleClearApiKey}
