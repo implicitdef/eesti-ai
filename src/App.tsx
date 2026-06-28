@@ -39,15 +39,30 @@ function App() {
           <p className="text-gray-500 text-center">Chat coming soon...</p>
         </div>
       </main>
-      <footer className="flex items-center justify-end gap-2 border-t border-gray-200 bg-white px-4 py-2 text-sm text-gray-400">
-        <span>API key: {maskedKey}</span>
-        <button
-          onClick={handleClearApiKey}
-          className="flex items-center gap-1 rounded px-2 py-1 hover:bg-red-50 hover:text-red-500 transition-colors"
-        >
-          <X size={14} />
-          <span>clear</span>
-        </button>
+      <footer className="border-t border-gray-200 bg-white">
+        <div className="flex items-center justify-between px-6 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-blue-700 tracking-tight">
+              Eesti AI
+            </span>
+            <span className="text-gray-200 select-none">|</span>
+            <span className="text-xs text-gray-400">Learn Estonian with AI</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50 px-3 py-1">
+              <span className="text-xs text-gray-400">API key</span>
+              <code className="font-mono text-xs text-gray-600">{maskedKey}</code>
+            </div>
+            <button
+              onClick={handleClearApiKey}
+              title="Clear API key"
+              className="flex items-center gap-1 rounded-full border border-transparent px-3 py-1 text-xs text-gray-400 transition-colors hover:border-red-100 hover:bg-red-50 hover:text-red-500"
+            >
+              <X size={12} />
+              <span>Clear</span>
+            </button>
+          </div>
+        </div>
       </footer>
     </div>
   );
