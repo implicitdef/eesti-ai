@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
-import type { PracticeConversation } from "./types";
-import {
-  generateSentence,
-  evaluateTranslation,
-  getCorrectVersions,
-} from "./practice-api";
+import { useEffect, useState } from "react";
 import HistoryPanel from "./HistoryPanel";
 import ModeToolbar from "./ModeToolbar";
-import SidebarLayout, { useCollapsibleSidebar } from "./SidebarLayout";
+import {
+  evaluateTranslation,
+  generateSentence,
+  getCorrectVersions,
+} from "./practice-api";
 import PracticeConversationView from "./PracticeConversationView";
+import SidebarLayout, { useCollapsibleSidebar } from "./SidebarLayout";
+import type { PracticeConversation } from "./types";
 
 const PRACTICE_HISTORY_KEY = "eesti-ai-practice-history";
 const API_KEY_STORAGE = "eesti-ai-api-key";
@@ -123,8 +123,7 @@ function PracticeMode() {
     }
   }
 
-  const selectedConv =
-    conversations.find((c) => c.id === selectedId) ?? null;
+  const selectedConv = conversations.find((c) => c.id === selectedId) ?? null;
   const hasConversations = conversations.length > 0;
 
   return (
@@ -135,7 +134,8 @@ function PracticeMode() {
         value={theme}
         onChange={setTheme}
         onSubmit={handleGenerate}
-        placeholder="Enter a theme (e.g. fruits, work, flirting at the gym…)"
+        placeholder="Enter a theme…"
+        hint='e.g. "beach", "equal", "memory", "asking for water at the restaurant", "flirting at the gym", …'
         disabled={!theme.trim() || loadingGenerate}
         error={error}
         submitLabel={loadingGenerate ? "Generating…" : "New sentence"}
