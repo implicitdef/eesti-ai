@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
 import AnalysisView from "./AnalysisView";
 import HistoryPanel from "./HistoryPanel";
-import SidebarLayout from "./SidebarLayout";
+import SidebarLayout, {
+  useCollapsibleSidebar,
+  SidebarToggleButton,
+} from "./SidebarLayout";
 import { analyzeEstonian } from "./api";
 import type { AnalysisEntry } from "./types";
 
@@ -26,7 +28,7 @@ function AnalyzeMode() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const { isOpen, toggle, close } = useCollapsibleSidebar();
 
   useEffect(() => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
@@ -59,15 +61,7 @@ function AnalyzeMode() {
         className={`px-6 py-4 border-b border-gray-200 ${!hasEntries ? "flex justify-center" : ""}`}
       >
         <div className={`flex items-center gap-3 ${!hasEntries ? "w-full max-w-2xl" : ""}`}>
-          {hasEntries && (
-            <button
-              onClick={() => setIsHistoryOpen(true)}
-              className="md:hidden flex items-center gap-1.5 shrink-0 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600"
-            >
-              <Menu size={16} />
-              History
-            </button>
-          )}
+          {hasEntries && <SidebarToggleButton onClick={toggle} />}
           <form
             onSubmit={handleAnalyze}
             className="flex-1 flex gap-3"
@@ -93,20 +87,20 @@ function AnalyzeMode() {
 
       {hasEntries && (
         <SidebarLayout
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
+          isOpen={isOpen}
+          onClose={close}
           sidebar={
             <HistoryPanel
               items={entries.map((e) => ({ id: e.id, label: e.originalText }))}
               selectedId={selectedId}
               onSelect={(id) => {
                 setSelectedId(id);
-                setIsHistoryOpen(false);
+                close();
               }}
               onClear={() => {
                 setEntries([]);
                 setSelectedId(null);
-                setIsHistoryOpen(false);
+                close();
               }}
             />
           }

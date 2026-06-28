@@ -1,4 +1,27 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
+import { Menu } from "lucide-react";
+
+export function useCollapsibleSidebar() {
+  const [isOpen, setIsOpen] = useState(false);
+  return {
+    isOpen,
+    toggle: () => setIsOpen((v) => !v),
+    close: () => setIsOpen(false),
+  };
+}
+
+export function SidebarToggleButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="md:hidden flex items-center gap-1.5 shrink-0 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600"
+    >
+      <Menu size={16} />
+      History
+    </button>
+  );
+}
 
 interface Props {
   sidebar: ReactNode;

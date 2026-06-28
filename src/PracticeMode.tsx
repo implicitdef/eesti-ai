@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
 import type { PracticeConversation } from "./types";
 import {
   generateSentence,
@@ -7,7 +6,10 @@ import {
   getCorrectVersions,
 } from "./practice-api";
 import HistoryPanel from "./HistoryPanel";
-import SidebarLayout from "./SidebarLayout";
+import SidebarLayout, {
+  useCollapsibleSidebar,
+  SidebarToggleButton,
+} from "./SidebarLayout";
 import PracticeConversationView from "./PracticeConversationView";
 
 const PRACTICE_HISTORY_KEY = "eesti-ai-practice-history";
@@ -33,7 +35,7 @@ function PracticeMode() {
   const [loadingGenerate, setLoadingGenerate] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const { isOpen, toggle, close } = useCollapsibleSidebar();
 
   useEffect(() => {
     localStorage.setItem(PRACTICE_HISTORY_KEY, JSON.stringify(conversations));
@@ -133,15 +135,7 @@ function PracticeMode() {
         className={`px-6 py-4 border-b border-gray-200 ${!hasConversations ? "flex justify-center" : ""}`}
       >
         <div className={`flex items-center gap-3 ${!hasConversations ? "w-full max-w-2xl" : ""}`}>
-          {hasConversations && (
-            <button
-              onClick={() => setIsHistoryOpen(true)}
-              className="md:hidden flex items-center gap-1.5 shrink-0 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600"
-            >
-              <Menu size={16} />
-              History
-            </button>
-          )}
+          {hasConversations && <SidebarToggleButton onClick={toggle} />}
           <form
             onSubmit={handleGenerate}
             className="flex-1 flex gap-3"
@@ -167,20 +161,20 @@ function PracticeMode() {
 
       {hasConversations && (
         <SidebarLayout
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
+          isOpen={isOpen}
+          onClose={close}
           sidebar={
             <HistoryPanel
               items={conversations.map((c) => ({ id: c.id, label: c.theme }))}
               selectedId={selectedId}
               onSelect={(id) => {
                 setSelectedId(id);
-                setIsHistoryOpen(false);
+                close();
               }}
               onClear={() => {
                 setConversations([]);
                 setSelectedId(null);
-                setIsHistoryOpen(false);
+                close();
               }}
             />
           }
