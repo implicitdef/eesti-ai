@@ -63,7 +63,32 @@ function AnalysisView({ entry }: Props) {
         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
           Word Analysis
         </p>
-        <div className="overflow-x-auto">
+        <div className="sm:hidden flex flex-col divide-y divide-gray-200">
+          {entry.words.map((w, i) => {
+            const baseForm = displayBaseForm(w.word, w.baseForm);
+            return (
+              <div key={i} className="grid grid-cols-2 gap-2 py-2.5">
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-medium text-gray-800">{w.word}</span>
+                  <span className="text-sm text-blue-700">{w.translation}</span>
+                </div>
+                <div className="flex flex-col gap-0.5 text-xs text-gray-500">
+                  <span>{w.wordType}</span>
+                  {w.grammaticalInfo && (
+                    <span className="text-gray-400">
+                      {annotateGrammaticalInfo(w.grammaticalInfo)}
+                    </span>
+                  )}
+                  {baseForm && (
+                    <span className="text-gray-400">base: {baseForm}</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-gray-300">
