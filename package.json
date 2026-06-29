@@ -15,7 +15,7 @@
   "dependencies": {
     "@tanstack/react-router": "^1.170.16",
     "lucide-react": "^1.21.0",
-    "openai": "^6.45.0",
+    "@anthropic-ai/sdk": "latest",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

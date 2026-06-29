@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import type { AnalysisEntry } from "./types";
 
 const SYSTEM_PROMPT = `You are an expert in Estonian linguistics and translation. When given Estonian text (a word, expression, or sentence), you will:
@@ -20,15 +20,16 @@ export async function analyzeEstonian(
   text: string,
   apiKey: string,
 ): Promise<AnalysisEntry> {
-  const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
+  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4o",
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "analyze_estonian",
-        strict: true,
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: 2048,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: text }],
+    output_config: {
+      format: {
+        type: "json_schema",
         schema: {
           type: "object",
           properties: {
@@ -102,13 +103,9 @@ export async function analyzeEstonian(
         },
       },
     },
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: text },
-    ],
   });
 
-  const raw = JSON.parse(response.choices[0].message.content!) as {
+  const raw = JSON.parse(response.content[0].text) as {
     fullTranslation: string;
     words: Array<{
       word: string;

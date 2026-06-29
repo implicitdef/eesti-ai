@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import type { CorrectVersion, PracticeAttempt } from "./types";
 
 function formatAcceptedVersions(versions: CorrectVersion[]): string {
@@ -14,20 +14,30 @@ export async function generateSentence(
   previousSentences: string[],
   apiKey: string,
 ): Promise<string> {
-  const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
+  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
   const avoidClause =
     previousSentences.length > 0
       ? `\n\nDo NOT use or closely paraphrase any of these previously generated sentences:\n${previousSentences.map((s) => `- ${s}`).join("\n")}`
       : "";
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4o",
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "generate_sentence",
-        strict: true,
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: 2048,
+    system: `Generate a single short, natural English sentence based on the given theme. Around B1 level.
+
+Requirements:
+- Short: 6 to 12 words
+- Only use the most common, everyday verbs: go, come, eat, drink, see, hear, say, want, need, like, love, take, give, buy, sell, know, think, feel, get, put, make, do, have, be, walk, run, sit, stand, wait, call, ask, tell, look, work, play, sleep, open, close, stop, start, help, try, etc. NEVER use any verb that feels unusual, literary, or descriptive (e.g. never use: dart, nibble, gaze, linger, wander, clutch, murmur, tremble, peer, glance, crouch, slumber, stride, shudder, gleam, etc.)
+- Grammatically simple: one or two clauses at most
+- Natural spoken or written English, not academic or literary.
+
+Good examples: "The cat ran out of the house.", "You have the most beautiful eyes I've ever seen.", "They recognized each other right away.", "She forgot her keys on the kitchen table.", "He drinks coffee every morning.", "We need to buy some bread." "Hey, how are you?"
+Bad examples: "The fox darts away into the bushes." (rare verb), "She nibbles on a piece of bread." (rare verb), "Though in all lands love is now mingled with grief, it grows perhaps the greater." (too literary, not B1)${avoidClause}`,
+    messages: [{ role: "user", content: `Theme: ${theme}` }],
+    output_config: {
+      format: {
+        type: "json_schema",
         schema: {
           type: "object",
           properties: {
@@ -41,25 +51,9 @@ export async function generateSentence(
         },
       },
     },
-    messages: [
-      {
-        role: "system",
-        content: `Generate a single short, natural English sentence based on the given theme. Around B1 level.
-
-Requirements:
-- Short: 6 to 12 words
-- Only use the most common, everyday verbs: go, come, eat, drink, see, hear, say, want, need, like, love, take, give, buy, sell, know, think, feel, get, put, make, do, have, be, walk, run, sit, stand, wait, call, ask, tell, look, work, play, sleep, open, close, stop, start, help, try, etc. NEVER use any verb that feels unusual, literary, or descriptive (e.g. never use: dart, nibble, gaze, linger, wander, clutch, murmur, tremble, peer, glance, crouch, slumber, stride, shudder, gleam, etc.)
-- Grammatically simple: one or two clauses at most
-- Natural spoken or written English, not academic or literary.
-
-Good examples: "The cat ran out of the house.", "You have the most beautiful eyes I've ever seen.", "They recognized each other right away.", "She forgot her keys on the kitchen table.", "He drinks coffee every morning.", "We need to buy some bread." "Hey, how are you?"
-Bad examples: "The fox darts away into the bushes." (rare verb), "She nibbles on a piece of bread." (rare verb), "Though in all lands love is now mingled with grief, it grows perhaps the greater." (too literary, not B1)${avoidClause}`,
-      },
-      { role: "user", content: `Theme: ${theme}` },
-    ],
   });
 
-  const raw = JSON.parse(response.choices[0].message.content!) as {
+  const raw = JSON.parse(response.content[0].text) as {
     sentence: string;
   };
   return raw.sentence;
@@ -71,15 +65,27 @@ export async function evaluateTranslation(
   acceptedVersions: CorrectVersion[],
   apiKey: string,
 ): Promise<Omit<PracticeAttempt, "userTranslation">> {
-  const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
+  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4o",
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "evaluate_translation",
-        strict: true,
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: 2048,
+    system: `You are an expert Estonian linguistics teacher evaluating a student's translation. Follow these rules strictly:
+
+1. LENIENCY: Accept ANY correct, natural Estonian translation — there are many valid ways to express the same sentence. Do NOT penalise valid alternative phrasings, word choices, or word orders.
+2. REAL ERRORS ONLY: Only flag genuine mistakes — wrong grammatical case, wrong word form, a word that loses or distorts the meaning, or clearly unnatural phrasing that a native speaker would not say.
+3. IGNORE capitalisation and final punctuation (period, exclamation mark, question mark at the end of the sentence) — never flag these as mistakes. Do care about commas within the sentence.
+4. CONSISTENCY: If the student is not yet correct, identify which pre-validated version they are closest to, and give feedback nudging them toward THAT specific version — not toward a different target than previous hints.
+5. DO NOT invent new "correct" targets that differ from the pre-validated versions when giving suggestions.${formatAcceptedVersions(acceptedVersions)}`,
+    messages: [
+      {
+        role: "user",
+        content: `English: "${englishSentence}"\nStudent's Estonian: "${userTranslation}"`,
+      },
+    ],
+    output_config: {
+      format: {
+        type: "json_schema",
         schema: {
           type: "object",
           properties: {
@@ -131,25 +137,9 @@ export async function evaluateTranslation(
         },
       },
     },
-    messages: [
-      {
-        role: "system",
-        content: `You are an expert Estonian linguistics teacher evaluating a student's translation. Follow these rules strictly:
-
-1. LENIENCY: Accept ANY correct, natural Estonian translation — there are many valid ways to express the same sentence. Do NOT penalise valid alternative phrasings, word choices, or word orders.
-2. REAL ERRORS ONLY: Only flag genuine mistakes — wrong grammatical case, wrong word form, a word that loses or distorts the meaning, or clearly unnatural phrasing that a native speaker would not say.
-3. IGNORE capitalisation and final punctuation (period, exclamation mark, question mark at the end of the sentence) — never flag these as mistakes. Do care about commas within the sentence.
-4. CONSISTENCY: If the student is not yet correct, identify which pre-validated version they are closest to, and give feedback nudging them toward THAT specific version — not toward a different target than previous hints.
-5. DO NOT invent new "correct" targets that differ from the pre-validated versions when giving suggestions.${formatAcceptedVersions(acceptedVersions)}`,
-      },
-      {
-        role: "user",
-        content: `English: "${englishSentence}"\nStudent's Estonian: "${userTranslation}"`,
-      },
-    ],
   });
 
-  return JSON.parse(response.choices[0].message.content!) as Omit<
+  return JSON.parse(response.content[0].text) as Omit<
     PracticeAttempt,
     "userTranslation"
   >;
@@ -159,15 +149,17 @@ export async function getCorrectVersions(
   englishSentence: string,
   apiKey: string,
 ): Promise<CorrectVersion[]> {
-  const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
+  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4o",
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "correct_versions",
-        strict: true,
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: 2048,
+    system:
+      "You are an expert Estonian language teacher. Generate 4–5 correct Estonian translations of the given English sentence, covering the full range of natural phrasings — different word orders, vocabulary choices, and registers (formal/colloquial). Be inclusive: capture all the common ways a fluent speaker might naturally say this. These serve as reference answers for evaluating student work, so err on the side of breadth. For each, add a short commentary on its style or how it differs from the others.",
+    messages: [{ role: "user", content: englishSentence }],
+    output_config: {
+      format: {
+        type: "json_schema",
         schema: {
           type: "object",
           properties: {
@@ -197,17 +189,9 @@ export async function getCorrectVersions(
         },
       },
     },
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are an expert Estonian language teacher. Generate 4–5 correct Estonian translations of the given English sentence, covering the full range of natural phrasings — different word orders, vocabulary choices, and registers (formal/colloquial). Be inclusive: capture all the common ways a fluent speaker might naturally say this. These serve as reference answers for evaluating student work, so err on the side of breadth. For each, add a short commentary on its style or how it differs from the others.",
-      },
-      { role: "user", content: englishSentence },
-    ],
   });
 
-  const raw = JSON.parse(response.choices[0].message.content!) as {
+  const raw = JSON.parse(response.content[0].text) as {
     versions: CorrectVersion[];
   };
   return raw.versions;
