@@ -5,7 +5,9 @@ interface Props {
   conversation: PracticeConversation;
   onSubmitAttempt: (translation: string) => Promise<void>;
   onShowAnswer: () => Promise<void>;
+  onGenerateWithSameTheme: () => void | Promise<void>;
   loading: boolean;
+  generatingNewSentence: boolean;
 }
 
 function Check({ ok }: { ok: boolean }) {
@@ -20,7 +22,9 @@ function PracticeConversationView({
   conversation,
   onSubmitAttempt,
   onShowAnswer,
+  onGenerateWithSameTheme,
   loading,
+  generatingNewSentence,
 }: Props) {
   const [input, setInput] = useState("");
 
@@ -38,6 +42,18 @@ function PracticeConversationView({
 
   return (
     <div className="flex flex-col gap-8">
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-gray-400">
+          Theme: {conversation.theme}
+        </span>
+        <button
+          onClick={onGenerateWithSameTheme}
+          disabled={generatingNewSentence}
+          className="text-xs text-gray-400 hover:text-blue-600 underline transition-colors disabled:opacity-40"
+        >
+          {generatingNewSentence ? "Generating…" : "New sentence →"}
+        </button>
+      </div>
       <div>
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
           Translate to Estonian

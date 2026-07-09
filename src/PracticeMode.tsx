@@ -45,26 +45,24 @@ function PracticeMode() {
     );
   }
 
-  async function handleGenerate(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = theme.trim();
-    if (!trimmed || loadingGenerate) return;
+  async function generateWithTheme(themeStr: string) {
+    if (!themeStr || loadingGenerate) return;
     setLoadingGenerate(true);
     setError(null);
     try {
       const previousSentences = conversations
-        .filter((c) => c.theme.toLowerCase() === trimmed.toLowerCase())
+        .filter((c) => c.theme.toLowerCase() === themeStr.toLowerCase())
         .map((c) => c.englishSentence);
 
       const sentence = await generateSentence(
-        trimmed,
+        themeStr,
         previousSentences,
         apiKey,
       );
       const acceptedVersions = await getCorrectVersions(sentence, apiKey);
       const newConv: PracticeConversation = {
         id: crypto.randomUUID(),
-        theme: trimmed,
+        theme: themeStr,
         englishSentence: sentence,
         attempts: [],
         acceptedVersions,
@@ -80,6 +78,11 @@ function PracticeMode() {
     } finally {
       setLoadingGenerate(false);
     }
+  }
+
+  async function handleGenerate(e: React.FormEvent) {
+    e.preventDefault();
+    await generateWithTheme(theme.trim());
   }
 
   async function handleSubmitAttempt(translation: string) {
@@ -163,7 +166,11 @@ function PracticeMode() {
               conversation={selectedConv}
               onSubmitAttempt={handleSubmitAttempt}
               onShowAnswer={handleShowAnswer}
+              onGenerateWithSameTheme={() =>
+                generateWithTheme(selectedConv.theme)
+              }
               loading={loadingAction}
+              generatingNewSentence={loadingGenerate}
             />
           )}
         </SidebarLayout>
