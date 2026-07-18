@@ -7,6 +7,7 @@ import {
 import RootLayout from "./RootLayout";
 import AnalyzeMode from "./AnalyzeMode";
 import PracticeMode from "./PracticeMode";
+import VideoMode from "./VideoMode";
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
@@ -22,7 +23,17 @@ const practiceRoute = createRoute({
   component: PracticeMode,
 });
 
-const routeTree = rootRoute.addChildren([analyzeRoute, practiceRoute]);
+const videoRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/video",
+  component: VideoMode,
+});
+
+const routeTree = rootRoute.addChildren([
+  analyzeRoute,
+  practiceRoute,
+  videoRoute,
+]);
 
 export const router = createRouter({
   routeTree,

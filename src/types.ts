@@ -50,3 +50,9 @@ export interface AnalysisEntry {
   compoundExpressions: CompoundExpression[];
   createdAt: number;
 }
+
+export interface SubtitleCue {
+  start: number;
+  end: number;
+  text: string;
+}

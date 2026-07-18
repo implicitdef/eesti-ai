@@ -54,6 +54,13 @@ function RootLayout() {
         >
           Practice
         </Link>
+        <Link
+          to="/video"
+          activeProps={{ className: activeLinkClass }}
+          inactiveProps={{ className: inactiveLinkClass }}
+        >
+          Video
+        </Link>
       </nav>
 
       <Outlet />
@@ -65,7 +72,9 @@ function RootLayout() {
               Eesti AI
             </span>
             <span className="text-gray-400 select-none">|</span>
-            <span className="text-xs text-gray-500">Learn Estonian with AI</span>
+            <span className="text-xs text-gray-500">
+              Learn Estonian with AI
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 rounded-full border border-gray-300 bg-gray-100 px-3 py-1">
