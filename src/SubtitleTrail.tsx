@@ -20,7 +20,7 @@ function SubtitleTrail({ cues, currentTime }: Props) {
     .map((i) => cues[i]);
 
   return (
-    <div className="lg:w-96 shrink-0 flex flex-col justify-end gap-2 px-2 py-4 min-h-32">
+    <div className="lg:w-96 shrink-0 flex flex-col gap-2 px-2 py-4">
       {lines.map((cue, i) => {
         const isCurrent = i === lines.length - 1;
         return (
@@ -28,8 +28,8 @@ function SubtitleTrail({ cues, currentTime }: Props) {
             key={i}
             className={
               isCurrent
-                ? "text-lg font-medium text-gray-800"
-                : "text-sm text-gray-400"
+                ? "text-2xl font-medium text-gray-800"
+                : "text-2xl text-gray-400"
             }
           >
             {cue.text}
