@@ -1,13 +1,28 @@
 import { useEffect, useRef, useState } from "react";
-import { FileVideo, FileText, RotateCcw } from "lucide-react";
+import {
+  FileVideo,
+  FileText,
+  RotateCcw,
+  Eye,
+  EyeOff,
+  ArrowLeftRight,
+} from "lucide-react";
 import SubtitleTrail from "./SubtitleTrail";
-import { parseSubtitles } from "./subtitles";
+import { parseSubtitles, estonianScore, detectLanguageLabel } from "./subtitles";
 import type { SubtitleCue } from "./types";
+
+interface SubtitleTrack {
+  cues: SubtitleCue[];
+  label: string;
+  fileName: string;
+}
 
 function VideoMode() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [cues, setCues] = useState<SubtitleCue[] | null>(null);
+  const [tracks, setTracks] = useState<SubtitleTrack[] | null>(null);
+  const [swapped, setSwapped] = useState(false);
+  const [showSecondary, setShowSecondary] = useState(false);
   const [subtitleError, setSubtitleError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
 
@@ -25,41 +40,74 @@ function VideoMode() {
 
   async function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    const subtitleFile = files.find((f) => /\.(vtt|srt)$/i.test(f.name));
-    const videoCandidate = files.find((f) => f !== subtitleFile);
+    const subtitleFiles = files
+      .filter((f) => /\.(vtt|srt)$/i.test(f.name))
+      .slice(0, 2);
+    const videoCandidate = files.find((f) => !subtitleFiles.includes(f));
 
     if (videoCandidate) {
       setVideoFile(videoCandidate);
     }
 
-    if (subtitleFile) {
-      try {
-        const text = await subtitleFile.text();
-        const parsed = parseSubtitles(text);
-        if (parsed.length === 0) {
-          setSubtitleError("No subtitle cues found in this file.");
-          setCues(null);
-        } else {
-          setSubtitleError(null);
-          setCues(parsed);
-        }
-      } catch {
-        setSubtitleError("Couldn't read that subtitle file.");
-        setCues(null);
+    if (subtitleFiles.length === 0) return;
+
+    try {
+      const parsed = await Promise.all(
+        subtitleFiles.map(async (f) => ({
+          cues: parseSubtitles(await f.text()),
+          fileName: f.name,
+        })),
+      );
+      const nonEmpty = parsed.filter((p) => p.cues.length > 0);
+
+      if (nonEmpty.length === 0) {
+        setSubtitleError("No subtitle cues found in these files.");
+        setTracks(null);
+      } else if (nonEmpty.length === 1) {
+        setSubtitleError(null);
+        setTracks([
+          { ...nonEmpty[0], label: detectLanguageLabel(nonEmpty[0].cues) },
+        ]);
+      } else {
+        // Two files: whichever scores higher as Estonian becomes the
+        // always-on primary track; the other is the toggle-able original.
+        const ordered = [...nonEmpty].sort(
+          (a, b) => estonianScore(b.cues) - estonianScore(a.cues),
+        );
+        setSubtitleError(null);
+        setTracks([
+          { ...ordered[0], label: "Estonian" },
+          { ...ordered[1], label: detectLanguageLabel(ordered[1].cues) },
+        ]);
       }
+      setSwapped(false);
+      setShowSecondary(false);
+    } catch {
+      setSubtitleError("Couldn't read those subtitle files.");
+      setTracks(null);
     }
   }
 
   function reset() {
     setVideoFile(null);
-    setCues(null);
+    setTracks(null);
     setSubtitleError(null);
     setCurrentTime(0);
+    setSwapped(false);
+    setShowSecondary(false);
   }
+
+  const primaryTrack = tracks
+    ? swapped
+      ? (tracks[1] ?? tracks[0])
+      : tracks[0]
+    : null;
+  const secondaryTrack =
+    tracks && tracks.length > 1 ? (swapped ? tracks[0] : tracks[1]) : null;
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden">
-      {!videoFile || !cues ? (
+      {!videoFile || !primaryTrack ? (
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="w-full max-w-md flex flex-col gap-4">
             <label className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
@@ -85,12 +133,20 @@ function VideoMode() {
               <div className="flex items-center gap-2">
                 <FileText size={14} className="shrink-0" />
                 <span className="truncate">
-                  {cues
-                    ? `${cues.length} subtitle cues loaded`
+                  {tracks
+                    ? tracks
+                        .map((t) => `${t.label} (${t.cues.length} cues)`)
+                        .join(" · ")
                     : "No subtitles selected yet"}
                 </span>
               </div>
             </div>
+            <p className="text-xs text-gray-400">
+              Select a video plus one or two subtitle files (.srt/.vtt) at
+              once. With two files, the Estonian track is detected
+              automatically — use "Swap languages" after loading if it
+              guessed wrong.
+            </p>
             {subtitleError && (
               <p className="text-sm text-red-500">{subtitleError}</p>
             )}
@@ -115,7 +171,34 @@ function VideoMode() {
             </button>
           </div>
 
-          <SubtitleTrail cues={cues} currentTime={currentTime} />
+          <div className="lg:w-96 shrink-0 flex flex-col gap-2">
+            {secondaryTrack && (
+              <div className="flex items-center gap-3 px-2">
+                <button
+                  onClick={() => setShowSecondary((v) => !v)}
+                  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                >
+                  {showSecondary ? <EyeOff size={12} /> : <Eye size={12} />}
+                  {showSecondary
+                    ? `Hide ${secondaryTrack.label}`
+                    : `Show ${secondaryTrack.label}`}
+                </button>
+                <button
+                  onClick={() => setSwapped((v) => !v)}
+                  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                >
+                  <ArrowLeftRight size={12} />
+                  Swap languages
+                </button>
+              </div>
+            )}
+            <SubtitleTrail
+              primaryCues={primaryTrack.cues}
+              secondaryCues={secondaryTrack?.cues ?? null}
+              showSecondary={showSecondary}
+              currentTime={currentTime}
+            />
+          </div>
         </div>
       )}
     </main>
