@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FileVideo, FileText, RotateCcw } from "lucide-react";
 import SubtitleTrail from "./SubtitleTrail";
-import { parseVtt } from "./vtt";
+import { parseSubtitles } from "./subtitles";
 import type { SubtitleCue } from "./types";
 
 function VideoMode() {
@@ -32,7 +32,7 @@ function VideoMode() {
     if (!file) return;
     try {
       const text = await file.text();
-      const parsed = parseVtt(text);
+      const parsed = parseSubtitles(text);
       if (parsed.length === 0) {
         setSubtitleError("No subtitle cues found in this file.");
         setCues(null);
@@ -75,11 +75,11 @@ function VideoMode() {
               <span className="text-sm text-gray-700 truncate">
                 {cues
                   ? `${cues.length} subtitle cues loaded`
-                  : "Choose a .vtt subtitle file…"}
+                  : "Choose a .vtt or .srt subtitle file…"}
               </span>
               <input
                 type="file"
-                accept=".vtt"
+                accept=".vtt,.srt"
                 className="hidden"
                 onChange={handleSubtitleChange}
               />

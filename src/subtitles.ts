@@ -16,7 +16,13 @@ function stripTags(text: string): string {
   return text.replace(/<[^>]*>/g, "");
 }
 
-export function parseVtt(raw: string): SubtitleCue[] {
+/**
+ * Parses WebVTT and SRT subtitle files. The two formats are structurally
+ * identical for our purposes (a "-->" timing line per cue, comma or dot as
+ * the millisecond separator) — this never requires the WEBVTT header, so
+ * both parse the same way.
+ */
+export function parseSubtitles(raw: string): SubtitleCue[] {
   const normalized = raw.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   const blocks = normalized.split(/\n\s*\n/);
   const cues: SubtitleCue[] = [];
@@ -26,7 +32,7 @@ export function parseVtt(raw: string): SubtitleCue[] {
     if (lines.length === 0) continue;
 
     const timingLineIndex = lines.findIndex((line) => line.includes("-->"));
-    if (timingLineIndex === -1) continue; // WEBVTT header, NOTE, or STYLE block
+    if (timingLineIndex === -1) continue; // WEBVTT header, NOTE/STYLE block, or SRT sequence number
 
     const [startRaw, endRawWithSettings] = lines[timingLineIndex].split("-->");
     const endRaw = endRawWithSettings.trim().split(/\s+/)[0];
