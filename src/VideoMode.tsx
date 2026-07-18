@@ -23,26 +23,30 @@ function VideoMode() {
     return () => URL.revokeObjectURL(url);
   }, [videoFile]);
 
-  function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setVideoFile(e.target.files?.[0] ?? null);
-  }
+  async function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    const subtitleFile = files.find((f) => /\.(vtt|srt)$/i.test(f.name));
+    const videoCandidate = files.find((f) => f !== subtitleFile);
 
-  async function handleSubtitleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null;
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const parsed = parseSubtitles(text);
-      if (parsed.length === 0) {
-        setSubtitleError("No subtitle cues found in this file.");
+    if (videoCandidate) {
+      setVideoFile(videoCandidate);
+    }
+
+    if (subtitleFile) {
+      try {
+        const text = await subtitleFile.text();
+        const parsed = parseSubtitles(text);
+        if (parsed.length === 0) {
+          setSubtitleError("No subtitle cues found in this file.");
+          setCues(null);
+        } else {
+          setSubtitleError(null);
+          setCues(parsed);
+        }
+      } catch {
+        setSubtitleError("Couldn't read that subtitle file.");
         setCues(null);
-        return;
       }
-      setSubtitleError(null);
-      setCues(parsed);
-    } catch {
-      setSubtitleError("Couldn't read that subtitle file.");
-      setCues(null);
     }
   }
 
@@ -60,30 +64,33 @@ function VideoMode() {
           <div className="w-full max-w-md flex flex-col gap-4">
             <label className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
               <FileVideo size={20} className="text-blue-700 shrink-0" />
-              <span className="text-sm text-gray-700 truncate">
-                {videoFile ? videoFile.name : "Choose a video file…"}
+              <span className="text-sm text-gray-700">
+                Choose video + subtitle files…
               </span>
               <input
                 type="file"
-                accept="video/*"
+                accept="video/*,.vtt,.srt"
+                multiple
                 className="hidden"
-                onChange={handleVideoChange}
+                onChange={handleFilesChange}
               />
             </label>
-            <label className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
-              <FileText size={20} className="text-blue-700 shrink-0" />
-              <span className="text-sm text-gray-700 truncate">
-                {cues
-                  ? `${cues.length} subtitle cues loaded`
-                  : "Choose a .vtt or .srt subtitle file…"}
-              </span>
-              <input
-                type="file"
-                accept=".vtt,.srt"
-                className="hidden"
-                onChange={handleSubtitleChange}
-              />
-            </label>
+            <div className="flex flex-col gap-1 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <FileVideo size={14} className="shrink-0" />
+                <span className="truncate">
+                  {videoFile ? videoFile.name : "No video selected yet"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FileText size={14} className="shrink-0" />
+                <span className="truncate">
+                  {cues
+                    ? `${cues.length} subtitle cues loaded`
+                    : "No subtitles selected yet"}
+                </span>
+              </div>
+            </div>
             {subtitleError && (
               <p className="text-sm text-red-500">{subtitleError}</p>
             )}
