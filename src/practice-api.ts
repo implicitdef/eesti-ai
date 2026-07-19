@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { CorrectVersion, PracticeAttempt } from "./types";
+import { responseText } from "./anthropic-response";
 
 function formatAcceptedVersions(versions: CorrectVersion[]): string {
   if (versions.length === 0) return "";
@@ -53,7 +54,7 @@ Bad examples: "The fox darts away into the bushes." (rare verb), "She nibbles on
     },
   });
 
-  const raw = JSON.parse(response.content[0].text) as {
+  const raw = JSON.parse(responseText(response)) as {
     sentence: string;
   };
   return raw.sentence;
@@ -139,7 +140,7 @@ export async function evaluateTranslation(
     },
   });
 
-  return JSON.parse(response.content[0].text) as Omit<
+  return JSON.parse(responseText(response)) as Omit<
     PracticeAttempt,
     "userTranslation"
   >;
@@ -191,7 +192,7 @@ export async function getCorrectVersions(
     },
   });
 
-  const raw = JSON.parse(response.content[0].text) as {
+  const raw = JSON.parse(responseText(response)) as {
     versions: CorrectVersion[];
   };
   return raw.versions;

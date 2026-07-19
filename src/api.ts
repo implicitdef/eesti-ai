@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { AnalysisEntry } from "./types";
+import { responseText } from "./anthropic-response";
 
 const SYSTEM_PROMPT = `You are an expert in Estonian linguistics and translation. When given Estonian text (a word, expression, or sentence), you will:
 1. Provide a complete, natural English translation of the entire input
@@ -110,7 +111,7 @@ export async function analyzeEstonian(
     },
   });
 
-  const raw = JSON.parse(response.content[0].text) as {
+  const raw = JSON.parse(responseText(response)) as {
     fullTranslation: string;
     words: Array<{
       word: string;
