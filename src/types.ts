@@ -56,3 +56,12 @@ export interface SubtitleCue {
   end: number;
   text: string;
 }
+
+export interface ComplexVocabEntry {
+  startMs: number;
+  endMs: number;
+  surfaceForm: string;
+  baseForm: string;
+  type: string;
+  translations: string[];
+}

@@ -1,10 +1,13 @@
-import type { SubtitleCue } from "./types";
+import type { ComplexVocabEntry, SubtitleCue } from "./types";
+import { vocabForCues } from "./complexVocab";
 
 interface Props {
   primaryCues: SubtitleCue[];
   secondaryCues?: SubtitleCue[] | null;
   showSecondary: boolean;
   currentTime: number;
+  vocabEntries?: ComplexVocabEntry[] | null;
+  showCheatsheet: boolean;
 }
 
 function trailLines(cues: SubtitleCue[], currentTime: number): SubtitleCue[] {
@@ -27,10 +30,18 @@ function SubtitleTrail({
   secondaryCues,
   showSecondary,
   currentTime,
+  vocabEntries,
+  showCheatsheet,
 }: Props) {
   const primaryLines = trailLines(primaryCues, currentTime);
   const secondaryLines =
-    showSecondary && secondaryCues ? trailLines(secondaryCues, currentTime) : [];
+    showSecondary && secondaryCues
+      ? trailLines(secondaryCues, currentTime)
+      : [];
+  const cheatsheetEntries =
+    showCheatsheet && vocabEntries
+      ? vocabForCues(vocabEntries, primaryLines)
+      : [];
 
   return (
     <div className="flex flex-col gap-4 px-2 py-2">
@@ -51,6 +62,24 @@ function SubtitleTrail({
           );
         })}
       </div>
+
+      {cheatsheetEntries.length > 0 && (
+        <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-3">
+          {cheatsheetEntries.map((entry, i) => (
+            <div key={i} className="flex items-baseline gap-2 text-sm">
+              <span className="font-medium text-gray-800">
+                {entry.baseForm}
+              </span>
+              <span className="text-xs text-gray-400 shrink-0">
+                {entry.type}
+              </span>
+              <span className="text-gray-500 truncate">
+                {entry.translations.join(", ")}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {secondaryLines.length > 0 && (
         <div className="flex flex-col gap-1 border-t border-gray-100 pt-3">

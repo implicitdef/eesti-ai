@@ -6,10 +6,16 @@ import {
   Eye,
   EyeOff,
   ArrowLeftRight,
+  BookOpen,
 } from "lucide-react";
 import SubtitleTrail from "./SubtitleTrail";
-import { parseSubtitles, estonianScore, detectLanguageLabel } from "./subtitles";
-import type { SubtitleCue } from "./types";
+import {
+  parseSubtitles,
+  estonianScore,
+  detectLanguageLabel,
+} from "./subtitles";
+import { parseComplexVocab } from "./complexVocab";
+import type { ComplexVocabEntry, SubtitleCue } from "./types";
 
 interface SubtitleTrack {
   cues: SubtitleCue[];
@@ -24,7 +30,13 @@ function VideoMode() {
   const [swapped, setSwapped] = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
   const [subtitleError, setSubtitleError] = useState<string | null>(null);
+  const [vocabError, setVocabError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
+  const [vocabEntries, setVocabEntries] = useState<ComplexVocabEntry[] | null>(
+    null,
+  );
+  const [vocabFileName, setVocabFileName] = useState<string | null>(null);
+  const [showCheatsheet, setShowCheatsheet] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -43,10 +55,27 @@ function VideoMode() {
     const subtitleFiles = files
       .filter((f) => /\.(vtt|srt)$/i.test(f.name))
       .slice(0, 2);
-    const videoCandidate = files.find((f) => !subtitleFiles.includes(f));
+    const vocabFile = files.find((f) => /\.json$/i.test(f.name));
+    const videoCandidate = files.find(
+      (f) => !subtitleFiles.includes(f) && f !== vocabFile,
+    );
 
     if (videoCandidate) {
       setVideoFile(videoCandidate);
+    }
+
+    if (vocabFile) {
+      const vocab = parseComplexVocab(await vocabFile.text());
+      if (vocab) {
+        setVocabEntries(vocab);
+        setVocabFileName(vocabFile.name);
+        setVocabError(null);
+      } else {
+        setVocabEntries(null);
+        setVocabFileName(null);
+        setVocabError("Couldn't read that cheatsheet JSON file.");
+      }
+      setShowCheatsheet(false);
     }
 
     if (subtitleFiles.length === 0) return;
@@ -95,6 +124,10 @@ function VideoMode() {
     setCurrentTime(0);
     setSwapped(false);
     setShowSecondary(false);
+    setVocabEntries(null);
+    setVocabFileName(null);
+    setVocabError(null);
+    setShowCheatsheet(false);
   }
 
   const primaryTrack = tracks
@@ -117,7 +150,7 @@ function VideoMode() {
               </span>
               <input
                 type="file"
-                accept="video/*,.vtt,.srt"
+                accept="video/*,.vtt,.srt,.json"
                 multiple
                 className="hidden"
                 onChange={handleFilesChange}
@@ -140,16 +173,26 @@ function VideoMode() {
                     : "No subtitles selected yet"}
                 </span>
               </div>
+              <div className="flex items-center gap-2">
+                <BookOpen size={14} className="shrink-0" />
+                <span className="truncate">
+                  {vocabFileName
+                    ? `${vocabFileName} (${vocabEntries?.length ?? 0} entries)`
+                    : "No cheatsheet selected (optional)"}
+                </span>
+              </div>
             </div>
             <p className="text-xs text-gray-400">
-              Select a video plus one or two subtitle files (.srt/.vtt) at
-              once. With two files, the Estonian track is detected
-              automatically — use "Swap languages" after loading if it
-              guessed wrong.
+              Select a video plus one or two subtitle files (.srt/.vtt) at once.
+              With two files, the Estonian track is detected automatically — use
+              "Swap languages" after loading if it guessed wrong. Optionally add
+              a complex-vocabulary cheatsheet JSON file to enable the word-list
+              toggle.
             </p>
             {subtitleError && (
               <p className="text-sm text-red-500">{subtitleError}</p>
             )}
+            {vocabError && <p className="text-sm text-red-500">{vocabError}</p>}
           </div>
         </div>
       ) : (
@@ -172,24 +215,37 @@ function VideoMode() {
           </div>
 
           <div className="lg:w-96 shrink-0 flex flex-col gap-2">
-            {secondaryTrack && (
-              <div className="flex items-center gap-3 px-2">
-                <button
-                  onClick={() => setShowSecondary((v) => !v)}
-                  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
-                >
-                  {showSecondary ? <EyeOff size={12} /> : <Eye size={12} />}
-                  {showSecondary
-                    ? `Hide ${secondaryTrack.label}`
-                    : `Show ${secondaryTrack.label}`}
-                </button>
-                <button
-                  onClick={() => setSwapped((v) => !v)}
-                  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
-                >
-                  <ArrowLeftRight size={12} />
-                  Swap languages
-                </button>
+            {(secondaryTrack || vocabEntries) && (
+              <div className="flex items-center gap-3 px-2 flex-wrap">
+                {secondaryTrack && (
+                  <>
+                    <button
+                      onClick={() => setShowSecondary((v) => !v)}
+                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                    >
+                      {showSecondary ? <EyeOff size={12} /> : <Eye size={12} />}
+                      {showSecondary
+                        ? `Hide ${secondaryTrack.label}`
+                        : `Show ${secondaryTrack.label}`}
+                    </button>
+                    <button
+                      onClick={() => setSwapped((v) => !v)}
+                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                    >
+                      <ArrowLeftRight size={12} />
+                      Swap languages
+                    </button>
+                  </>
+                )}
+                {vocabEntries && (
+                  <button
+                    onClick={() => setShowCheatsheet((v) => !v)}
+                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                  >
+                    <BookOpen size={12} />
+                    {showCheatsheet ? "Hide cheatsheet" : "Show cheatsheet"}
+                  </button>
+                )}
               </div>
             )}
             <SubtitleTrail
@@ -197,6 +253,8 @@ function VideoMode() {
               secondaryCues={secondaryTrack?.cues ?? null}
               showSecondary={showSecondary}
               currentTime={currentTime}
+              vocabEntries={vocabEntries}
+              showCheatsheet={showCheatsheet}
             />
           </div>
         </div>
