@@ -54,7 +54,9 @@ function ModeToolbar({
               className="bg-blue-700 text-white rounded-lg px-2.5 md:px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
             >
               <ArrowRight size={18} className="md:hidden" />
-              <span className="hidden md:inline whitespace-nowrap">{submitLabel}</span>
+              <span className="hidden md:inline whitespace-nowrap">
+                {submitLabel}
+              </span>
             </button>
           </form>
           {hint && <p className="text-xs text-gray-400">{hint}</p>}

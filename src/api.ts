@@ -45,8 +45,7 @@ export async function analyzeEstonian(
                 properties: {
                   word: {
                     type: "string",
-                    description:
-                      "The word as it appears in the original text",
+                    description: "The word as it appears in the original text",
                   },
                   wordType: {
                     type: "string",
@@ -68,7 +67,13 @@ export async function analyzeEstonian(
                       "Grammatical details: case, tense, person, number, mood, etc. — null if not applicable",
                   },
                 },
-                required: ["word", "wordType", "baseForm", "translation", "grammaticalInfo"],
+                required: [
+                  "word",
+                  "wordType",
+                  "baseForm",
+                  "translation",
+                  "grammaticalInfo",
+                ],
                 additionalProperties: false,
               },
             },
