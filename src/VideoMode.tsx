@@ -213,14 +213,18 @@ function VideoMode() {
             </button>
           </div>
 
-          <div className="lg:w-96 shrink-0 flex flex-col gap-2">
+          <div className="lg:w-96 shrink-0 flex flex-col gap-3">
             {(secondaryTrack || vocabEntries) && (
-              <div className="flex items-center gap-3 px-2 flex-wrap">
+              <div className="flex items-center gap-2 px-1 flex-wrap">
                 {secondaryTrack && (
                   <>
                     <button
                       onClick={() => setShowSecondary((v) => !v)}
-                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                      className={
+                        showSecondary
+                          ? "flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-100"
+                          : "flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50"
+                      }
                     >
                       {showSecondary ? <EyeOff size={12} /> : <Eye size={12} />}
                       {showSecondary
@@ -229,7 +233,7 @@ function VideoMode() {
                     </button>
                     <button
                       onClick={() => setSwapped((v) => !v)}
-                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                      className="flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50"
                     >
                       <ArrowLeftRight size={12} />
                       Swap languages
@@ -239,7 +243,11 @@ function VideoMode() {
                 {vocabEntries && (
                   <button
                     onClick={() => setShowCheatsheet((v) => !v)}
-                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                    className={
+                      showCheatsheet
+                        ? "flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100"
+                        : "flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50"
+                    }
                   >
                     <BookOpen size={12} />
                     {showCheatsheet ? "Hide cheatsheet" : "Show cheatsheet"}
@@ -250,6 +258,7 @@ function VideoMode() {
             <SubtitleTrail
               primaryCues={primaryTrack.cues}
               secondaryCues={secondaryTrack?.cues ?? null}
+              secondaryLabel={secondaryTrack?.label}
               showSecondary={showSecondary}
               currentTime={currentTime}
               vocabEntries={vocabEntries}
