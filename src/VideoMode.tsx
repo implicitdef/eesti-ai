@@ -36,7 +36,7 @@ function VideoMode() {
     null,
   );
   const [vocabFileName, setVocabFileName] = useState<string | null>(null);
-  const [showCheatsheet, setShowCheatsheet] = useState(false);
+  const [showCheatsheet, setShowCheatsheet] = useState(true);
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -75,7 +75,6 @@ function VideoMode() {
         setVocabFileName(null);
         setVocabError("Couldn't read that cheatsheet JSON file.");
       }
-      setShowCheatsheet(false);
     }
 
     if (subtitleFiles.length === 0) return;
@@ -127,7 +126,7 @@ function VideoMode() {
     setVocabEntries(null);
     setVocabFileName(null);
     setVocabError(null);
-    setShowCheatsheet(false);
+    setShowCheatsheet(true);
   }
 
   const primaryTrack = tracks
