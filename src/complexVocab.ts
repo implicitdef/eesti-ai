@@ -50,17 +50,24 @@ export function parseComplexVocab(raw: string): ComplexVocabEntry[] | null {
   return parsed;
 }
 
+export interface VocabTrailEntry {
+  entry: ComplexVocabEntry;
+  isPast: boolean;
+}
+
 /**
  * Vocab entries whose time window overlaps any of the given subtitle cues
  * (e.g. the lines currently shown in the trail), deduplicated by base form
- * in order of first appearance.
+ * in order of first appearance. Each entry is tagged with whether it came
+ * from the last cue (the current line) or an earlier one (a past line).
  */
 export function vocabForCues(
   vocab: ComplexVocabEntry[],
   cues: SubtitleCue[],
-): ComplexVocabEntry[] {
+): VocabTrailEntry[] {
   const seen = new Set<string>();
-  const result: ComplexVocabEntry[] = [];
+  const result: VocabTrailEntry[] = [];
+  const currentCue = cues[cues.length - 1];
 
   for (const cue of cues) {
     const cueStartMs = cue.start * 1000;
@@ -70,7 +77,7 @@ export function vocabForCues(
       const key = entry.baseForm.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
-      result.push(entry);
+      result.push({ entry, isPast: cue !== currentCue });
     }
   }
 

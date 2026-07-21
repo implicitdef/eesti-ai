@@ -65,8 +65,14 @@ function SubtitleTrail({
 
       {cheatsheetEntries.length > 0 && (
         <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-3">
-          {cheatsheetEntries.map((entry, i) => (
-            <div key={i} className="flex items-baseline gap-2 text-sm">
+          {cheatsheetEntries.map(({ entry, isPast }, i) => (
+            <div
+              key={i}
+              className={
+                "flex items-baseline gap-2 text-sm" +
+                (isPast ? " opacity-50" : "")
+              }
+            >
               <span className="font-medium text-gray-800">
                 {entry.baseForm}
               </span>
