@@ -23,6 +23,42 @@ interface SubtitleTrack {
   fileName: string;
 }
 
+const VIDEO_POSITIONS_KEY = "eesti-ai-video-positions";
+const MAX_VIDEO_POSITIONS = 50;
+const RESUME_END_GUARD_SECONDS = 2;
+
+interface VideoPositions {
+  [key: string]: { time: number; updatedAt: number };
+}
+
+function videoKeyFor(file: File): string {
+  return `${file.name}:${file.size}`;
+}
+
+function readVideoPositions(): VideoPositions {
+  try {
+    const stored = localStorage.getItem(VIDEO_POSITIONS_KEY);
+    return stored ? (JSON.parse(stored) as VideoPositions) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveVideoPosition(key: string, time: number) {
+  const positions = readVideoPositions();
+  positions[key] = { time, updatedAt: Date.now() };
+  let entries = Object.entries(positions);
+  if (entries.length > MAX_VIDEO_POSITIONS) {
+    entries = entries
+      .sort((a, b) => b[1].updatedAt - a[1].updatedAt)
+      .slice(0, MAX_VIDEO_POSITIONS);
+  }
+  localStorage.setItem(
+    VIDEO_POSITIONS_KEY,
+    JSON.stringify(Object.fromEntries(entries)),
+  );
+}
+
 function VideoMode() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -39,6 +75,8 @@ function VideoMode() {
   const [showCheatsheet, setShowCheatsheet] = useState(true);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lastSavedSecondRef = useRef(-1);
+  const videoKey = videoFile ? videoKeyFor(videoFile) : null;
 
   useEffect(() => {
     if (!videoFile) {
@@ -48,6 +86,19 @@ function VideoMode() {
     const url = URL.createObjectURL(videoFile);
     setVideoUrl(url);
     return () => URL.revokeObjectURL(url);
+  }, [videoFile]);
+
+  useEffect(() => {
+    function flush() {
+      if (videoFile && videoRef.current) {
+        saveVideoPosition(videoKeyFor(videoFile), videoRef.current.currentTime);
+      }
+    }
+    window.addEventListener("beforeunload", flush);
+    return () => {
+      window.removeEventListener("beforeunload", flush);
+      flush();
+    };
   }, [videoFile]);
 
   async function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -61,6 +112,9 @@ function VideoMode() {
     );
 
     if (videoCandidate) {
+      if (videoFile && videoRef.current) {
+        saveVideoPosition(videoKeyFor(videoFile), videoRef.current.currentTime);
+      }
       setVideoFile(videoCandidate);
     }
 
@@ -113,6 +167,37 @@ function VideoMode() {
     } catch {
       setSubtitleError("Couldn't read those subtitle files.");
       setTracks(null);
+    }
+  }
+
+  function handleTimeUpdate(e: React.SyntheticEvent<HTMLVideoElement>) {
+    const t = e.currentTarget.currentTime;
+    setCurrentTime(t);
+    if (!videoKey) return;
+    const sec = Math.floor(t);
+    if (sec !== lastSavedSecondRef.current) {
+      lastSavedSecondRef.current = sec;
+      saveVideoPosition(videoKey, t);
+    }
+  }
+
+  function handlePause(e: React.SyntheticEvent<HTMLVideoElement>) {
+    if (!videoKey) return;
+    saveVideoPosition(videoKey, e.currentTarget.currentTime);
+  }
+
+  function handleLoadedMetadata(e: React.SyntheticEvent<HTMLVideoElement>) {
+    lastSavedSecondRef.current = -1;
+    if (!videoKey) return;
+    const video = e.currentTarget;
+    const saved = readVideoPositions()[videoKey];
+    if (
+      saved &&
+      saved.time > 0 &&
+      (Number.isNaN(video.duration) ||
+        saved.time < video.duration - RESUME_END_GUARD_SECONDS)
+    ) {
+      video.currentTime = saved.time;
     }
   }
 
@@ -202,7 +287,9 @@ function VideoMode() {
               src={videoUrl ?? undefined}
               controls
               className="w-full rounded-lg bg-black max-h-[75vh]"
-              onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+              onTimeUpdate={handleTimeUpdate}
+              onPause={handlePause}
+              onLoadedMetadata={handleLoadedMetadata}
             />
             <button
               onClick={reset}
