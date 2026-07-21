@@ -213,7 +213,7 @@ function VideoMode() {
             </button>
           </div>
 
-          <div className="lg:w-96 shrink-0 flex flex-col gap-3">
+          <div className="lg:w-[416px] shrink-0 flex flex-col gap-3">
             {(secondaryTrack || vocabEntries) && (
               <div className="flex items-center gap-2 px-1 flex-wrap">
                 {secondaryTrack && (
