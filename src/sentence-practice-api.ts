@@ -39,19 +39,9 @@ Given an Estonian sentence, do the following:
         schema: {
           type: "object",
           properties: {
-            englishTranslation: {
-              type: "string",
-              description: "English translation of the input sentence",
-            },
-            variant: {
-              type: "string",
-              description:
-                "an Estonian sentence, variant on the input sentence",
-            },
-            variantEnglishTranslation: {
-              type: "string",
-              description: "English translation of the variant sentence.",
-            },
+            englishTranslation: { type: "string" },
+            variant: { type: "string" },
+            variantEnglishTranslation: { type: "string" },
           },
           required: [
             "englishTranslation",
