@@ -55,8 +55,8 @@ function SentencePracticeMode() {
         originalEstonian,
         guidance: guidanceText || null,
         englishTranslation: result.englishTranslation,
-        englishVariant: result.englishVariant,
-        expectedEstonian: result.expectedEstonian,
+        variant: result.variant,
+        variantEnglishTranslation: result.variantEnglishTranslation,
         attempts: [],
         status: "in_progress",
         revealed: false,
@@ -81,7 +81,7 @@ function SentencePracticeMode() {
   function handleSubmitAttempt(userAnswer: string) {
     const item = items.find((it) => it.id === selectedId);
     if (!item) return;
-    const isCorrect = isExactMatch(item.expectedEstonian, userAnswer);
+    const isCorrect = isExactMatch(item.variant, userAnswer);
     updateItem({
       ...item,
       attempts: [...item.attempts, { userAnswer, isCorrect }],

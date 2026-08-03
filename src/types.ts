@@ -38,8 +38,8 @@ export interface SentencePracticeItem {
   originalEstonian: string;
   guidance: string | null;
   englishTranslation: string;
-  englishVariant: string;
-  expectedEstonian: string;
+  variantEnglishTranslation: string;
+  variant: string;
   attempts: SentencePracticeAttempt[];
   status: "in_progress" | "completed";
   revealed: boolean;

@@ -95,7 +95,7 @@ function SentencePracticeItemView({
           Translate to Estonian
         </p>
         <p className="text-2xl font-bold text-gray-900">
-          {item.englishVariant}
+          {item.variantEnglishTranslation}
         </p>
       </div>
 
@@ -112,7 +112,7 @@ function SentencePracticeItemView({
                 </p>
               ) : (
                 <DiffText
-                  expected={item.expectedEstonian}
+                  expected={item.variant}
                   actual={attempt.userAnswer}
                   revealExact={revealExact}
                 />
@@ -145,7 +145,7 @@ function SentencePracticeItemView({
           <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
             Correct answer
           </p>
-          <p className="font-bold text-gray-900">{item.expectedEstonian}</p>
+          <p className="font-bold text-gray-900">{item.variant}</p>
         </div>
       )}
 

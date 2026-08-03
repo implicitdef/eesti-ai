@@ -3,8 +3,8 @@ import { MODEL, responseText } from "./anthropic-response";
 
 export interface SentenceVariantResult {
   englishTranslation: string;
-  englishVariant: string;
-  expectedEstonian: string;
+  variant: string;
+  variantEnglishTranslation: string;
 }
 
 export async function generateVariant(
@@ -26,20 +26,15 @@ export async function generateVariant(
 Given an Estonian sentence, do the following:
 
 1. Translate it to natural English ("englishTranslation").
-2. Create "englishVariant": an English sentence that reuses similar vocabulary as the translation but changes it. Randomly combine one or more of these transformations (favor combining 2-3 when the guidance doesn't dictate otherwise):
+2. Create "variant": an Estonian sentence that is a variation on the given one. It must reuse the vocabulary, the structure, but randomly apply 2-3 of these transformations :
    - tense change (past/present/future/perfect)
    - singular <-> plural
    - affirmation <-> negation
    - statement <-> question
-   - adding/removing a modal verb (can, must, should, want to)
-   - register change (formal <-> informal/polite)
-   - pronoun or subject-person swap (I/you/he/she/we/they)
-   - comparative/superlative forms
+   - pronoun or subject-person swap (ma/sa/ta/me/te/nad)
    - quantity or time-expression changes (today -> yesterday, always -> never, one -> several)
-   - synonym substitution
-   - simplification: if the original has multiple clauses or is complex, drop a subordinate clause or a detail to make it shorter
-   Keep the variant natural, coherent English at roughly the same difficulty level as the input.${guidanceClause}
-3. Write "expectedEstonian": the single most natural, standard Estonian translation of "englishVariant". Since this is used as the one canonical answer key (no leniency grading), pick the most common, expected phrasing — not an unusual or overly literary one.`,
+   This new sentence must have a somewhat coherent meaning.
+3. Translate also this variant to English ("variantEnglishTranslation").`,
     messages: [
       { role: "user", content: `Estonian sentence: "${estonianSentence}"` },
     ],
@@ -51,23 +46,22 @@ Given an Estonian sentence, do the following:
           properties: {
             englishTranslation: {
               type: "string",
-              description: "Natural English translation of the input sentence",
+              description: "English translation of the input sentence",
             },
-            englishVariant: {
+            variant: {
               type: "string",
               description:
-                "The transformed English sentence for the learner to translate back",
+                "an Estonian sentence, variant on the input sentence",
             },
-            expectedEstonian: {
+            variantEnglishTranslation: {
               type: "string",
-              description:
-                "The single canonical Estonian translation of englishVariant",
+              description: "English translation of the variant sentence.",
             },
           },
           required: [
             "englishTranslation",
-            "englishVariant",
-            "expectedEstonian",
+            "variant",
+            "variantEnglishTranslation",
           ],
           additionalProperties: false,
         },
