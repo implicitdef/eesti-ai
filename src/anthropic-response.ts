@@ -1,5 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
+export const MODEL = "claude-sonnet-5";
+
 /**
  * Structured-output requests (output_config.format) always reply with a
  * single text block, but the SDK's ContentBlock type is a broad union (text,

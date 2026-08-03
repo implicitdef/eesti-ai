@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { CorrectVersion, PracticeAttempt } from "./types";
-import { responseText } from "./anthropic-response";
+import { MODEL, responseText } from "./anthropic-response";
 
 function formatAcceptedVersions(versions: CorrectVersion[]): string {
   if (versions.length === 0) return "";
@@ -23,7 +23,7 @@ export async function generateSentence(
       : "";
 
   const response = await client.messages.create({
-    model: "claude-haiku-4-5",
+    model: MODEL,
     max_tokens: 2048,
     system: `Generate a single short, natural English sentence based on the given theme. Around B1 level.
 
@@ -69,7 +69,7 @@ export async function evaluateTranslation(
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
   const response = await client.messages.create({
-    model: "claude-haiku-4-5",
+    model: MODEL,
     max_tokens: 2048,
     system: `You are an expert Estonian linguistics teacher evaluating a student's translation. Follow these rules strictly:
 
@@ -153,7 +153,7 @@ export async function getCorrectVersions(
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
   const response = await client.messages.create({
-    model: "claude-haiku-4-5",
+    model: MODEL,
     max_tokens: 2048,
     system:
       "You are an expert Estonian language teacher. Generate 4–5 correct Estonian translations of the given English sentence, covering the full range of natural phrasings — different word orders, vocabulary choices, and registers (formal/colloquial). Be inclusive: capture all the common ways a fluent speaker might naturally say this. These serve as reference answers for evaluating student work, so err on the side of breadth. For each, add a short commentary on its style or how it differs from the others.",

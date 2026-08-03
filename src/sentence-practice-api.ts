@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { responseText } from "./anthropic-response";
+import { MODEL, responseText } from "./anthropic-response";
 
 export interface SentenceVariantResult {
   englishTranslation: string;
@@ -20,7 +20,7 @@ export async function generateVariant(
     : "";
 
   const response = await client.messages.create({
-    model: "claude-haiku-4-5",
+    model: MODEL,
     max_tokens: 2048,
     system: `You are an expert Estonian language teacher preparing a back-translation exercise.
 
