@@ -103,9 +103,14 @@ function SentencePracticeItemView({
         <div className="flex flex-col gap-4">
           {item.attempts.map((attempt, i) => (
             <div key={i} className="flex flex-col gap-1">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                Attempt {i + 1}
-              </span>
+              <div className="flex items-baseline gap-3">
+                <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                  Attempt {i + 1}
+                </span>
+                <span className="text-sm font-medium text-gray-700">
+                  {attempt.userAnswer}
+                </span>
+              </div>
               {attempt.isCorrect ? (
                 <p className="text-sm text-green-600 font-semibold">
                   ✓ Correct!
