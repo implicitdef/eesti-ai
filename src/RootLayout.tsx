@@ -55,6 +55,13 @@ function RootLayout() {
           Practice
         </Link>
         <Link
+          to="/from-sentence"
+          activeProps={{ className: activeLinkClass }}
+          inactiveProps={{ className: inactiveLinkClass }}
+        >
+          From sentence
+        </Link>
+        <Link
           to="/video"
           activeProps={{ className: activeLinkClass }}
           inactiveProps={{ className: inactiveLinkClass }}

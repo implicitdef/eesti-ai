@@ -51,6 +51,25 @@ export interface AnalysisEntry {
   createdAt: number;
 }
 
+export interface SentencePracticeAttempt {
+  userAnswer: string;
+  isCorrect: boolean;
+}
+
+export interface SentencePracticeItem {
+  id: string;
+  originalEstonian: string;
+  guidance: string | null;
+  englishTranslation: string;
+  englishVariant: string;
+  variantDescription: string;
+  expectedEstonian: string;
+  attempts: SentencePracticeAttempt[];
+  status: "in_progress" | "completed";
+  revealed: boolean;
+  createdAt: number;
+}
+
 export interface SubtitleCue {
   start: number;
   end: number;

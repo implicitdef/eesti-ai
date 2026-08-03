@@ -13,9 +13,10 @@
     "pretty-check": "prettier --check ."
   },
   "dependencies": {
-    "@tanstack/react-router": "^1.170.16",
-    "lucide-react": "^1.21.0",
     "@anthropic-ai/sdk": "latest",
+    "@tanstack/react-router": "^1.170.16",
+    "diff": "^9.0.0",
+    "lucide-react": "^1.21.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
