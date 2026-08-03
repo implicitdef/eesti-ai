@@ -7,29 +7,17 @@ export interface SentenceVariantResult {
   variantEnglishTranslation: string;
 }
 
-export async function generateVariant(
+async function translateToEnglish(
   estonianSentence: string,
   apiKey: string,
-): Promise<SentenceVariantResult> {
+): Promise<string> {
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
   const response = await client.messages.create({
     model: MODEL,
-    max_tokens: 2048,
-    system: `You are an expert Estonian language teacher preparing a back-translation exercise.
-
-Given an Estonian sentence, do the following:
-
-1. Translate it to natural English ("englishTranslation").
-2. Create "variant": an Estonian sentence that is a variation on the given one. It must reuse the vocabulary, the structure, but randomly apply 2-3 of these transformations :
-   - tense change (past/present/future/perfect)
-   - singular <-> plural
-   - affirmation <-> negation
-   - statement <-> question
-   - pronoun or subject-person swap (ma/sa/ta/me/te/nad)
-   - quantity or time-expression changes (today -> yesterday, always -> never, one -> several)
-   This new sentence must have a somewhat coherent meaning.
-3. Translate also this variant to English ("variantEnglishTranslation").`,
+    max_tokens: 1024,
+    system:
+      "You are an expert Estonian language teacher. Translate the given Estonian sentence to natural English.",
     messages: [
       { role: "user", content: `Estonian sentence: "${estonianSentence}"` },
     ],
@@ -39,20 +27,69 @@ Given an Estonian sentence, do the following:
         schema: {
           type: "object",
           properties: {
-            englishTranslation: { type: "string" },
-            variant: { type: "string" },
-            variantEnglishTranslation: { type: "string" },
+            translation: { type: "string" },
           },
-          required: [
-            "englishTranslation",
-            "variant",
-            "variantEnglishTranslation",
-          ],
+          required: ["translation"],
           additionalProperties: false,
         },
       },
     },
   });
 
-  return JSON.parse(responseText(response)) as SentenceVariantResult;
+  const raw = JSON.parse(responseText(response)) as { translation: string };
+  return raw.translation;
+}
+
+async function createVariant(
+  estonianSentence: string,
+  apiKey: string,
+): Promise<string> {
+  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+
+  const response = await client.messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    system: `You are an expert Estonian language teacher preparing a back-translation exercise.
+
+Create "variant": an Estonian sentence that is a variation on the given one. It must reuse the vocabulary, the structure, but randomly apply 2-3 of these transformations :
+   - tense change (past/present/future/perfect)
+   - singular <-> plural
+   - affirmation <-> negation
+   - statement <-> question
+   - pronoun or subject-person swap (ma/sa/ta/me/te/nad)
+   - quantity or time-expression changes (today -> yesterday, always -> never, one -> several)
+This new sentence must have a somewhat coherent meaning.`,
+    messages: [
+      { role: "user", content: `Estonian sentence: "${estonianSentence}"` },
+    ],
+    output_config: {
+      format: {
+        type: "json_schema",
+        schema: {
+          type: "object",
+          properties: {
+            variant: { type: "string" },
+          },
+          required: ["variant"],
+          additionalProperties: false,
+        },
+      },
+    },
+  });
+
+  const raw = JSON.parse(responseText(response)) as { variant: string };
+  return raw.variant;
+}
+
+export async function generateVariant(
+  estonianSentence: string,
+  apiKey: string,
+): Promise<SentenceVariantResult> {
+  const [englishTranslation, variant] = await Promise.all([
+    translateToEnglish(estonianSentence, apiKey),
+    createVariant(estonianSentence, apiKey),
+  ]);
+  const variantEnglishTranslation = await translateToEnglish(variant, apiKey);
+
+  return { englishTranslation, variant, variantEnglishTranslation };
 }
