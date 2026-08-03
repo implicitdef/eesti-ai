@@ -76,21 +76,26 @@ function SentencePracticeItemView({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-gray-400">
-          Original: {item.originalEstonian}
-        </span>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs text-gray-400">Original: </p>
+          <p className="text-base font-medium text-gray-800">
+            {item.originalEstonian}
+          </p>
+          <p className="italic text-sm text-gray-400">
+            ↳ {item.englishTranslation}
+          </p>
+        </div>
         <button
           onClick={onGenerateNewVariant}
           disabled={generatingNewVariant}
-          className="text-xs text-gray-400 hover:text-blue-600 underline transition-colors disabled:opacity-40"
+          className="text-xs text-gray-400 hover:text-blue-600 underline transition-colors disabled:opacity-40 shrink-0"
         >
           {generatingNewVariant ? "Generating…" : "New variant →"}
         </button>
       </div>
 
       <div>
-        <p className="text-xs text-gray-400 mb-2">{item.englishTranslation}</p>
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
           Translate to Estonian
         </p>
