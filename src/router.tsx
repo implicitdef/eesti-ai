@@ -5,22 +5,15 @@ import {
   createHashHistory,
 } from "@tanstack/react-router";
 import RootLayout from "./RootLayout";
-import AnalyzeMode from "./AnalyzeMode";
 import PracticeMode from "./PracticeMode";
 import SentencePracticeMode from "./SentencePracticeMode";
 import VideoMode from "./VideoMode";
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
-const analyzeRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-  component: AnalyzeMode,
-});
-
 const practiceRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/practice",
+  path: "/",
   component: PracticeMode,
 });
 
@@ -37,7 +30,6 @@ const videoRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  analyzeRoute,
   practiceRoute,
   sentencePracticeRoute,
   videoRoute,

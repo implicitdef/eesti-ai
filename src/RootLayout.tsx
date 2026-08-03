@@ -45,13 +45,6 @@ function RootLayout() {
           inactiveProps={{ className: inactiveLinkClass }}
           activeOptions={{ exact: true }}
         >
-          Analyze
-        </Link>
-        <Link
-          to="/practice"
-          activeProps={{ className: activeLinkClass }}
-          inactiveProps={{ className: inactiveLinkClass }}
-        >
           Practice
         </Link>
         <Link
