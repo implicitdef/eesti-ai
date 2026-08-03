@@ -4,7 +4,6 @@ import { MODEL, responseText } from "./anthropic-response";
 export interface SentenceVariantResult {
   englishTranslation: string;
   englishVariant: string;
-  variantDescription: string;
   expectedEstonian: string;
 }
 
@@ -40,8 +39,7 @@ Given an Estonian sentence, do the following:
    - synonym substitution
    - simplification: if the original has multiple clauses or is complex, drop a subordinate clause or a detail to make it shorter
    Keep the variant natural, coherent English at roughly the same difficulty level as the input.${guidanceClause}
-3. Write "variantDescription": a short (under 10 words) human-readable note of what changed, e.g. "past tense, negative". This is shown to the learner immediately, so it must NOT reveal any Estonian words.
-4. Write "expectedEstonian": the single most natural, standard Estonian translation of "englishVariant". Since this is used as the one canonical answer key (no leniency grading), pick the most common, expected phrasing — not an unusual or overly literary one.`,
+3. Write "expectedEstonian": the single most natural, standard Estonian translation of "englishVariant". Since this is used as the one canonical answer key (no leniency grading), pick the most common, expected phrasing — not an unusual or overly literary one.`,
     messages: [
       { role: "user", content: `Estonian sentence: "${estonianSentence}"` },
     ],
@@ -60,11 +58,6 @@ Given an Estonian sentence, do the following:
               description:
                 "The transformed English sentence for the learner to translate back",
             },
-            variantDescription: {
-              type: "string",
-              description:
-                "Short note of what changed, e.g. 'past tense, negative'",
-            },
             expectedEstonian: {
               type: "string",
               description:
@@ -74,7 +67,6 @@ Given an Estonian sentence, do the following:
           required: [
             "englishTranslation",
             "englishVariant",
-            "variantDescription",
             "expectedEstonian",
           ],
           additionalProperties: false,

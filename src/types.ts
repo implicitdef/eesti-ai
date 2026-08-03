@@ -39,7 +39,6 @@ export interface SentencePracticeItem {
   guidance: string | null;
   englishTranslation: string;
   englishVariant: string;
-  variantDescription: string;
   expectedEstonian: string;
   attempts: SentencePracticeAttempt[];
   status: "in_progress" | "completed";

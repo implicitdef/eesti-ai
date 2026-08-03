@@ -97,9 +97,6 @@ function SentencePracticeItemView({
         <p className="text-2xl font-bold text-gray-900">
           {item.englishVariant}
         </p>
-        <p className="text-xs text-gray-400 mt-2 italic">
-          {item.variantDescription}
-        </p>
       </div>
 
       {item.attempts.length > 0 && (

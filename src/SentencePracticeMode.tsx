@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
+import { isExactMatch } from "./estonianDiff";
 import HistoryPanel from "./HistoryPanel";
+import { generateVariant } from "./sentence-practice-api";
+import SentencePracticeItemView from "./SentencePracticeItemView";
 import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
 } from "./SidebarLayout";
-import { generateVariant } from "./sentence-practice-api";
-import { isExactMatch } from "./estonianDiff";
-import SentencePracticeItemView from "./SentencePracticeItemView";
 import type { SentencePracticeItem } from "./types";
 
 const SENTENCE_PRACTICE_HISTORY_KEY = "eesti-ai-sentence-practice-history";
@@ -56,7 +56,6 @@ function SentencePracticeMode() {
         guidance: guidanceText || null,
         englishTranslation: result.englishTranslation,
         englishVariant: result.englishVariant,
-        variantDescription: result.variantDescription,
         expectedEstonian: result.expectedEstonian,
         attempts: [],
         status: "in_progress",

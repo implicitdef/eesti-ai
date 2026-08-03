@@ -4,13 +4,14 @@ export const MODEL = "claude-sonnet-5";
 
 /**
  * Structured-output requests (output_config.format) always reply with a
- * single text block, but the SDK's ContentBlock type is a broad union (text,
- * thinking, tool use, etc.) since it also covers other request shapes.
+ * text block, but models with thinking on by default (e.g. claude-sonnet-5)
+ * prepend one or more "thinking" blocks first, so we can't assume content[0].
  */
 export function responseText(response: Anthropic.Message): string {
-  const block = response.content[0];
-  if (block.type !== "text") {
-    throw new Error(`Expected a text content block, got "${block.type}"`);
+  const block = response.content.find((b) => b.type === "text");
+  if (!block) {
+    const types = response.content.map((b) => b.type).join(", ");
+    throw new Error(`Expected a text content block, got only: ${types}`);
   }
   return block.text;
 }
