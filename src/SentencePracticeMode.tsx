@@ -27,7 +27,6 @@ function SentencePracticeMode() {
     () => items[0]?.id ?? null,
   );
   const [sentence, setSentence] = useState("");
-  const [guidance, setGuidance] = useState("");
   const [loadingGenerate, setLoadingGenerate] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isOpen, toggle, close } = useCollapsibleSidebar();
@@ -40,20 +39,15 @@ function SentencePracticeMode() {
     setItems((prev) => prev.map((it) => (it.id === updated.id ? updated : it)));
   }
 
-  async function generateFrom(originalEstonian: string, guidanceText: string) {
+  async function generateFrom(originalEstonian: string) {
     if (!originalEstonian || loadingGenerate) return;
     setLoadingGenerate(true);
     setError(null);
     try {
-      const result = await generateVariant(
-        originalEstonian,
-        guidanceText,
-        apiKey,
-      );
+      const result = await generateVariant(originalEstonian, apiKey);
       const newItem: SentencePracticeItem = {
         id: crypto.randomUUID(),
         originalEstonian,
-        guidance: guidanceText || null,
         englishTranslation: result.englishTranslation,
         variant: result.variant,
         variantEnglishTranslation: result.variantEnglishTranslation,
@@ -65,7 +59,6 @@ function SentencePracticeMode() {
       setItems((prev) => [newItem, ...prev]);
       setSelectedId(newItem.id);
       setSentence("");
-      setGuidance("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -75,7 +68,7 @@ function SentencePracticeMode() {
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
-    await generateFrom(sentence.trim(), guidance.trim());
+    await generateFrom(sentence.trim());
   }
 
   function handleSubmitAttempt(userAnswer: string) {
@@ -112,31 +105,22 @@ function SentencePracticeMode() {
         >
           {hasItems && <SidebarToggleButton onClick={toggle} />}
           <div className="flex-1 flex flex-col gap-1.5">
-            <form onSubmit={handleGenerate} className="flex flex-col gap-2">
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={sentence}
-                  onChange={(e) => setSentence(e.target.value)}
-                  placeholder="Paste an Estonian sentence…"
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <button
-                  type="submit"
-                  disabled={!sentence.trim() || loadingGenerate}
-                  className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
-                >
-                  {loadingGenerate ? "Generating…" : "Practice"}
-                </button>
-              </div>
+            <form onSubmit={handleGenerate} className="flex gap-3">
               <input
                 type="text"
-                value={guidance}
-                onChange={(e) => setGuidance(e.target.value)}
-                placeholder="Optional: guide the variant, e.g. 'make it negative and past tense'"
-                className="border border-gray-200 rounded-lg px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={sentence}
+                onChange={(e) => setSentence(e.target.value)}
+                placeholder="Paste an Estonian sentence…"
+                className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              <button
+                type="submit"
+                disabled={!sentence.trim() || loadingGenerate}
+                className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
+              >
+                {loadingGenerate ? "Generating…" : "Practice"}
+              </button>
             </form>
           </div>
         </div>
@@ -171,10 +155,7 @@ function SentencePracticeMode() {
               onSubmitAttempt={handleSubmitAttempt}
               onShowAnswer={handleShowAnswer}
               onGenerateNewVariant={() =>
-                generateFrom(
-                  selectedItem.originalEstonian,
-                  selectedItem.guidance ?? "",
-                )
+                generateFrom(selectedItem.originalEstonian)
               }
               generatingNewVariant={loadingGenerate}
             />

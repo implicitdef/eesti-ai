@@ -36,7 +36,6 @@ export interface SentencePracticeAttempt {
 export interface SentencePracticeItem {
   id: string;
   originalEstonian: string;
-  guidance: string | null;
   englishTranslation: string;
   variantEnglishTranslation: string;
   variant: string;

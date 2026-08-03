@@ -9,14 +9,9 @@ export interface SentenceVariantResult {
 
 export async function generateVariant(
   estonianSentence: string,
-  guidance: string,
   apiKey: string,
 ): Promise<SentenceVariantResult> {
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-
-  const guidanceClause = guidance
-    ? `\n\nThe learner asked for this specific kind of variation, follow it preferentially (you may still add a secondary tweak on top): "${guidance}"`
-    : "";
 
   const response = await client.messages.create({
     model: MODEL,
