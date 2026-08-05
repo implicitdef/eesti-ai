@@ -138,19 +138,17 @@ function SentencePracticeItemView({
                 <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
                   Attempt {i + 1}
                 </span>
-                <span className="text-sm font-medium text-gray-700">
-                  {attempt.userAnswer}
-                </span>
               </div>
-              {attempt.isCorrect ? (
-                <p className="text-sm text-green-600 font-semibold">
-                  ✓ Correct!
-                </p>
-              ) : (
-                <CharComparison
-                  expected={item.variant}
-                  actual={attempt.userAnswer}
-                />
+              <CharComparison
+                expected={item.variant}
+                actual={attempt.userAnswer}
+              />
+              {attempt.isCorrect && (
+                <>
+                  <p className="text-sm text-green-600 font-semibold">
+                    ✓ Correct!
+                  </p>
+                </>
               )}
             </div>
           ))}
