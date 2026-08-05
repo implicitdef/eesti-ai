@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { computeDiff } from "./estonianDiff";
 import { buildMaskedHintParts } from "./maskedHint";
 import type { SentencePracticeItem } from "./types";
 
@@ -11,40 +10,20 @@ interface Props {
   generatingNewVariant: boolean;
 }
 
-function DiffText({
+function CharComparison({
   expected,
   actual,
-  revealExact,
 }: {
   expected: string;
   actual: string;
-  revealExact: boolean;
 }) {
-  const parts = computeDiff(expected, actual);
   return (
     <span className="font-mono text-sm tracking-wide">
-      {parts.map((part, i) => {
-        if (part.added) {
-          return (
-            <span key={i} className="text-red-500">
-              {part.value}
-            </span>
-          );
-        }
-        if (part.removed) {
-          return (
-            <span key={i} className="text-amber-600">
-              {revealExact ? (
-                <span className="line-through decoration-2">{part.value}</span>
-              ) : (
-                "•".repeat(part.value.length)
-              )}
-            </span>
-          );
-        }
+      {actual.split("").map((char, i) => {
+        const isMatch = char.toLowerCase() === expected[i]?.toLowerCase();
         return (
-          <span key={i} className="text-green-600">
-            {part.value}
+          <span key={i} className={isMatch ? "text-green-600" : "text-red-500"}>
+            {char}
           </span>
         );
       })}
@@ -108,7 +87,6 @@ function SentencePracticeItemView({
   generatingNewVariant,
 }: Props) {
   const [input, setInput] = useState("");
-  const [revealExact, setRevealExact] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -121,7 +99,6 @@ function SentencePracticeItemView({
   const isCompleted = item.status === "completed";
   const lastAttempt = item.attempts[item.attempts.length - 1];
   const succeededOnLastAttempt = isCompleted && lastAttempt?.isCorrect === true;
-  const hasMistakesToReveal = item.attempts.some((a) => !a.isCorrect);
 
   return (
     <div className="flex flex-col gap-8">
@@ -170,24 +147,13 @@ function SentencePracticeItemView({
                   ✓ Correct!
                 </p>
               ) : (
-                <DiffText
+                <CharComparison
                   expected={item.variant}
                   actual={attempt.userAnswer}
-                  revealExact={revealExact}
                 />
               )}
             </div>
           ))}
-          {hasMistakesToReveal && (
-            <button
-              onClick={() => setRevealExact((v) => !v)}
-              className="self-start text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
-            >
-              {revealExact
-                ? "Hide exact corrections"
-                : "Reveal exact corrections"}
-            </button>
-          )}
         </div>
       )}
 
