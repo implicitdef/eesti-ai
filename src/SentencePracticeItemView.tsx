@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { computeDiff } from "./estonianDiff";
+import { buildMaskedHintParts } from "./maskedHint";
 import type { SentencePracticeItem } from "./types";
 
 interface Props {
@@ -48,6 +49,54 @@ function DiffText({
         );
       })}
     </span>
+  );
+}
+
+function maskedHintPartClassName(
+  kind: "typed" | "hintLetter" | "punctuation" | "mask",
+) {
+  switch (kind) {
+    case "typed":
+      return "text-gray-900";
+    case "mask":
+      return "text-gray-300";
+    default:
+      return "text-gray-400";
+  }
+}
+
+function MaskedVariantInput({
+  target,
+  value,
+  onChange,
+}: {
+  target: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const parts = buildMaskedHintParts(target, value);
+  return (
+    <div className="relative flex-1">
+      <div
+        aria-hidden
+        className="absolute inset-0 flex items-center px-4 py-2.5 text-sm font-mono tracking-wide pointer-events-none overflow-hidden whitespace-pre"
+      >
+        {parts.map((part, i) => (
+          <span key={i} className={maskedHintPartClassName(part.kind)}>
+            {part.char}
+          </span>
+        ))}
+      </div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
+        className="relative w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-mono tracking-wide bg-transparent text-transparent caret-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
   );
 }
 
@@ -162,12 +211,10 @@ function SentencePracticeItemView({
       {!isCompleted && (
         <div className="flex flex-col gap-3">
           <form onSubmit={handleSubmit} className="flex gap-3">
-            <input
-              type="text"
+            <MaskedVariantInput
+              target={item.variant}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Your Estonian translation…"
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={setInput}
             />
             <button
               type="submit"
