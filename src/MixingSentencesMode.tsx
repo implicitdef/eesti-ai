@@ -1,24 +1,24 @@
 import { useEffect, useState } from "react";
 import { isExactMatch } from "./estonianDiff";
 import HistoryPanel from "./HistoryPanel";
-import { generateVariant } from "./sentence-practice-api";
+import { generateMixedSentence } from "./mixed-sentence-practice-api";
 import TranslationExerciseView from "./TranslationExerciseView";
 import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
 } from "./SidebarLayout";
-import type { SentencePracticeItem } from "./types";
+import type { MixedSentencePracticeItem } from "./types";
 
-const SENTENCE_PRACTICE_HISTORY_KEY = "eesti-ai-sentence-practice-history";
+const MIXING_SENTENCES_HISTORY_KEY = "eesti-ai-mixing-sentences-history";
 const API_KEY_STORAGE = "eesti-ai-api-key";
 
-function SentencePracticeMode() {
+function MixingSentencesMode() {
   const apiKey = localStorage.getItem(API_KEY_STORAGE)!;
 
-  const [items, setItems] = useState<SentencePracticeItem[]>(() => {
+  const [items, setItems] = useState<MixedSentencePracticeItem[]>(() => {
     try {
-      const stored = localStorage.getItem(SENTENCE_PRACTICE_HISTORY_KEY);
-      return stored ? (JSON.parse(stored) as SentencePracticeItem[]) : [];
+      const stored = localStorage.getItem(MIXING_SENTENCES_HISTORY_KEY);
+      return stored ? (JSON.parse(stored) as MixedSentencePracticeItem[]) : [];
     } catch {
       return [];
     }
@@ -26,31 +26,30 @@ function SentencePracticeMode() {
   const [selectedId, setSelectedId] = useState<string | null>(
     () => items[0]?.id ?? null,
   );
-  const [sentence, setSentence] = useState("");
+  const [sentencesInput, setSentencesInput] = useState("");
   const [loadingGenerate, setLoadingGenerate] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isOpen, toggle, close } = useCollapsibleSidebar();
 
   useEffect(() => {
-    localStorage.setItem(SENTENCE_PRACTICE_HISTORY_KEY, JSON.stringify(items));
+    localStorage.setItem(MIXING_SENTENCES_HISTORY_KEY, JSON.stringify(items));
   }, [items]);
 
-  function updateItem(updated: SentencePracticeItem) {
+  function updateItem(updated: MixedSentencePracticeItem) {
     setItems((prev) => prev.map((it) => (it.id === updated.id ? updated : it)));
   }
 
-  async function generateFrom(originalEstonian: string) {
-    if (!originalEstonian || loadingGenerate) return;
+  async function generateFrom(inputSentences: string) {
+    if (!inputSentences || loadingGenerate) return;
     setLoadingGenerate(true);
     setError(null);
     try {
-      const result = await generateVariant(originalEstonian, apiKey);
-      const newItem: SentencePracticeItem = {
+      const result = await generateMixedSentence(inputSentences, apiKey);
+      const newItem: MixedSentencePracticeItem = {
         id: crypto.randomUUID(),
-        originalEstonian,
+        inputSentences,
+        sentence: result.sentence,
         englishTranslation: result.englishTranslation,
-        variant: result.variant,
-        variantEnglishTranslation: result.variantEnglishTranslation,
         attempts: [],
         status: "in_progress",
         revealed: false,
@@ -58,7 +57,7 @@ function SentencePracticeMode() {
       };
       setItems((prev) => [newItem, ...prev]);
       setSelectedId(newItem.id);
-      setSentence("");
+      setSentencesInput("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -68,13 +67,13 @@ function SentencePracticeMode() {
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
-    await generateFrom(sentence.trim());
+    await generateFrom(sentencesInput.trim());
   }
 
   function handleSubmitAttempt(userAnswer: string) {
     const item = items.find((it) => it.id === selectedId);
     if (!item) return;
-    const isCorrect = isExactMatch(item.variant, userAnswer);
+    const isCorrect = isExactMatch(item.sentence, userAnswer);
     updateItem({
       ...item,
       attempts: [...item.attempts, { userAnswer, isCorrect }],
@@ -106,20 +105,20 @@ function SentencePracticeMode() {
           {hasItems && <SidebarToggleButton onClick={toggle} />}
           <div className="flex-1 flex flex-col gap-1.5">
             <form onSubmit={handleGenerate} className="flex gap-3">
-              <input
-                type="text"
-                value={sentence}
-                onChange={(e) => setSentence(e.target.value)}
-                placeholder="Paste an Estonian sentence…"
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <textarea
+                value={sentencesInput}
+                onChange={(e) => setSentencesInput(e.target.value)}
+                placeholder="Paste several Estonian sentences…"
+                rows={3}
+                className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
               <button
                 type="submit"
-                disabled={!sentence.trim() || loadingGenerate}
-                className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
+                disabled={!sentencesInput.trim() || loadingGenerate}
+                className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap self-start"
               >
-                {loadingGenerate ? "Generating…" : "Practice"}
+                {loadingGenerate ? "Generating…" : "Mix"}
               </button>
             </form>
           </div>
@@ -134,7 +133,7 @@ function SentencePracticeMode() {
             <HistoryPanel
               items={items.map((it) => ({
                 id: it.id,
-                label: it.originalEstonian,
+                label: it.inputSentences,
               }))}
               selectedId={selectedId}
               onSelect={(id) => {
@@ -154,25 +153,22 @@ function SentencePracticeMode() {
               header={
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs text-gray-400">Original: </p>
-                    <p className="text-base font-medium text-gray-800">
-                      {selectedItem.originalEstonian}
-                    </p>
-                    <p className="italic text-sm text-gray-400">
-                      ↳ {selectedItem.englishTranslation}
+                    <p className="text-xs text-gray-400">Input sentences: </p>
+                    <p className="text-sm font-medium text-gray-600 whitespace-pre-wrap">
+                      {selectedItem.inputSentences}
                     </p>
                   </div>
                   <button
-                    onClick={() => generateFrom(selectedItem.originalEstonian)}
+                    onClick={() => generateFrom(selectedItem.inputSentences)}
                     disabled={loadingGenerate}
                     className="text-xs text-gray-400 hover:text-blue-600 underline transition-colors disabled:opacity-40 shrink-0"
                   >
-                    {loadingGenerate ? "Generating…" : "New variant →"}
+                    {loadingGenerate ? "Generating…" : "New sentence →"}
                   </button>
                 </div>
               }
-              targetEstonian={selectedItem.variant}
-              englishToTranslate={selectedItem.variantEnglishTranslation}
+              targetEstonian={selectedItem.sentence}
+              englishToTranslate={selectedItem.englishTranslation}
               attempts={selectedItem.attempts}
               status={selectedItem.status}
               revealed={selectedItem.revealed}
@@ -186,4 +182,4 @@ function SentencePracticeMode() {
   );
 }
 
-export default SentencePracticeMode;
+export default MixingSentencesMode;

@@ -7,7 +7,7 @@ export interface SentenceVariantResult {
   variantEnglishTranslation: string;
 }
 
-async function translateToEnglish(
+export async function translateToEnglish(
   estonianSentence: string,
   apiKey: string,
 ): Promise<string> {

@@ -45,6 +45,17 @@ export interface SentencePracticeItem {
   createdAt: number;
 }
 
+export interface MixedSentencePracticeItem {
+  id: string;
+  inputSentences: string;
+  sentence: string;
+  englishTranslation: string;
+  attempts: SentencePracticeAttempt[];
+  status: "in_progress" | "completed";
+  revealed: boolean;
+  createdAt: number;
+}
+
 export interface SubtitleCue {
   start: number;
   end: number;

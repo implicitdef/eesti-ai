@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { buildMaskedHintParts } from "./maskedHint";
-import type { SentencePracticeItem } from "./types";
+import type { SentencePracticeAttempt } from "./types";
 
 interface Props {
-  item: SentencePracticeItem;
+  header: React.ReactNode;
+  englishToTranslate: string;
+  targetEstonian: string;
+  attempts: SentencePracticeAttempt[];
+  status: "in_progress" | "completed";
+  revealed: boolean;
   onSubmitAttempt: (userAnswer: string) => void;
   onShowAnswer: () => void;
-  onGenerateNewVariant: () => void | Promise<void>;
-  generatingNewVariant: boolean;
 }
 
 function CharComparison({
@@ -79,60 +82,44 @@ function MaskedVariantInput({
   );
 }
 
-function SentencePracticeItemView({
-  item,
+function TranslationExerciseView({
+  header,
+  englishToTranslate,
+  targetEstonian,
+  attempts,
+  status,
+  revealed,
   onSubmitAttempt,
   onShowAnswer,
-  onGenerateNewVariant,
-  generatingNewVariant,
 }: Props) {
   const [input, setInput] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
-    if (!text || item.status === "completed") return;
+    if (!text || status === "completed") return;
     onSubmitAttempt(text);
     setInput("");
   }
 
-  const isCompleted = item.status === "completed";
-  const lastAttempt = item.attempts[item.attempts.length - 1];
+  const isCompleted = status === "completed";
+  const lastAttempt = attempts[attempts.length - 1];
   const succeededOnLastAttempt = isCompleted && lastAttempt?.isCorrect === true;
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs text-gray-400">Original: </p>
-          <p className="text-base font-medium text-gray-800">
-            {item.originalEstonian}
-          </p>
-          <p className="italic text-sm text-gray-400">
-            ↳ {item.englishTranslation}
-          </p>
-        </div>
-        <button
-          onClick={onGenerateNewVariant}
-          disabled={generatingNewVariant}
-          className="text-xs text-gray-400 hover:text-blue-600 underline transition-colors disabled:opacity-40 shrink-0"
-        >
-          {generatingNewVariant ? "Generating…" : "New variant →"}
-        </button>
-      </div>
+      {header}
 
       <div>
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
           Translate to Estonian
         </p>
-        <p className="text-2xl font-bold text-gray-900">
-          {item.variantEnglishTranslation}
-        </p>
+        <p className="text-2xl font-bold text-gray-900">{englishToTranslate}</p>
       </div>
 
-      {item.attempts.length > 0 && (
+      {attempts.length > 0 && (
         <div className="flex flex-col gap-4">
-          {item.attempts.map((attempt, i) => (
+          {attempts.map((attempt, i) => (
             <div key={i} className="flex flex-col gap-1">
               <div className="flex items-baseline gap-3">
                 <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
@@ -140,7 +127,7 @@ function SentencePracticeItemView({
                 </span>
               </div>
               <CharComparison
-                expected={item.variant}
+                expected={targetEstonian}
                 actual={attempt.userAnswer}
               />
               {attempt.isCorrect && (
@@ -163,12 +150,12 @@ function SentencePracticeItemView({
         </div>
       )}
 
-      {item.revealed && (
+      {revealed && (
         <div className="flex flex-col gap-2">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
             Correct answer
           </p>
-          <p className="font-bold text-gray-900">{item.variant}</p>
+          <p className="font-bold text-gray-900">{targetEstonian}</p>
         </div>
       )}
 
@@ -176,7 +163,7 @@ function SentencePracticeItemView({
         <div className="flex flex-col gap-3">
           <form onSubmit={handleSubmit} className="flex gap-3">
             <MaskedVariantInput
-              target={item.variant}
+              target={targetEstonian}
               value={input}
               onChange={setInput}
             />
@@ -200,4 +187,4 @@ function SentencePracticeItemView({
   );
 }
 
-export default SentencePracticeItemView;
+export default TranslationExerciseView;
