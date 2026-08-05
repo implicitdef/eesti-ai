@@ -45,7 +45,7 @@ function RootLayout() {
           inactiveProps={{ className: inactiveLinkClass }}
           activeOptions={{ exact: true }}
         >
-          Practice
+          Practice from theme
         </Link>
         <Link
           to="/from-sentence"
