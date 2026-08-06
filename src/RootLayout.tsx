@@ -62,6 +62,13 @@ function RootLayout() {
           Mixing sentences
         </Link>
         <Link
+          to="/from-theme-v2"
+          activeProps={{ className: activeLinkClass }}
+          inactiveProps={{ className: inactiveLinkClass }}
+        >
+          From theme v2
+        </Link>
+        <Link
           to="/video"
           activeProps={{ className: activeLinkClass }}
           inactiveProps={{ className: inactiveLinkClass }}
