@@ -15,3 +15,15 @@ export function responseText(response: Anthropic.Message): string {
   }
   return block.text;
 }
+
+export const MAX_PREVIOUS_SENTENCES = 5;
+
+/**
+ * Appended to a system prompt to steer the model away from repeating
+ * sentences already generated for the same input.
+ */
+export function avoidRepeatsNote(previousSentences: string[]): string {
+  if (previousSentences.length === 0) return "";
+  const list = previousSentences.map((s) => `- ${s}`).join("\n");
+  return `\n\nNote: for this same input, we have already generated the following sentences previously:\n${list}\nTry to generate something meaningfully different from these.`;
+}

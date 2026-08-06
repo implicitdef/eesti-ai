@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
 import HistoryPanel from "./HistoryPanel";
 import { generateVariant } from "./sentence-practice-api";
@@ -44,7 +45,16 @@ function SentencePracticeMode() {
     setLoadingGenerate(true);
     setError(null);
     try {
-      const result = await generateVariant(originalEstonian, apiKey);
+      const previousVariants = items
+        .filter((it) => it.originalEstonian === originalEstonian)
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, MAX_PREVIOUS_SENTENCES)
+        .map((it) => it.variant);
+      const result = await generateVariant(
+        originalEstonian,
+        apiKey,
+        previousVariants,
+      );
       const newItem: SentencePracticeItem = {
         id: crypto.randomUUID(),
         originalEstonian,

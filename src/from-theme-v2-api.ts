@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { MODEL, responseText } from "./anthropic-response";
+import { avoidRepeatsNote, MODEL, responseText } from "./anthropic-response";
 import {
   fixSentenceIfNeeded,
   translateToEnglish,
@@ -13,6 +13,7 @@ export interface ThemeV2SentenceResult {
 async function createSentenceFromTheme(
   theme: string,
   apiKey: string,
+  previousSentences: string[],
 ): Promise<string> {
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
@@ -30,7 +31,7 @@ Requirements:
 - Short: 6 to 12 words
 - Simple, everyday vocabulary and grammar: one or two clauses at most
 - Natural spoken or written Estonian, not academic or literary
-- Grammatically correct`,
+- Grammatically correct${avoidRepeatsNote(previousSentences)}`,
     messages: [{ role: "user", content: `Input: ${theme}` }],
     output_config: {
       format: {
@@ -54,8 +55,13 @@ Requirements:
 export async function generateThemeV2Sentence(
   theme: string,
   apiKey: string,
+  previousSentences: string[] = [],
 ): Promise<ThemeV2SentenceResult> {
-  const rawSentence = await createSentenceFromTheme(theme, apiKey);
+  const rawSentence = await createSentenceFromTheme(
+    theme,
+    apiKey,
+    previousSentences,
+  );
   const sentence = await fixSentenceIfNeeded(rawSentence, apiKey);
   const englishTranslation = await translateToEnglish(sentence, apiKey);
   return { sentence, englishTranslation };

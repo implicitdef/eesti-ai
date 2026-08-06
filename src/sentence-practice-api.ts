@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { MODEL, responseText } from "./anthropic-response";
+import { avoidRepeatsNote, MODEL, responseText } from "./anthropic-response";
 
 export interface SentenceVariantResult {
   englishTranslation: string;
@@ -80,6 +80,7 @@ export async function fixSentenceIfNeeded(
 async function createVariant(
   estonianSentence: string,
   apiKey: string,
+  previousVariants: string[],
 ): Promise<string> {
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
@@ -95,7 +96,7 @@ Create "variant": an Estonian sentence that is a variation on the given one. It 
    - statement <-> question
    - pronoun or subject-person swap (ma/sa/ta/me/te/nad)
    - quantity or time-expression changes (today -> yesterday, always -> never, one -> several)
-This new sentence must have a somewhat coherent meaning.`,
+This new sentence must have a somewhat coherent meaning.${avoidRepeatsNote(previousVariants)}`,
     messages: [
       { role: "user", content: `Estonian sentence: "${estonianSentence}"` },
     ],
@@ -121,10 +122,11 @@ This new sentence must have a somewhat coherent meaning.`,
 export async function generateVariant(
   estonianSentence: string,
   apiKey: string,
+  previousVariants: string[] = [],
 ): Promise<SentenceVariantResult> {
   const [englishTranslation, variant] = await Promise.all([
     translateToEnglish(estonianSentence, apiKey),
-    createVariant(estonianSentence, apiKey),
+    createVariant(estonianSentence, apiKey, previousVariants),
   ]);
   const variantEnglishTranslation = await translateToEnglish(variant, apiKey);
 

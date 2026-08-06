@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
 import HistoryPanel from "./HistoryPanel";
 import { generateMixedSentence } from "./mixed-sentence-practice-api";
@@ -44,7 +45,16 @@ function MixingSentencesMode() {
     setLoadingGenerate(true);
     setError(null);
     try {
-      const result = await generateMixedSentence(inputSentences, apiKey);
+      const previousSentences = items
+        .filter((it) => it.inputSentences === inputSentences)
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, MAX_PREVIOUS_SENTENCES)
+        .map((it) => it.sentence);
+      const result = await generateMixedSentence(
+        inputSentences,
+        apiKey,
+        previousSentences,
+      );
       const newItem: MixedSentencePracticeItem = {
         id: crypto.randomUUID(),
         inputSentences,

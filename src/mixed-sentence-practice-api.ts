@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { MODEL, responseText } from "./anthropic-response";
+import { avoidRepeatsNote, MODEL, responseText } from "./anthropic-response";
 import {
   fixSentenceIfNeeded,
   translateToEnglish,
@@ -13,6 +13,7 @@ export interface MixedSentenceResult {
 async function createSentenceFromInputs(
   inputSentences: string,
   apiKey: string,
+  previousSentences: string[],
 ): Promise<string> {
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
@@ -24,7 +25,7 @@ async function createSentenceFromInputs(
 You will be given several Estonian sentences below. They may be unrelated to each other. Write ONE new Estonian sentence at approximately B1 level, reusing vocabulary from the given sentences as much as possible — both single words and idioms/expressions — treating them as building blocks (structures, expressions, words) you can draw from. You do not need to reuse all of the vocabulary, since you are producing only one sentence; just reuse as much as fits naturally into a coherent sentence.
 It's best if your final sentence doesn't look a copy/paste of the clauses of the original sentences. Mix them up, and you may play also with tenses, affirmative/negative, singular plural, etc.
 The final sentence MUST always be grammatically correct and natural Estonian.
-`,
+${avoidRepeatsNote(previousSentences)}`,
     messages: [
       { role: "user", content: `Estonian sentences:\n${inputSentences}` },
     ],
@@ -50,8 +51,13 @@ The final sentence MUST always be grammatically correct and natural Estonian.
 export async function generateMixedSentence(
   inputSentences: string,
   apiKey: string,
+  previousSentences: string[] = [],
 ): Promise<MixedSentenceResult> {
-  const rawSentence = await createSentenceFromInputs(inputSentences, apiKey);
+  const rawSentence = await createSentenceFromInputs(
+    inputSentences,
+    apiKey,
+    previousSentences,
+  );
   const sentence = await fixSentenceIfNeeded(rawSentence, apiKey);
   const englishTranslation = await translateToEnglish(sentence, apiKey);
   return { sentence, englishTranslation };

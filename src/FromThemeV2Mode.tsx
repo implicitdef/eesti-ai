@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
 import HistoryPanel from "./HistoryPanel";
 import { generateThemeV2Sentence } from "./from-theme-v2-api";
@@ -44,7 +45,16 @@ function FromThemeV2Mode() {
     setLoadingGenerate(true);
     setError(null);
     try {
-      const result = await generateThemeV2Sentence(theme, apiKey);
+      const previousSentences = items
+        .filter((it) => it.theme === theme)
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, MAX_PREVIOUS_SENTENCES)
+        .map((it) => it.sentence);
+      const result = await generateThemeV2Sentence(
+        theme,
+        apiKey,
+        previousSentences,
+      );
       const newItem: ThemeV2PracticeItem = {
         id: crypto.randomUUID(),
         theme,
