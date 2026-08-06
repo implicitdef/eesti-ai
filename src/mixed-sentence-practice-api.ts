@@ -1,6 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { MODEL, responseText } from "./anthropic-response";
-import { translateToEnglish } from "./sentence-practice-api";
+import {
+  fixSentenceIfNeeded,
+  translateToEnglish,
+} from "./sentence-practice-api";
 
 export interface MixedSentenceResult {
   sentence: string;
@@ -48,7 +51,8 @@ export async function generateMixedSentence(
   inputSentences: string,
   apiKey: string,
 ): Promise<MixedSentenceResult> {
-  const sentence = await createSentenceFromInputs(inputSentences, apiKey);
+  const rawSentence = await createSentenceFromInputs(inputSentences, apiKey);
+  const sentence = await fixSentenceIfNeeded(rawSentence, apiKey);
   const englishTranslation = await translateToEnglish(sentence, apiKey);
   return { sentence, englishTranslation };
 }
