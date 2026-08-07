@@ -111,16 +111,8 @@ function FromThemeMode() {
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden">
-      <div
-        className={`px-6 py-4 border-b border-gray-200 ${!hasItems ? "flex justify-center" : ""}`}
-      >
-        <div
-          className={`flex gap-3 ${
-            !hasItems
-              ? "items-start w-full max-w-2xl"
-              : "flex-col md:flex-row md:items-start"
-          }`}
-        >
+      <div className="px-6 py-4 border-b border-gray-200 flex justify-center">
+        <div className="flex flex-col md:flex-row md:items-start gap-3 w-full max-w-2xl">
           {hasItems && <SidebarToggleButton onClick={toggle} />}
           <div className="flex-1 flex flex-col gap-2">
             <TabDescription>
