@@ -7,7 +7,7 @@ import {
 import RootLayout from "./RootLayout";
 import SentencePracticeMode from "./SentencePracticeMode";
 import MixingSentencesMode from "./MixingSentencesMode";
-import FromThemeV2Mode from "./FromThemeV2Mode";
+import FromThemeMode from "./FromThemeMode";
 import VideoMode from "./VideoMode";
 
 const rootRoute = createRootRoute({ component: RootLayout });
@@ -24,10 +24,10 @@ const mixingSentencesRoute = createRoute({
   component: MixingSentencesMode,
 });
 
-const fromThemeV2Route = createRoute({
+const fromThemeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  component: FromThemeV2Mode,
+  component: FromThemeMode,
 });
 
 const videoRoute = createRoute({
@@ -39,7 +39,7 @@ const videoRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   sentencePracticeRoute,
   mixingSentencesRoute,
-  fromThemeV2Route,
+  fromThemeRoute,
   videoRoute,
 ]);
 

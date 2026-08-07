@@ -5,7 +5,7 @@ import {
   translateToEnglish,
 } from "./sentence-practice-api";
 
-export interface ThemeV2SentenceResult {
+export interface ThemeSentenceResult {
   sentence: string;
   englishTranslation: string;
 }
@@ -52,11 +52,11 @@ Requirements:
   return raw.sentence;
 }
 
-export async function generateThemeV2Sentence(
+export async function generateThemeSentence(
   theme: string,
   apiKey: string,
   previousSentences: string[] = [],
-): Promise<ThemeV2SentenceResult> {
+): Promise<ThemeSentenceResult> {
   const rawSentence = await createSentenceFromTheme(
     theme,
     apiKey,

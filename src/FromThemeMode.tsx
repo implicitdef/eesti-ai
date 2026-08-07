@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
-import { generateThemeV2Sentence } from "./from-theme-v2-api";
+import { generateThemeSentence } from "./from-theme-api";
 import HistoryPanel from "./HistoryPanel";
 import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
 } from "./SidebarLayout";
 import TranslationExerciseView from "./TranslationExerciseView";
-import type { ThemeV2PracticeItem } from "./types";
+import type { ThemePracticeItem } from "./types";
 
-const FROM_THEME_V2_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
+const FROM_THEME_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
 const API_KEY_STORAGE = "eesti-ai-api-key";
 
-function FromThemeV2Mode() {
+function FromThemeMode() {
   const apiKey = localStorage.getItem(API_KEY_STORAGE)!;
 
-  const [items, setItems] = useState<ThemeV2PracticeItem[]>(() => {
+  const [items, setItems] = useState<ThemePracticeItem[]>(() => {
     try {
-      const stored = localStorage.getItem(FROM_THEME_V2_HISTORY_KEY);
-      return stored ? (JSON.parse(stored) as ThemeV2PracticeItem[]) : [];
+      const stored = localStorage.getItem(FROM_THEME_HISTORY_KEY);
+      return stored ? (JSON.parse(stored) as ThemePracticeItem[]) : [];
     } catch {
       return [];
     }
@@ -33,10 +33,10 @@ function FromThemeV2Mode() {
   const { isOpen, toggle, close } = useCollapsibleSidebar();
 
   useEffect(() => {
-    localStorage.setItem(FROM_THEME_V2_HISTORY_KEY, JSON.stringify(items));
+    localStorage.setItem(FROM_THEME_HISTORY_KEY, JSON.stringify(items));
   }, [items]);
 
-  function updateItem(updated: ThemeV2PracticeItem) {
+  function updateItem(updated: ThemePracticeItem) {
     setItems((prev) => prev.map((it) => (it.id === updated.id ? updated : it)));
   }
 
@@ -50,12 +50,12 @@ function FromThemeV2Mode() {
         .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, MAX_PREVIOUS_SENTENCES)
         .map((it) => it.sentence);
-      const result = await generateThemeV2Sentence(
+      const result = await generateThemeSentence(
         theme,
         apiKey,
         previousSentences,
       );
-      const newItem: ThemeV2PracticeItem = {
+      const newItem: ThemePracticeItem = {
         id: crypto.randomUUID(),
         theme,
         sentence: result.sentence,
@@ -203,4 +203,4 @@ function FromThemeV2Mode() {
   );
 }
 
-export default FromThemeV2Mode;
+export default FromThemeMode;

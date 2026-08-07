@@ -26,7 +26,7 @@ export interface MixedSentencePracticeItem {
   createdAt: number;
 }
 
-export interface ThemeV2PracticeItem {
+export interface ThemePracticeItem {
   id: string;
   theme: string;
   sentence: string;
