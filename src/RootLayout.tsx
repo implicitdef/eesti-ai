@@ -13,6 +13,14 @@ const inactiveLinkClass =
 const activeLinkClassSmall = `${activeLinkClass} text-sm`;
 const inactiveLinkClassSmall = `${inactiveLinkClass} text-sm`;
 
+function LegacyBadge() {
+  return (
+    <span className="rounded-full bg-gray-300 px-1.5 py-0.75 text-[10px] leading-none font-medium tracking-wide text-black uppercase">
+      legacy
+    </span>
+  );
+}
+
 function RootLayout() {
   const [apiKey, setApiKeyState] = useState(
     () => localStorage.getItem(STORAGE_KEY) ?? "",
@@ -66,7 +74,8 @@ function RootLayout() {
             inactiveProps={{ className: inactiveLinkClassSmall }}
           >
             <TrendingUpDown size={14} className="shrink-0" />
-            Variant of sentence (legacy)
+            Variant of sentence
+            <LegacyBadge />
           </Link>
           <Link
             to="/mixing-sentences"
@@ -74,7 +83,8 @@ function RootLayout() {
             inactiveProps={{ className: inactiveLinkClassSmall }}
           >
             <Shuffle size={14} className="shrink-0" />
-            Mixing sentences (legacy)
+            Mixing sentences
+            <LegacyBadge />
           </Link>
         </div>
       </nav>
