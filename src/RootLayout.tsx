@@ -6,9 +6,9 @@ import ApiKeyScreen from "./ApiKeyScreen";
 const STORAGE_KEY = "eesti-ai-api-key";
 
 const activeLinkClass =
-  "flex items-center gap-1.5 border-b-2 border-blue-700 text-blue-700 font-semibold pb-2";
+  "px-2 flex items-center gap-1.5 border-b-3 border-blue-500 text-blue-700  pb-2 pt-2";
 const inactiveLinkClass =
-  "flex items-center gap-1.5 border-b-2 border-transparent text-gray-500 hover:text-gray-800 pb-2 transition-colors";
+  "px-2 flex items-center gap-1.5 border-b-3 border-transparent text-black hover:text-gray-800 pb-2 pt-2 transition-colors";
 
 const activeLinkClassSmall = `${activeLinkClass} text-sm`;
 const inactiveLinkClassSmall = `${inactiveLinkClass} text-sm`;
@@ -51,8 +51,8 @@ function RootLayout() {
         </span>
       </header>
 
-      <nav className="flex items-end justify-between gap-6 px-6 pt-3 border-b border-gray-200">
-        <div className="flex items-end gap-6">
+      <nav className="flex items-end justify-between gap-6 border-b border-black">
+        <div className="flex items-end">
           <Link
             to="/"
             activeProps={{ className: activeLinkClass }}
