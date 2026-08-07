@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
-import HistoryPanel from "./HistoryPanel";
 import { generateThemeV2Sentence } from "./from-theme-v2-api";
-import TranslationExerciseView from "./TranslationExerciseView";
+import HistoryPanel from "./HistoryPanel";
 import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
 } from "./SidebarLayout";
+import TranslationExerciseView from "./TranslationExerciseView";
 import type { ThemeV2PracticeItem } from "./types";
 
 const FROM_THEME_V2_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
@@ -125,7 +125,7 @@ function FromThemeV2Mode() {
                 type="text"
                 value={themeInput}
                 onChange={(e) => setThemeInput(e.target.value)}
-                placeholder="A theme in English, or an Estonian idiom…"
+                placeholder="A theme in English, or some words/idiom in Estonian"
                 className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
@@ -137,6 +137,10 @@ function FromThemeV2Mode() {
                 {loadingGenerate ? "Generating…" : "Generate"}
               </button>
             </form>
+            <p className="text-xs text-gray-400">
+              e.g. "beach", "war", "job interview", "flirting at the gym", OR
+              "tööle võtma", "rääkimata", "X-ks valmis", "ostma VS otsima", ...
+            </p>
           </div>
         </div>
       </div>
