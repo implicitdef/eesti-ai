@@ -97,6 +97,12 @@ function MixingSentencesMode() {
     updateItem({ ...item, revealed: true, status: "completed" });
   }
 
+  function handleHideAnswer() {
+    const item = items.find((it) => it.id === selectedId);
+    if (!item) return;
+    updateItem({ ...item, revealed: false, status: "in_progress" });
+  }
+
   const selectedItem = items.find((it) => it.id === selectedId) ?? null;
   const hasItems = items.length > 0;
 
@@ -184,6 +190,7 @@ function MixingSentencesMode() {
               revealed={selectedItem.revealed}
               onSubmitAttempt={handleSubmitAttempt}
               onShowAnswer={handleShowAnswer}
+              onHideAnswer={handleHideAnswer}
             />
           )}
         </SidebarLayout>

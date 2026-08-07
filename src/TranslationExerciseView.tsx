@@ -11,6 +11,7 @@ interface Props {
   revealed: boolean;
   onSubmitAttempt: (userAnswer: string) => void;
   onShowAnswer: () => void;
+  onHideAnswer: () => void;
 }
 
 function CharComparison({
@@ -91,6 +92,7 @@ function TranslationExerciseView({
   revealed,
   onSubmitAttempt,
   onShowAnswer,
+  onHideAnswer,
 }: Props) {
   const [input, setInput] = useState("");
 
@@ -152,9 +154,17 @@ function TranslationExerciseView({
 
       {revealed && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
-            Correct answer
-          </p>
+          <div className="flex items-baseline gap-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
+              Correct answer
+            </p>
+            <button
+              onClick={onHideAnswer}
+              className="text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
+            >
+              Hide
+            </button>
+          </div>
           <p className="font-bold text-gray-900">{targetEstonian}</p>
         </div>
       )}
