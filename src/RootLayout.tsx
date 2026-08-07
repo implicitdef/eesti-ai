@@ -13,6 +13,9 @@ const inactiveLinkClass =
 const activeLinkClassSmall = `${activeLinkClass} text-sm`;
 const inactiveLinkClassSmall = `${inactiveLinkClass} text-sm`;
 
+const activeIconColorClass = "text-blue-600";
+const inactiveIconColorClass = "text-gray-400";
+
 function LegacyBadge() {
   return (
     <span className="rounded-full bg-slate-300 px-1.5 py-0.75 text-[10px] leading-none font-medium tracking-wide text-black uppercase">
@@ -59,38 +62,62 @@ function RootLayout() {
             inactiveProps={{ className: inactiveLinkClass }}
             activeOptions={{ exact: true }}
           >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-500 text-white">
-              <NotebookPen size={14} />
-            </span>
-            From theme or words
+            {({ isActive }) => (
+              <>
+                <NotebookPen
+                  size={16}
+                  className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
+                />
+                From theme or words
+              </>
+            )}
           </Link>
           <Link
             to="/video"
             activeProps={{ className: activeLinkClass }}
             inactiveProps={{ className: inactiveLinkClass }}
           >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-500 text-white">
-              <Play size={14} fill="currentColor" />
-            </span>
-            Watch video with subtitles and cheatsheet
+            {({ isActive }) => (
+              <>
+                <Play
+                  size={16}
+                  className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
+                />
+                Watch video with subtitles and cheatsheet
+              </>
+            )}
           </Link>
           <Link
             to="/from-sentence"
             activeProps={{ className: activeLinkClassSmall }}
             inactiveProps={{ className: inactiveLinkClassSmall }}
           >
-            <TrendingUpDown size={14} className="shrink-0" />
-            Variant of sentence
-            <LegacyBadge />
+            {({ isActive }) => (
+              <>
+                <TrendingUpDown
+                  size={14}
+                  className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
+                />
+                Variant of sentence
+                <LegacyBadge />
+              </>
+            )}
           </Link>
           <Link
             to="/mixing-sentences"
             activeProps={{ className: activeLinkClassSmall }}
             inactiveProps={{ className: inactiveLinkClassSmall }}
           >
-            <Shuffle size={14} className="shrink-0" />
-            Mixing sentences
-            <LegacyBadge />
+            {({ isActive }) => (
+              <>
+                <Shuffle
+                  size={14}
+                  className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
+                />
+                Mixing sentences
+                <LegacyBadge />
+              </>
+            )}
           </Link>
         </div>
       </nav>
