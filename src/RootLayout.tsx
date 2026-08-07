@@ -57,7 +57,9 @@ function RootLayout() {
             inactiveProps={{ className: inactiveLinkClass }}
             activeOptions={{ exact: true }}
           >
-            <NotebookPen size={16} className="shrink-0" />
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-500 text-white">
+              <NotebookPen size={14} />
+            </span>
             From theme or words
           </Link>
           <Link
@@ -65,7 +67,9 @@ function RootLayout() {
             activeProps={{ className: activeLinkClass }}
             inactiveProps={{ className: inactiveLinkClass }}
           >
-            <Play size={16} className="shrink-0" />
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-500 text-white">
+              <Play size={14} fill="currentColor" />
+            </span>
             Watch video with subtitles and cheatsheet
           </Link>
           <Link
