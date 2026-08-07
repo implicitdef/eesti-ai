@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
+import GenerateAnotherButton from "./GenerateAnotherButton";
 import GenerateForm from "./GenerateForm";
 import HistoryPanel from "./HistoryPanel";
 import { generateVariant } from "./sentence-practice-api";
@@ -179,13 +180,10 @@ function SentencePracticeMode() {
                       ↳ {selectedItem.englishTranslation}
                     </p>
                   </div>
-                  <button
+                  <GenerateAnotherButton
                     onClick={() => generateFrom(selectedItem.originalEstonian)}
-                    disabled={loadingGenerate}
-                    className="text-xs text-gray-400 hover:text-blue-600 underline transition-colors disabled:opacity-40 shrink-0"
-                  >
-                    {loadingGenerate ? "Generating…" : "New variant →"}
-                  </button>
+                    loading={loadingGenerate}
+                  />
                 </div>
               }
               targetEstonian={selectedItem.variant}
