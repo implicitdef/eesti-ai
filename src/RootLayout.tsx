@@ -10,6 +10,9 @@ const activeLinkClass =
 const inactiveLinkClass =
   "border-b-2 border-transparent text-gray-500 hover:text-gray-800 pb-2 transition-colors";
 
+const activeLinkClassSmall = `${activeLinkClass} text-sm`;
+const inactiveLinkClassSmall = `${inactiveLinkClass} text-sm`;
+
 function RootLayout() {
   const [apiKey, setApiKeyState] = useState(
     () => localStorage.getItem(STORAGE_KEY) ?? "",
@@ -38,8 +41,8 @@ function RootLayout() {
         <p className="text-sm text-blue-200">Learn Estonian with AI</p>
       </header>
 
-      <nav className="flex items-center justify-between gap-6 px-6 pt-3 border-b border-gray-200">
-        <div className="flex items-center gap-6">
+      <nav className="flex items-end justify-between gap-6 px-6 pt-3 border-b border-gray-200">
+        <div className="flex items-end gap-6">
           <Link
             to="/"
             activeProps={{ className: activeLinkClass }}
@@ -57,15 +60,15 @@ function RootLayout() {
           </Link>
           <Link
             to="/from-sentence"
-            activeProps={{ className: activeLinkClass }}
-            inactiveProps={{ className: inactiveLinkClass }}
+            activeProps={{ className: activeLinkClassSmall }}
+            inactiveProps={{ className: inactiveLinkClassSmall }}
           >
             Variant of sentence (legacy)
           </Link>
           <Link
             to="/mixing-sentences"
-            activeProps={{ className: activeLinkClass }}
-            inactiveProps={{ className: inactiveLinkClass }}
+            activeProps={{ className: activeLinkClassSmall }}
+            inactiveProps={{ className: inactiveLinkClassSmall }}
           >
             Mixing sentences (legacy)
           </Link>
