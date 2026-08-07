@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { Link, Outlet } from "@tanstack/react-router";
 import { X } from "lucide-react";
+import { useState } from "react";
 import ApiKeyScreen from "./ApiKeyScreen";
 
 const STORAGE_KEY = "eesti-ai-api-key";
@@ -89,6 +89,13 @@ function RootLayout() {
             <span className="text-xs text-gray-500">
               Learn Estonian with AI
             </span>
+            <span className="text-gray-400 select-none">|</span>
+            <code
+              className="font-mono text-xs text-gray-500"
+              title="Build version"
+            >
+              version: {__APP_VERSION__}
+            </code>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 rounded-full border border-gray-300 bg-gray-100 px-3 py-1">
