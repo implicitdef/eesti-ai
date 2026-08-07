@@ -38,36 +38,38 @@ function RootLayout() {
         <p className="text-sm text-blue-200">Learn Estonian with AI</p>
       </header>
 
-      <nav className="flex gap-6 px-6 pt-3 border-b border-gray-200">
-        <Link
-          to="/"
-          activeProps={{ className: activeLinkClass }}
-          inactiveProps={{ className: inactiveLinkClass }}
-          activeOptions={{ exact: true }}
-        >
-          From theme or words
-        </Link>
-        <Link
-          to="/from-sentence"
-          activeProps={{ className: activeLinkClass }}
-          inactiveProps={{ className: inactiveLinkClass }}
-        >
-          Variant of sentence
-        </Link>
-        <Link
-          to="/mixing-sentences"
-          activeProps={{ className: activeLinkClass }}
-          inactiveProps={{ className: inactiveLinkClass }}
-        >
-          Mixing sentences
-        </Link>
-        <Link
-          to="/video"
-          activeProps={{ className: activeLinkClass }}
-          inactiveProps={{ className: inactiveLinkClass }}
-        >
-          Watch video with subtitles and cheatsheet
-        </Link>
+      <nav className="flex items-center justify-between gap-6 px-6 pt-3 border-b border-gray-200">
+        <div className="flex items-center gap-6">
+          <Link
+            to="/"
+            activeProps={{ className: activeLinkClass }}
+            inactiveProps={{ className: inactiveLinkClass }}
+            activeOptions={{ exact: true }}
+          >
+            From theme or words
+          </Link>
+          <Link
+            to="/video"
+            activeProps={{ className: activeLinkClass }}
+            inactiveProps={{ className: inactiveLinkClass }}
+          >
+            Watch video with subtitles and cheatsheet
+          </Link>
+          <Link
+            to="/from-sentence"
+            activeProps={{ className: activeLinkClass }}
+            inactiveProps={{ className: inactiveLinkClass }}
+          >
+            Variant of sentence (legacy)
+          </Link>
+          <Link
+            to="/mixing-sentences"
+            activeProps={{ className: activeLinkClass }}
+            inactiveProps={{ className: inactiveLinkClass }}
+          >
+            Mixing sentences (legacy)
+          </Link>
+        </div>
       </nav>
 
       <Outlet />
