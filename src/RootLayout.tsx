@@ -44,9 +44,11 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-blue-700 text-white p-4 shadow">
-        <h1 className="text-2xl font-bold">Eesti AI</h1>
-        <p className="text-sm text-blue-200">Learn Estonian with AI</p>
+      <header className="bg-slate-300 text-slate-700 p-4 shadow">
+        <h1 className="text-2xl font-bold uppercase inline">Eesti AI</h1>
+        <span className="text-sm text-blue-700 ml-2">
+          Practice Estonian with AI
+        </span>
       </header>
 
       <nav className="flex items-end justify-between gap-6 px-6 pt-3 border-b border-gray-200">
@@ -98,14 +100,6 @@ function RootLayout() {
       <footer className="border-t border-gray-400">
         <div className="flex items-center justify-end sm:justify-between px-4 sm:px-6 py-3">
           <div className="hidden sm:flex items-center gap-2">
-            <span className="text-sm font-bold text-blue-700 tracking-tight">
-              Eesti AI
-            </span>
-            <span className="text-gray-400 select-none">|</span>
-            <span className="text-xs text-gray-500">
-              Learn Estonian with AI
-            </span>
-            <span className="text-gray-400 select-none">|</span>
             <code
               className="font-mono text-xs text-gray-500"
               title="Build version"
