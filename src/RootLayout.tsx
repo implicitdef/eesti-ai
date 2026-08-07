@@ -52,7 +52,7 @@ function RootLayout() {
           activeProps={{ className: activeLinkClass }}
           inactiveProps={{ className: inactiveLinkClass }}
         >
-          From sentence
+          Variant of sentence
         </Link>
         <Link
           to="/mixing-sentences"
@@ -66,7 +66,7 @@ function RootLayout() {
           activeProps={{ className: activeLinkClass }}
           inactiveProps={{ className: inactiveLinkClass }}
         >
-          Video
+          Watch video with subtitles and cheatsheet
         </Link>
       </nav>
 
