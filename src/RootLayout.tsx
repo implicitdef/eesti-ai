@@ -15,7 +15,7 @@ const inactiveLinkClassSmall = `${inactiveLinkClass} text-sm`;
 
 function LegacyBadge() {
   return (
-    <span className="rounded-full bg-gray-300 px-1.5 py-0.75 text-[10px] leading-none font-medium tracking-wide text-black uppercase">
+    <span className="rounded-full bg-slate-300 px-1.5 py-0.75 text-[10px] leading-none font-medium tracking-wide text-black uppercase">
       legacy
     </span>
   );

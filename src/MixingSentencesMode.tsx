@@ -3,11 +3,12 @@ import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
 import HistoryPanel from "./HistoryPanel";
 import { generateMixedSentence } from "./mixed-sentence-practice-api";
-import TranslationExerciseView from "./TranslationExerciseView";
 import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
 } from "./SidebarLayout";
+import TabDescription from "./TabDescription";
+import TranslationExerciseView from "./TranslationExerciseView";
 import type { MixedSentencePracticeItem } from "./types";
 
 const MIXING_SENTENCES_HISTORY_KEY = "eesti-ai-mixing-sentences-history";
@@ -119,7 +120,14 @@ function MixingSentencesMode() {
           }`}
         >
           {hasItems && <SidebarToggleButton onClick={toggle} />}
-          <div className="flex-1 flex flex-col gap-1.5">
+          <div className="flex-1 flex flex-col gap-2">
+            <TabDescription>
+              Translation exercise, English to Estonian.
+              <br />
+              Paste several Estonian sentences (typically from a movie) in the
+              first input, this will generate a sentence which is kinda of a mix
+              of the vocabulary and structures of the ones you gave.
+            </TabDescription>
             <form onSubmit={handleGenerate} className="flex gap-3">
               <textarea
                 value={sentencesInput}

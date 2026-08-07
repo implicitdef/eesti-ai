@@ -3,11 +3,12 @@ import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
 import HistoryPanel from "./HistoryPanel";
 import { generateVariant } from "./sentence-practice-api";
-import TranslationExerciseView from "./TranslationExerciseView";
 import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
 } from "./SidebarLayout";
+import TabDescription from "./TabDescription";
+import TranslationExerciseView from "./TranslationExerciseView";
 import type { SentencePracticeItem } from "./types";
 
 const SENTENCE_PRACTICE_HISTORY_KEY = "eesti-ai-sentence-practice-history";
@@ -120,7 +121,15 @@ function SentencePracticeMode() {
           }`}
         >
           {hasItems && <SidebarToggleButton onClick={toggle} />}
-          <div className="flex-1 flex flex-col gap-1.5">
+          <div className="flex-1 flex flex-col gap-2">
+            <TabDescription>
+              Translation exercise, English to Estonian.
+              <br />
+              You must give as input one Estonian sentence. Then this will make
+              you work on another sentence very close to it (typically with
+              affirmative/negative variations, changing the pronoun, the tense,
+              etc.)
+            </TabDescription>
             <form onSubmit={handleGenerate} className="flex gap-3">
               <input
                 type="text"

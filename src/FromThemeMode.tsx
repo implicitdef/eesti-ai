@@ -7,6 +7,7 @@ import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
 } from "./SidebarLayout";
+import TabDescription from "./TabDescription";
 import TranslationExerciseView from "./TranslationExerciseView";
 import type { ThemePracticeItem } from "./types";
 
@@ -119,13 +120,23 @@ function FromThemeMode() {
           }`}
         >
           {hasItems && <SidebarToggleButton onClick={toggle} />}
-          <div className="flex-1 flex flex-col gap-1.5">
+          <div className="flex-1 flex flex-col gap-2">
+            <TabDescription>
+              Translation exercise, English to Estonian.
+              <br />
+              The sentence to guess will be based on the little input you give.
+              <br />- For example, if you type "family", you might have to find
+              the sentence "Minu perekonnas on neli inimest ja üks koer".
+              <br />- Or if you type "hädas olema", you might get "Ta helistas
+              mulle, kuna oli suures hädas". <br />
+              Generating a sentence will make some requests to Anthropic API.
+            </TabDescription>
             <form onSubmit={handleGenerate} className="flex gap-3">
               <input
                 type="text"
                 value={themeInput}
                 onChange={(e) => setThemeInput(e.target.value)}
-                placeholder="A theme in English, or some words/idiom in Estonian"
+                placeholder="Type a theme (in English) or some words or idiom (in Estonian)"
                 className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {error && <p className="text-sm text-red-500">{error}</p>}

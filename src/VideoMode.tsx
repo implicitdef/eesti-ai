@@ -1,20 +1,21 @@
-import { useEffect, useRef, useState } from "react";
 import {
-  FileVideo,
-  FileText,
-  RotateCcw,
-  Eye,
-  EyeOff,
   ArrowLeftRight,
   BookOpen,
+  Eye,
+  EyeOff,
+  FileText,
+  FileVideo,
+  RotateCcw,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import SubtitleTrail from "./SubtitleTrail";
-import {
-  parseSubtitles,
-  estonianScore,
-  detectLanguageLabel,
-} from "./subtitles";
+import TabDescription from "./TabDescription";
 import { parseComplexVocab } from "./complexVocab";
+import {
+  detectLanguageLabel,
+  estonianScore,
+  parseSubtitles,
+} from "./subtitles";
 import type { ComplexVocabEntry, SubtitleCue } from "./types";
 
 interface SubtitleTrack {
@@ -227,6 +228,17 @@ function VideoMode() {
       {!videoFile || !primaryTrack ? (
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="w-full max-w-md flex flex-col gap-4">
+            <TabDescription>
+              Watch an Estonian video with dual subtitles plus an optional
+              vocabulary cheatsheet to help with tricky words.
+              <br />
+              This feature does not use Anthropic API at all, but you need to
+              have already ready :<br />- the video file
+              <br />- the subtitle files (typically Estonian + a reference one
+              in French or English)
+              <br />- the cheatsheet, which needs to be generated with a script
+              that does use Anthropic API.
+            </TabDescription>
             <label className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
               <FileVideo size={20} className="text-blue-700 shrink-0" />
               <span className="text-sm text-gray-700">
