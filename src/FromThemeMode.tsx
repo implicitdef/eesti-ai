@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
 import { generateThemeSentence } from "./from-theme-api";
+import GenerateForm from "./GenerateForm";
 import HistoryPanel from "./HistoryPanel";
 import SidebarLayout, {
   SidebarToggleButton,
@@ -131,23 +132,15 @@ function FromThemeMode() {
               mulle, kuna oli suures hädas". <br />
               Generating a sentence will make some requests to Anthropic API.
             </TabDescription>
-            <form onSubmit={handleGenerate} className="flex gap-3">
-              <input
-                type="text"
-                value={themeInput}
-                onChange={(e) => setThemeInput(e.target.value)}
-                placeholder="Type a theme (in English) or some words or idiom (in Estonian)"
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <button
-                type="submit"
-                disabled={!themeInput.trim() || loadingGenerate}
-                className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
-              >
-                {loadingGenerate ? "Generating…" : "Generate"}
-              </button>
-            </form>
+            <GenerateForm
+              value={themeInput}
+              onChange={setThemeInput}
+              onSubmit={handleGenerate}
+              placeholder="Type a theme (in English) or some words or idiom (in Estonian)"
+              submitLabel="Generate"
+              loading={loadingGenerate}
+              error={error}
+            />
             <p className="text-xs text-gray-400">
               e.g. "beach", "war", "job interview", "flirting at the gym", OR
               "tööle võtma", "rääkimata", "X-ks valmis", "ostma VS otsima", ...

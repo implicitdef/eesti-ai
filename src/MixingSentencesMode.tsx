@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
 import HistoryPanel from "./HistoryPanel";
+import GenerateForm from "./GenerateForm";
 import { generateMixedSentence } from "./mixed-sentence-practice-api";
 import SidebarLayout, {
   SidebarToggleButton,
@@ -128,23 +129,16 @@ function MixingSentencesMode() {
               first input, this will generate a sentence which is kinda of a mix
               of the vocabulary and structures of the ones you gave.
             </TabDescription>
-            <form onSubmit={handleGenerate} className="flex gap-3">
-              <textarea
-                value={sentencesInput}
-                onChange={(e) => setSentencesInput(e.target.value)}
-                placeholder="Paste several Estonian sentences…"
-                rows={3}
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-              />
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <button
-                type="submit"
-                disabled={!sentencesInput.trim() || loadingGenerate}
-                className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap self-start"
-              >
-                {loadingGenerate ? "Generating…" : "Mix"}
-              </button>
-            </form>
+            <GenerateForm
+              value={sentencesInput}
+              onChange={setSentencesInput}
+              onSubmit={handleGenerate}
+              placeholder="Paste several Estonian sentences…"
+              submitLabel="Mix"
+              loading={loadingGenerate}
+              error={error}
+              multiline
+            />
           </div>
         </div>
       </div>

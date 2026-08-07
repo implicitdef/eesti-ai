@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import { isExactMatch } from "./estonianDiff";
+import GenerateForm from "./GenerateForm";
 import HistoryPanel from "./HistoryPanel";
 import { generateVariant } from "./sentence-practice-api";
 import SidebarLayout, {
@@ -130,23 +131,15 @@ function SentencePracticeMode() {
               affirmative/negative variations, changing the pronoun, the tense,
               etc.)
             </TabDescription>
-            <form onSubmit={handleGenerate} className="flex gap-3">
-              <input
-                type="text"
-                value={sentence}
-                onChange={(e) => setSentence(e.target.value)}
-                placeholder="Paste an Estonian sentence…"
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <button
-                type="submit"
-                disabled={!sentence.trim() || loadingGenerate}
-                className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap"
-              >
-                {loadingGenerate ? "Generating…" : "Practice"}
-              </button>
-            </form>
+            <GenerateForm
+              value={sentence}
+              onChange={setSentence}
+              onSubmit={handleGenerate}
+              placeholder="Paste an Estonian sentence…"
+              submitLabel="Practice"
+              loading={loadingGenerate}
+              error={error}
+            />
           </div>
         </div>
       </div>
