@@ -1,14 +1,14 @@
 import { Link, Outlet } from "@tanstack/react-router";
-import { X } from "lucide-react";
+import { NotebookPen, Play, Shuffle, TrendingUpDown, X } from "lucide-react";
 import { useState } from "react";
 import ApiKeyScreen from "./ApiKeyScreen";
 
 const STORAGE_KEY = "eesti-ai-api-key";
 
 const activeLinkClass =
-  "border-b-2 border-blue-700 text-blue-700 font-semibold pb-2";
+  "flex items-center gap-1.5 border-b-2 border-blue-700 text-blue-700 font-semibold pb-2";
 const inactiveLinkClass =
-  "border-b-2 border-transparent text-gray-500 hover:text-gray-800 pb-2 transition-colors";
+  "flex items-center gap-1.5 border-b-2 border-transparent text-gray-500 hover:text-gray-800 pb-2 transition-colors";
 
 const activeLinkClassSmall = `${activeLinkClass} text-sm`;
 const inactiveLinkClassSmall = `${inactiveLinkClass} text-sm`;
@@ -49,6 +49,7 @@ function RootLayout() {
             inactiveProps={{ className: inactiveLinkClass }}
             activeOptions={{ exact: true }}
           >
+            <NotebookPen size={16} className="shrink-0" />
             From theme or words
           </Link>
           <Link
@@ -56,6 +57,7 @@ function RootLayout() {
             activeProps={{ className: activeLinkClass }}
             inactiveProps={{ className: inactiveLinkClass }}
           >
+            <Play size={16} className="shrink-0" />
             Watch video with subtitles and cheatsheet
           </Link>
           <Link
@@ -63,6 +65,7 @@ function RootLayout() {
             activeProps={{ className: activeLinkClassSmall }}
             inactiveProps={{ className: inactiveLinkClassSmall }}
           >
+            <TrendingUpDown size={14} className="shrink-0" />
             Variant of sentence (legacy)
           </Link>
           <Link
@@ -70,6 +73,7 @@ function RootLayout() {
             activeProps={{ className: activeLinkClassSmall }}
             inactiveProps={{ className: inactiveLinkClassSmall }}
           >
+            <Shuffle size={14} className="shrink-0" />
             Mixing sentences (legacy)
           </Link>
         </div>
