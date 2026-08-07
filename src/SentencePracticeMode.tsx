@@ -136,7 +136,6 @@ function SentencePracticeMode() {
               onChange={setSentence}
               onSubmit={handleGenerate}
               placeholder="Paste an Estonian sentence…"
-              submitLabel="Practice"
               loading={loadingGenerate}
               error={error}
             />

@@ -134,7 +134,6 @@ function MixingSentencesMode() {
               onChange={setSentencesInput}
               onSubmit={handleGenerate}
               placeholder="Paste several Estonian sentences…"
-              submitLabel="Mix"
               loading={loadingGenerate}
               error={error}
               multiline

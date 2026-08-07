@@ -137,7 +137,6 @@ function FromThemeMode() {
               onChange={setThemeInput}
               onSubmit={handleGenerate}
               placeholder="Type a theme (in English) or some words or idiom (in Estonian)"
-              submitLabel="Generate"
               loading={loadingGenerate}
               error={error}
             />
