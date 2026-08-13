@@ -1,5 +1,5 @@
 import { Link, Outlet } from "@tanstack/react-router";
-import { NotebookPen, Play, Shuffle, TrendingUpDown, X } from "lucide-react";
+import { NotebookPen, Play, X } from "lucide-react";
 import { useState } from "react";
 import ApiKeyScreen from "./ApiKeyScreen";
 
@@ -10,19 +10,8 @@ const activeLinkClass =
 const inactiveLinkClass =
   "px-2 flex items-center gap-1.5 border-b-3 border-transparent text-black hover:text-gray-800 pb-2 pt-2 transition-colors";
 
-const activeLinkClassSmall = `${activeLinkClass} text-sm`;
-const inactiveLinkClassSmall = `${inactiveLinkClass} text-sm`;
-
 const activeIconColorClass = "text-blue-600";
 const inactiveIconColorClass = "text-gray-400";
-
-function LegacyBadge() {
-  return (
-    <span className="rounded-full bg-slate-300 px-1.5 py-0.75 text-[10px] leading-none font-medium tracking-wide text-black uppercase">
-      legacy
-    </span>
-  );
-}
 
 function RootLayout() {
   const [apiKey, setApiKeyState] = useState(
@@ -84,38 +73,6 @@ function RootLayout() {
                   className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
                 />
                 Watch video with subtitles and cheatsheet
-              </>
-            )}
-          </Link>
-          <Link
-            to="/from-sentence"
-            activeProps={{ className: activeLinkClassSmall }}
-            inactiveProps={{ className: inactiveLinkClassSmall }}
-          >
-            {({ isActive }) => (
-              <>
-                <TrendingUpDown
-                  size={14}
-                  className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
-                />
-                Variant of sentence
-                <LegacyBadge />
-              </>
-            )}
-          </Link>
-          <Link
-            to="/mixing-sentences"
-            activeProps={{ className: activeLinkClassSmall }}
-            inactiveProps={{ className: inactiveLinkClassSmall }}
-          >
-            {({ isActive }) => (
-              <>
-                <Shuffle
-                  size={14}
-                  className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
-                />
-                Mixing sentences
-                <LegacyBadge />
               </>
             )}
           </Link>

@@ -3,29 +3,6 @@ export interface SentencePracticeAttempt {
   isCorrect: boolean;
 }
 
-export interface SentencePracticeItem {
-  id: string;
-  originalEstonian: string;
-  englishTranslation: string;
-  variantEnglishTranslation: string;
-  variant: string;
-  attempts: SentencePracticeAttempt[];
-  status: "in_progress" | "completed";
-  revealed: boolean;
-  createdAt: number;
-}
-
-export interface MixedSentencePracticeItem {
-  id: string;
-  inputSentences: string;
-  sentence: string;
-  englishTranslation: string;
-  attempts: SentencePracticeAttempt[];
-  status: "in_progress" | "completed";
-  revealed: boolean;
-  createdAt: number;
-}
-
 export interface ThemePracticeItem {
   id: string;
   theme: string;

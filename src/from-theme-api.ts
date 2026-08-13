@@ -1,9 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { avoidRepeatsNote, MODEL, responseText } from "./anthropic-response";
-import {
-  fixSentenceIfNeeded,
-  translateToEnglish,
-} from "./sentence-practice-api";
+import { fixSentenceIfNeeded, translateToEnglish } from "./translation-api";
 
 export interface ThemeSentenceResult {
   sentence: string;
