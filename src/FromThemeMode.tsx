@@ -4,7 +4,7 @@ import { isExactMatch } from "./estonianDiff";
 import { generateThemeSentence } from "./from-theme-api";
 import GenerateAnotherButton from "./GenerateAnotherButton";
 import GenerateForm from "./GenerateForm";
-import HistoryPanel from "./HistoryPanel";
+import HistoryPanel, { type HistoryItemStatus } from "./HistoryPanel";
 import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
@@ -20,6 +20,13 @@ import type { ThemePracticeItem } from "./types";
 
 const FROM_THEME_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
 const API_KEY_STORAGE = "eesti-ai-api-key";
+
+function historyItemStatus(item: ThemePracticeItem): HistoryItemStatus {
+  if (item.revealed) return "revealed";
+  if (item.status === "completed") return "solved";
+  if (item.attempts.length > 0) return "in_progress";
+  return "not_started";
+}
 
 function FromThemeMode() {
   const apiKey = localStorage.getItem(API_KEY_STORAGE)!;
@@ -161,6 +168,7 @@ function FromThemeMode() {
               items={items.map((it) => ({
                 id: it.id,
                 label: it.theme,
+                status: historyItemStatus(it),
               }))}
               selectedId={selectedId}
               onSelect={(id) => {

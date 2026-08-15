@@ -1,8 +1,56 @@
+import { Check, Dot, Eye, PencilLine } from "lucide-react";
+
+export type HistoryItemStatus =
+  | "not_started"
+  | "in_progress"
+  | "revealed"
+  | "solved";
+
 interface Props {
-  items: { id: string; label: string }[];
+  items: { id: string; label: string; status: HistoryItemStatus }[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onClear: () => void;
+}
+
+function StatusIcon({ status }: { status: HistoryItemStatus }) {
+  switch (status) {
+    case "solved":
+      return (
+        <Check
+          size={16}
+          strokeWidth={4}
+          className="shrink-0 text-green-500"
+          aria-label="Solved"
+        />
+      );
+    case "revealed":
+      return (
+        <Eye
+          size={14}
+          className="shrink-0 text-red-500"
+          aria-label="Answer revealed"
+        />
+      );
+    case "in_progress":
+      return (
+        <PencilLine
+          size={16}
+          strokeWidth={2}
+          className="shrink-0 text-orange-600"
+          aria-label="In progress, mistakes made"
+        />
+      );
+    case "not_started":
+      return (
+        <Dot
+          size={14}
+          strokeWidth={5}
+          className="shrink-0 text-gray-500"
+          aria-label="Not started"
+        />
+      );
+  }
 }
 
 function HistoryPanel({ items, selectedId, onSelect, onClear }: Props) {
@@ -31,7 +79,10 @@ function HistoryPanel({ items, selectedId, onSelect, onClear }: Props) {
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              <span className="block truncate">{item.label}</span>
+              <span className="flex items-center gap-2">
+                <StatusIcon status={item.status} />
+                <span className="block truncate">{item.label}</span>
+              </span>
             </button>
           </li>
         ))}
