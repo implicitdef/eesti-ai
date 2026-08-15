@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { buildMaskedHintParts } from "./maskedHint";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  buildMaskedHintParts,
+  joinTokensWithWordValues,
+  tokenizeSentence,
+  wordTokenTexts,
+  type SentenceToken,
+} from "./maskedHint";
 import type { SentencePracticeAttempt } from "./types";
 
 interface Props {
@@ -48,37 +54,104 @@ function maskedHintPartClassName(
   }
 }
 
-function MaskedVariantInput({
-  target,
+function WordInput({
+  word,
   value,
   onChange,
+  onFilled,
+  onFocusPrev,
+  inputRef,
 }: {
-  target: string;
+  word: string;
   value: string;
   onChange: (value: string) => void;
+  onFilled: () => void;
+  onFocusPrev: () => void;
+  inputRef: (el: HTMLInputElement | null) => void;
 }) {
-  const parts = buildMaskedHintParts(target, value);
+  const parts = buildMaskedHintParts(word, value);
   return (
-    <div className="relative flex-1">
-      <div
+    <span
+      className="relative inline-block align-middle"
+      style={{ width: `${word.length + 1.5}ch` }}
+    >
+      <span
         aria-hidden
-        className="absolute inset-0 flex items-center px-4 py-2.5 text-sm font-mono tracking-wide pointer-events-none overflow-hidden whitespace-pre"
+        className="absolute inset-0 flex items-center justify-center text-sm font-mono tracking-wide pointer-events-none overflow-hidden whitespace-pre"
       >
         {parts.map((part, i) => (
           <span key={i} className={maskedHintPartClassName(part.kind)}>
             {part.char}
           </span>
         ))}
-      </div>
+      </span>
       <input
+        ref={inputRef}
         type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        maxLength={word.length}
+        onChange={(e) => {
+          const next = e.target.value;
+          onChange(next);
+          if (next.length >= word.length) onFilled();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Backspace" && value === "") {
+            e.preventDefault();
+            onFocusPrev();
+          }
+        }}
         autoCapitalize="off"
         autoCorrect="off"
         spellCheck={false}
-        className="relative w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-mono tracking-wide bg-transparent text-transparent caret-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="relative w-full border border-gray-300 rounded-lg px-1 py-2.5 text-sm font-mono tracking-wide text-center bg-transparent text-transparent caret-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
+    </span>
+  );
+}
+
+function MaskedSentenceInputs({
+  tokens,
+  wordValues,
+  onChangeWord,
+  registerInputRef,
+  onFocusWord,
+}: {
+  tokens: SentenceToken[];
+  wordValues: string[];
+  onChangeWord: (index: number, value: string) => void;
+  registerInputRef: (index: number, el: HTMLInputElement | null) => void;
+  onFocusWord: (index: number) => void;
+}) {
+  let wordIndex = -1;
+
+  return (
+    <div className="flex-1 flex flex-wrap items-center gap-y-2">
+      {tokens.map((token, i) => {
+        if (token.type === "separator") {
+          return (
+            <span
+              key={i}
+              className="text-sm font-mono tracking-wide text-gray-400 whitespace-pre"
+            >
+              {token.text}
+            </span>
+          );
+        }
+        wordIndex++;
+        const index = wordIndex;
+        return (
+          <WordInput
+            key={i}
+            word={token.text}
+            value={wordValues[index] ?? ""}
+            onChange={(value) => onChangeWord(index, value)}
+            onFilled={() => onFocusWord(index + 1)}
+            onFocusPrev={() => onFocusWord(index - 1)}
+            inputRef={(el) => registerInputRef(index, el)}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -94,14 +167,43 @@ function TranslationExerciseView({
   onShowAnswer,
   onHideAnswer,
 }: Props) {
-  const [input, setInput] = useState("");
+  const tokens = useMemo(
+    () => tokenizeSentence(targetEstonian),
+    [targetEstonian],
+  );
+  const wordTexts = useMemo(() => wordTokenTexts(tokens), [tokens]);
+  const [wordValues, setWordValues] = useState<string[]>(() =>
+    wordTexts.map(() => ""),
+  );
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    setWordValues(wordTexts.map(() => ""));
+  }, [targetEstonian]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function registerInputRef(index: number, el: HTMLInputElement | null) {
+    inputRefs.current[index] = el;
+  }
+
+  function focusWord(index: number) {
+    inputRefs.current[index]?.focus();
+    inputRefs.current[index]?.select();
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const text = input.trim();
-    if (!text || status === "completed") return;
-    onSubmitAttempt(text);
-    setInput("");
+    if (status === "completed") return;
+    const hasContent = wordValues.some((value) => value.trim().length > 0);
+    if (!hasContent) return;
+
+    onSubmitAttempt(joinTokensWithWordValues(tokens, wordValues).trim());
+
+    const nextValues = wordValues.map((value, i) =>
+      value.toLowerCase() === wordTexts[i]?.toLowerCase() ? value : "",
+    );
+    setWordValues(nextValues);
+    const firstBlank = nextValues.findIndex((value) => value === "");
+    if (firstBlank !== -1) focusWord(firstBlank);
   }
 
   const isCompleted = status === "completed";
@@ -171,15 +273,24 @@ function TranslationExerciseView({
 
       {!isCompleted && (
         <div className="flex flex-col gap-3">
-          <form onSubmit={handleSubmit} className="flex gap-3">
-            <MaskedVariantInput
-              target={targetEstonian}
-              value={input}
-              onChange={setInput}
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-wrap items-start gap-3"
+          >
+            <MaskedSentenceInputs
+              tokens={tokens}
+              wordValues={wordValues}
+              onChangeWord={(index, value) =>
+                setWordValues((prev) =>
+                  prev.map((v, i) => (i === index ? value : v)),
+                )
+              }
+              registerInputRef={registerInputRef}
+              onFocusWord={focusWord}
             />
             <button
               type="submit"
-              disabled={!input.trim()}
+              disabled={!wordValues.some((value) => value.trim())}
               className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
             >
               Check
