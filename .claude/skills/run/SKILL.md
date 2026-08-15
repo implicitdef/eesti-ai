@@ -11,8 +11,7 @@ don't just read the diff or run `tsc`/`build`.
 
 ## Dev server: reuse, don't kill
 
-The user often has `npm run dev` running in their own terminal tab on port
-5173. **Never `lsof -ti:5173 | xargs kill` or otherwise stop it** — that
+The user often has `npm run dev` running in their own terminal tab on port 5173. **Never `lsof -ti:5173 | xargs kill` or otherwise stop it** — that
 kills their session and they have to manually restart it.
 
 ```bash
@@ -63,21 +62,24 @@ words" (`FromThemeMode.tsx`), the key is `eesti-ai-from-theme-v2-history`,
 holding a JSON array of `ThemePracticeItem` (see `src/types.ts`):
 
 ```js
-await page.evaluate((item) => {
-  localStorage.setItem(
-    "eesti-ai-from-theme-v2-history",
-    JSON.stringify([item]),
-  );
-}, {
-  id: "smoke-test-1",
-  theme: "test",
-  sentence: "Võib-olla ta tuleb homme, aga ma ei ole kindel.",
-  englishTranslation: "Maybe he will come tomorrow, but I'm not sure.",
-  attempts: [],
-  status: "in_progress",
-  revealed: false,
-  createdAt: Date.now(),
-});
+await page.evaluate(
+  (item) => {
+    localStorage.setItem(
+      "eesti-ai-from-theme-v2-history",
+      JSON.stringify([item]),
+    );
+  },
+  {
+    id: "smoke-test-1",
+    theme: "test",
+    sentence: "Võib-olla ta tuleb homme, aga ma ei ole kindel.",
+    englishTranslation: "Maybe he will come tomorrow, but I'm not sure.",
+    attempts: [],
+    status: "in_progress",
+    revealed: false,
+    createdAt: Date.now(),
+  },
+);
 await page.reload();
 ```
 
