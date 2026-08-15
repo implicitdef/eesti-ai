@@ -72,7 +72,7 @@ function WordInput({
   const parts = buildMaskedHintParts(word, value);
   return (
     <span
-      className="relative inline-block align-middle"
+      className="relative inline-block align-middle font-mono text-sm tracking-wide"
       style={{ width: `calc(${word.length}ch + 0.375rem)` }}
     >
       <span
