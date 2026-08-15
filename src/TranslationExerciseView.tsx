@@ -192,7 +192,7 @@ function MaskedSentenceInputs({
   let wordIndex = -1;
 
   return (
-    <div className="flex-1 flex flex-wrap items-center gap-y-2">
+    <div className="flex flex-wrap items-center gap-y-2">
       {tokens.map((token, i) => {
         if (token.type === "separator") {
           return (
