@@ -36,7 +36,7 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-black text-white px-2 py-1 shadow">
+      <header className="bg-blue-900 text-white px-2 py-1 shadow">
         <h1 className="text-2xl font-bold uppercase inline">Eesti AI</h1>
         <span className="text-sm text-blXue-700 ml-2">
           practice Estonian with AI
