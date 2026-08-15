@@ -73,11 +73,11 @@ function WordInput({
   return (
     <span
       className="relative inline-block align-middle"
-      style={{ width: `${word.length + 1}ch` }}
+      style={{ width: `calc(${word.length}ch + 0.375rem)` }}
     >
       <span
         aria-hidden
-        className="absolute inset-0 flex items-center pl-1 text-sm font-mono tracking-wide pointer-events-none overflow-hidden whitespace-pre"
+        className="absolute inset-0 flex items-center px-0.5 text-sm font-mono tracking-wide pointer-events-none overflow-hidden whitespace-pre"
       >
         {parts.map((part, i) => (
           <span key={i} className={maskedHintPartClassName(part.kind)}>
@@ -104,7 +104,7 @@ function WordInput({
         autoCapitalize="off"
         autoCorrect="off"
         spellCheck={false}
-        className="relative w-full border border-gray-300 rounded-lg pl-1 py-2.5 text-sm font-mono tracking-wide bg-transparent text-transparent caret-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="relative w-full border border-gray-300 rounded-lg px-0.5 py-2.5 text-sm font-mono tracking-wide bg-transparent text-transparent caret-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </span>
   );
