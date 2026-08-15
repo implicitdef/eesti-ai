@@ -9,6 +9,11 @@ import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
 } from "./SidebarLayout";
+import {
+  playCorrectSound,
+  playIncorrectSound,
+  playSentenceReadySound,
+} from "./sound";
 import TabDescription from "./TabDescription";
 import TranslationExerciseView from "./TranslationExerciseView";
 import type { ThemePracticeItem } from "./types";
@@ -71,6 +76,7 @@ function FromThemeMode() {
       setItems((prev) => [newItem, ...prev]);
       setSelectedId(newItem.id);
       setThemeInput("");
+      playSentenceReadySound();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -92,6 +98,11 @@ function FromThemeMode() {
       attempts: [...item.attempts, { userAnswer, isCorrect }],
       status: isCorrect ? "completed" : item.status,
     });
+    if (isCorrect) {
+      playCorrectSound();
+    } else {
+      playIncorrectSound();
+    }
   }
 
   function handleShowAnswer() {
