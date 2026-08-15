@@ -1,6 +1,8 @@
 export interface SentencePracticeAttempt {
   userAnswer: string;
   isCorrect: boolean;
+  // Absent on attempts recorded before per-word inputs existed.
+  wordValues?: string[];
 }
 
 export interface ThemePracticeItem {

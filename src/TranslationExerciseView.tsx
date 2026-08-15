@@ -15,7 +15,7 @@ interface Props {
   attempts: SentencePracticeAttempt[];
   status: "in_progress" | "completed";
   revealed: boolean;
-  onSubmitAttempt: (userAnswer: string) => void;
+  onSubmitAttempt: (userAnswer: string, wordValues: string[]) => void;
   onShowAnswer: () => void;
   onHideAnswer: () => void;
 }
@@ -35,6 +35,72 @@ function CharComparison({
           <span key={i} className={isMatch ? "text-green-600" : "text-red-500"}>
             {char}
           </span>
+        );
+      })}
+    </span>
+  );
+}
+
+function WordDiff({ expected, actual }: { expected: string; actual: string }) {
+  const length = Math.max(expected.length, actual.length);
+  const chars: React.ReactNode[] = [];
+  for (let i = 0; i < length; i++) {
+    if (i < actual.length) {
+      const isMatch = actual[i].toLowerCase() === expected[i]?.toLowerCase();
+      chars.push(
+        <span key={i} className={isMatch ? "text-green-600" : "text-red-500"}>
+          {actual[i]}
+        </span>,
+      );
+    } else {
+      chars.push(
+        <span key={i} className="text-red-500">
+          _
+        </span>,
+      );
+    }
+  }
+  return <>{chars}</>;
+}
+
+function AttemptDiff({
+  targetEstonian,
+  tokens,
+  wordTexts,
+  attempt,
+}: {
+  targetEstonian: string;
+  tokens: SentenceToken[];
+  wordTexts: string[];
+  attempt: SentencePracticeAttempt;
+}) {
+  // Attempts recorded before per-word inputs existed don't have wordValues;
+  // fall back to the old whole-string comparison for those.
+  if (!attempt.wordValues) {
+    return (
+      <CharComparison expected={targetEstonian} actual={attempt.userAnswer} />
+    );
+  }
+
+  let wordIndex = -1;
+  return (
+    <span className="font-mono text-sm tracking-wide">
+      {tokens.map((token, i) => {
+        if (token.type === "separator") {
+          return (
+            <span key={i} className="text-gray-500">
+              {token.text}
+            </span>
+          );
+        }
+        wordIndex++;
+        const idx = wordIndex;
+        return (
+          <WordDiff
+            key={i}
+            expected={wordTexts[idx]}
+            actual={attempt.wordValues?.[idx] ?? ""}
+          />
         );
       })}
     </span>
@@ -196,7 +262,10 @@ function TranslationExerciseView({
     const hasContent = wordValues.some((value) => value.trim().length > 0);
     if (!hasContent) return;
 
-    onSubmitAttempt(joinTokensWithWordValues(tokens, wordValues).trim());
+    onSubmitAttempt(
+      joinTokensWithWordValues(tokens, wordValues).trim(),
+      wordValues,
+    );
 
     const nextValues = wordValues.map((value, i) =>
       value.toLowerCase() === wordTexts[i]?.toLowerCase() ? value : "",
@@ -230,9 +299,11 @@ function TranslationExerciseView({
                   Attempt {i + 1}
                 </span>
               </div>
-              <CharComparison
-                expected={targetEstonian}
-                actual={attempt.userAnswer}
+              <AttemptDiff
+                targetEstonian={targetEstonian}
+                tokens={tokens}
+                wordTexts={wordTexts}
+                attempt={attempt}
               />
               {attempt.isCorrect && (
                 <>

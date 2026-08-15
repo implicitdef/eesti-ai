@@ -89,13 +89,13 @@ function FromThemeMode() {
     await generateFrom(themeInput.trim());
   }
 
-  function handleSubmitAttempt(userAnswer: string) {
+  function handleSubmitAttempt(userAnswer: string, wordValues: string[]) {
     const item = items.find((it) => it.id === selectedId);
     if (!item) return;
     const isCorrect = isExactMatch(item.sentence, userAnswer);
     updateItem({
       ...item,
-      attempts: [...item.attempts, { userAnswer, isCorrect }],
+      attempts: [...item.attempts, { userAnswer, isCorrect, wordValues }],
       status: isCorrect ? "completed" : item.status,
     });
     if (isCorrect) {
