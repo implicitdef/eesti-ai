@@ -134,7 +134,7 @@ function FromThemeMode() {
               error={error}
             />
             <p className="text-xs text-gray-400">
-              e.g. "beach", "war", "job interview", "flirting at the gym", OR
+              e.g. "beach", "forest", "job interview", "at the gym", ... OR
               "tööle võtma", "rääkimata", "X-ks valmis", "ostma VS otsima", ...
             </p>
           </div>
