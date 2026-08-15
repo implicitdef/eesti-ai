@@ -34,23 +34,23 @@ export function playSentenceReadySound() {
   const ctx = getAudioContext();
   if (!ctx) return;
   const now = ctx.currentTime;
-  playTone(ctx, 660, now, 0.12, 0.12);
-  playTone(ctx, 880, now + 0.08, 0.14, 0.12);
+  playTone(ctx, 660, now, 0.12, 0.28);
+  playTone(ctx, 880, now + 0.08, 0.14, 0.28);
 }
 
 export function playCorrectSound() {
   const ctx = getAudioContext();
   if (!ctx) return;
   const now = ctx.currentTime;
-  playTone(ctx, 523.25, now, 0.12, 0.15); // C5
-  playTone(ctx, 659.25, now + 0.09, 0.12, 0.15); // E5
-  playTone(ctx, 783.99, now + 0.18, 0.22, 0.15); // G5
+  playTone(ctx, 523.25, now, 0.12, 0.35); // C5
+  playTone(ctx, 659.25, now + 0.09, 0.12, 0.35); // E5
+  playTone(ctx, 783.99, now + 0.18, 0.22, 0.35); // G5
 }
 
 export function playIncorrectSound() {
   const ctx = getAudioContext();
   if (!ctx) return;
   const now = ctx.currentTime;
-  playTone(ctx, 220, now, 0.16, 0.15);
-  playTone(ctx, 174.61, now + 0.12, 0.22, 0.15);
+  playTone(ctx, 220, now, 0.16, 0.35);
+  playTone(ctx, 174.61, now + 0.12, 0.22, 0.35);
 }
