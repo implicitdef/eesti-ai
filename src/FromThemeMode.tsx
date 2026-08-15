@@ -178,7 +178,7 @@ function FromThemeMode() {
           {selectedItem && (
             <TranslationExerciseView
               header={
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-end bg-red-10X0  gap-3">
                   <div>
                     <p className="text-xs text-gray-400">Theme: </p>
                     <p className="text-sm font-medium text-gray-600">
