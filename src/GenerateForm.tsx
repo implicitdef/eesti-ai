@@ -54,7 +54,10 @@ function GenerateForm({
             : submitButtonClassName
         }
       >
-        <RefreshCcw size={20} className="shrink-0" />
+        <RefreshCcw
+          size={20}
+          className={`shrink-0 ${loading ? "animate-spin" : ""}`}
+        />
         {loading ? "Generating…" : "Generate"}
       </button>
     </form>
