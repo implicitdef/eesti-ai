@@ -136,6 +136,7 @@ function WordInput({
   inputRef: (el: HTMLInputElement | null) => void;
 }) {
   const parts = buildMaskedHintParts(word, value);
+  const isComposingRef = useRef(false);
   return (
     <span
       className="relative inline-block align-middle font-mono text-sm tracking-wide"
@@ -156,9 +157,19 @@ function WordInput({
         type="text"
         value={value}
         maxLength={word.length}
+        onCompositionStart={() => {
+          isComposingRef.current = true;
+        }}
+        onCompositionEnd={(e) => {
+          isComposingRef.current = false;
+          const next = e.currentTarget.value;
+          onChange(next);
+          if (next.length >= word.length) onFilled();
+        }}
         onChange={(e) => {
           const next = e.target.value;
           onChange(next);
+          if (isComposingRef.current || e.nativeEvent.isComposing) return;
           if (next.length >= word.length) onFilled();
         }}
         onKeyDown={(e) => {
