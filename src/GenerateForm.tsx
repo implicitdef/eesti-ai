@@ -48,11 +48,7 @@ function GenerateForm({
       <button
         type="submit"
         disabled={!value.trim() || loading}
-        className={
-          multiline
-            ? `${submitButtonClassName} self-start`
-            : submitButtonClassName
-        }
+        className={`${submitButtonClassName} ${multiline ? "self-start" : ""} ${loading ? "btn-shimmer" : ""}`}
       >
         <RefreshCcw
           size={20}
