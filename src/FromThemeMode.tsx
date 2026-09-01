@@ -50,12 +50,14 @@ function GenerationErrorDetailView({
   theme,
   errorMessage,
   onRetry,
-  loading,
+  spinning,
+  disabled,
 }: {
   theme: string;
   errorMessage: string | undefined;
   onRetry: () => void;
-  loading: boolean;
+  spinning: boolean;
+  disabled: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -70,11 +72,11 @@ function GenerationErrorDetailView({
         {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
         <button
           onClick={onRetry}
-          disabled={loading}
+          disabled={disabled}
           className="self-start flex items-center gap-1.5 bg-blue-700 text-white rounded-md px-4 py-1.5 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
         >
-          <RefreshCcw size={16} className={loading ? "animate-spin" : ""} />
-          {loading ? "Retrying…" : "Retry"}
+          <RefreshCcw size={16} className={spinning ? "animate-spin" : ""} />
+          {spinning ? "Retrying…" : "Retry"}
         </button>
       </div>
     </div>
@@ -106,7 +108,10 @@ function FromThemeMode() {
     () => items[0]?.id ?? null,
   );
   const [themeInput, setThemeInput] = useState("");
-  const [loadingGenerate, setLoadingGenerate] = useState(false);
+  const [generatingSource, setGeneratingSource] = useState<
+    "single" | "batch" | "another" | "retry" | null
+  >(null);
+  const isGenerating = generatingSource !== null;
   const { isOpen, toggle, close } = useCollapsibleSidebar();
 
   useEffect(() => {
@@ -144,9 +149,13 @@ function FromThemeMode() {
     }
   }
 
-  async function generateBatch(theme: string, count: number) {
-    if (!theme || loadingGenerate) return;
-    setLoadingGenerate(true);
+  async function generateBatch(
+    theme: string,
+    count: number,
+    source: "single" | "batch" | "another",
+  ) {
+    if (!theme || isGenerating) return;
+    setGeneratingSource(source);
 
     const existingForTheme = items
       .filter((it) => it.theme === theme && it.sentence)
@@ -190,12 +199,12 @@ function FromThemeMode() {
       }
     }
 
-    setLoadingGenerate(false);
+    setGeneratingSource(null);
   }
 
   async function retryItem(item: ThemePracticeItem) {
-    if (loadingGenerate) return;
-    setLoadingGenerate(true);
+    if (isGenerating) return;
+    setGeneratingSource("retry");
     updateItem({ ...item, status: "generating", errorMessage: undefined });
 
     const previousSentences = items
@@ -209,16 +218,16 @@ function FromThemeMode() {
     const resolved = await generateSentenceForItem(item, previousSentences);
     updateItem(resolved);
     if (resolved.status === "in_progress") playSentenceReadySound();
-    setLoadingGenerate(false);
+    setGeneratingSource(null);
   }
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
-    await generateBatch(themeInput.trim(), 1);
+    await generateBatch(themeInput.trim(), 1, "single");
   }
 
   async function handleGenerateBatch() {
-    await generateBatch(themeInput.trim(), 3);
+    await generateBatch(themeInput.trim(), 3, "batch");
   }
 
   function handleSubmitAttempt(userAnswer: string, wordValues: string[]) {
@@ -274,7 +283,9 @@ function FromThemeMode() {
               onSubmit={handleGenerate}
               onGenerateBatch={handleGenerateBatch}
               placeholder="Type a theme (in English) or some words or idiom (in Estonian)"
-              loading={loadingGenerate}
+              submitLoading={generatingSource === "single"}
+              batchLoading={generatingSource === "batch"}
+              disabled={isGenerating}
             />
             <p className="text-xs text-gray-400">
               e.g. "beach", "forest", "job interview", "at the gym", ... OR
@@ -316,7 +327,8 @@ function FromThemeMode() {
               theme={selectedItem.theme}
               errorMessage={selectedItem.errorMessage}
               onRetry={() => retryItem(selectedItem)}
-              loading={loadingGenerate}
+              spinning={generatingSource === "retry"}
+              disabled={isGenerating}
             />
           )}
           {selectedItem &&
@@ -332,8 +344,11 @@ function FromThemeMode() {
                       </p>
                     </div>
                     <GenerateAnotherButton
-                      onClick={() => generateBatch(selectedItem.theme, 1)}
-                      loading={loadingGenerate}
+                      onClick={() =>
+                        generateBatch(selectedItem.theme, 1, "another")
+                      }
+                      spinning={generatingSource === "another"}
+                      disabled={isGenerating}
                     />
                   </div>
                 }
