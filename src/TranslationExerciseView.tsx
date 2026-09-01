@@ -169,7 +169,11 @@ function WordInput({
         onChange={(e) => {
           const next = e.target.value;
           onChange(next);
-          if (isComposingRef.current || e.nativeEvent.isComposing) return;
+          if (
+            isComposingRef.current ||
+            (e.nativeEvent as InputEvent).isComposing
+          )
+            return;
           if (next.length >= word.length) onFilled();
         }}
         onKeyDown={(e) => {
