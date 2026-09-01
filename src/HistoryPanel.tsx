@@ -1,10 +1,19 @@
-import { Check, Dot, Eye, PencilLine } from "lucide-react";
+import {
+  Check,
+  CircleAlert,
+  Dot,
+  Eye,
+  PencilLine,
+  RefreshCcw,
+} from "lucide-react";
 
 export type HistoryItemStatus =
   | "not_started"
   | "in_progress"
   | "revealed"
-  | "solved";
+  | "solved"
+  | "generating"
+  | "error";
 
 interface Props {
   items: { id: string; label: string; status: HistoryItemStatus }[];
@@ -15,6 +24,22 @@ interface Props {
 
 function StatusIcon({ status }: { status: HistoryItemStatus }) {
   switch (status) {
+    case "generating":
+      return (
+        <RefreshCcw
+          size={14}
+          className="shrink-0 text-blue-500 animate-spin"
+          aria-label="Generating"
+        />
+      );
+    case "error":
+      return (
+        <CircleAlert
+          size={14}
+          className="shrink-0 text-red-600"
+          aria-label="Generation failed"
+        />
+      );
     case "solved":
       return (
         <Check

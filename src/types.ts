@@ -11,9 +11,11 @@ export interface ThemePracticeItem {
   sentence: string;
   englishTranslation: string;
   attempts: SentencePracticeAttempt[];
-  status: "in_progress" | "completed";
+  status: "generating" | "error" | "in_progress" | "completed";
   revealed: boolean;
   createdAt: number;
+  // Set only when status === "error".
+  errorMessage?: string;
 }
 
 export interface SubtitleCue {

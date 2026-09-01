@@ -6,13 +6,16 @@ const fieldClassName =
 const submitButtonClassName =
   "flex items-center gap-1.5 bg-blue-700 text-white rounded-md px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap disabled:bg-black";
 
+const batchButtonClassName =
+  "flex items-center gap-1.5 border-2 border-blue-700 text-blue-700 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-50 transition-colors whitespace-nowrap";
+
 interface Props {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onGenerateBatch: () => void;
   placeholder: string;
   loading: boolean;
-  error: string | null;
   multiline?: boolean;
 }
 
@@ -20,9 +23,9 @@ function GenerateForm({
   value,
   onChange,
   onSubmit,
+  onGenerateBatch,
   placeholder,
   loading,
-  error,
   multiline = false,
 }: Props) {
   return (
@@ -44,7 +47,6 @@ function GenerateForm({
           className={fieldClassName}
         />
       )}
-      {error && <p className="text-sm text-red-500">{error}</p>}
       <button
         type="submit"
         disabled={!value.trim() || loading}
@@ -55,6 +57,19 @@ function GenerateForm({
           className={`shrink-0 ${loading ? "animate-spin" : ""}`}
         />
         {loading ? "Generating…" : "Generate"}
+      </button>
+      <button
+        type="button"
+        onClick={onGenerateBatch}
+        disabled={!value.trim() || loading}
+        title="Generate 3 sentences for this theme"
+        className={`${batchButtonClassName} ${multiline ? "self-start" : ""}`}
+      >
+        <RefreshCcw
+          size={18}
+          className={`shrink-0 ${loading ? "animate-spin" : ""}`}
+        />
+        {loading ? "Generating…" : "Generate 3x"}
       </button>
     </form>
   );
