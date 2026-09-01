@@ -1,13 +1,14 @@
 import { RefreshCcw } from "lucide-react";
 
 const fieldClassName =
-  "flex-1 border border-black rounded-md px-4 py-2.5 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-600 placeholder:italic border-2 bg-slate-100 text-blue-700 placeholder:text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:placeholder:text-gray-400 disabled:cursor-not-allowed";
+  "flex-1 border border-black rounded-md px-4 py-2.5 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-600 placeholder:italic border-2 bg-slate-100 text-blue-700 placeholder:text-sm disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-300 disabled:placeholder:text-gray-400 disabled:cursor-not-allowed disabled:shadow-inner";
 
-const submitButtonClassName =
-  "flex items-center gap-1.5 bg-blue-700 text-white rounded-md px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors whitespace-nowrap disabled:bg-black";
+const actionButtonClassName =
+  "flex items-center gap-1.5 bg-blue-700 text-white rounded-md py-2 text-sm font-semibold hover:bg-blue-800 transition-colors whitespace-nowrap disabled:bg-gray-300 disabled:text-gray-500 disabled:hover:bg-gray-300 disabled:cursor-not-allowed";
 
-const batchButtonClassName =
-  "flex items-center gap-1.5 border-2 border-blue-700 text-blue-700 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-50 transition-colors whitespace-nowrap";
+const submitButtonClassName = `${actionButtonClassName} px-5`;
+
+const batchButtonClassName = `${actionButtonClassName} px-3`;
 
 interface Props {
   value: string;
@@ -69,13 +70,13 @@ function GenerateForm({
         onClick={onGenerateBatch}
         disabled={!value.trim() || disabled}
         title="Generate 3 sentences for this theme"
-        className={`${batchButtonClassName} ${multiline ? "self-start" : ""}`}
+        className={`${batchButtonClassName} ${multiline ? "self-start" : ""} ${batchLoading ? "btn-shimmer" : ""}`}
       >
         <RefreshCcw
           size={18}
           className={`shrink-0 ${batchLoading ? "animate-spin" : ""}`}
         />
-        {batchLoading ? "Generating…" : "Generate 3x"}
+        3x
       </button>
     </form>
   );

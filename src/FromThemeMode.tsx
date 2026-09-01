@@ -73,7 +73,7 @@ function GenerationErrorDetailView({
         <button
           onClick={onRetry}
           disabled={disabled}
-          className="self-start flex items-center gap-1.5 bg-blue-700 text-white rounded-md px-4 py-1.5 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
+          className={`self-start flex items-center gap-1.5 bg-blue-700 text-white rounded-md px-4 py-1.5 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:hover:bg-gray-300 disabled:cursor-not-allowed ${spinning ? "btn-shimmer" : ""}`}
         >
           <RefreshCcw size={16} className={spinning ? "animate-spin" : ""} />
           {spinning ? "Retrying…" : "Retry"}

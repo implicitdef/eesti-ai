@@ -11,7 +11,7 @@ function GenerateAnotherButton({ onClick, spinning, disabled }: Props) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-600 underline transition-colors disabled:opacity-40 disabled:no-underline disabled:hover:text-gray-400 shrink-0 mb-0.5"
+      className={`flex items-center gap-1.5 bg-blue-700 text-white rounded-md px-3 py-1.5 text-xs font-semibold hover:bg-blue-800 transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:hover:bg-gray-300 disabled:cursor-not-allowed shrink-0 ${spinning ? "btn-shimmer" : ""}`}
     >
       <RefreshCcw
         size={12}
