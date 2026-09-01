@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <clipPath id="rounded-outer">
+      <rect width="64" height="64" rx="12"/>
+    </clipPath>
+    <clipPath id="rounded-inner">
+      <rect x="6" y="6" width="52" height="52" rx="8"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#rounded-outer)">
+    <rect width="64" height="64" fill="#00bc00"/>
+    <g clip-path="url(#rounded-inner)">
+      <rect x="6" y="6" width="52" height="17.33" fill="#0072CE"/>
+      <rect x="6" y="23.33" width="52" height="17.33" fill="#000000"/>
+      <rect x="6" y="40.66" width="52" height="17.34" fill="#FFFFFF"/>
+    </g>
+  </g>
+</svg>
