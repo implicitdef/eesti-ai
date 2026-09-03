@@ -118,6 +118,14 @@ function ViewSwitcher({
     onSwitchView(next);
   }
 
+  if (!hasMineItems) {
+    return (
+      <span className="text-sm font-semibold text-gray-700">
+        {VIEW_LABELS[view]}
+      </span>
+    );
+  }
+
   return (
     <div className="relative" ref={containerRef}>
       <button
@@ -174,7 +182,7 @@ function HistoryPanel({
 }: Props) {
   return (
     <div className="w-52 shrink-0 overflow-y-auto flex flex-col bg-slate-200 h-full">
-      <div className="flex items-center justify-between gap-2 px-4 pt-5 pb-2">
+      <div className="flex flex-col gap-0.5 px-4 pt-5 pb-2">
         <ViewSwitcher
           view={view}
           onSwitchView={onSwitchView}
@@ -183,7 +191,7 @@ function HistoryPanel({
         {view === "demo" ? (
           <button
             onClick={onResetDemo}
-            className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
+            className="self-start text-xs text-gray-400 hover:text-blue-600 transition-colors"
             title="Reset demo sentences to their original unsolved state"
           >
             Reset
@@ -191,7 +199,7 @@ function HistoryPanel({
         ) : (
           <button
             onClick={onClearMine}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            className="self-start text-xs text-gray-400 hover:text-red-500 transition-colors"
             title="Clear your sentences"
           >
             Clear
