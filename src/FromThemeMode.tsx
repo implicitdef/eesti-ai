@@ -1,6 +1,8 @@
 import { RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
+import ApiKeyModal from "./ApiKeyModal";
+import { useApiKey } from "./ApiKeyContext";
 import { isExactMatch } from "./estonianDiff";
 import { generateThemeSentence } from "./from-theme-api";
 import GenerateAnotherButton from "./GenerateAnotherButton";
@@ -20,7 +22,42 @@ import TranslationExerciseView from "./TranslationExerciseView";
 import type { ThemePracticeItem } from "./types";
 
 const FROM_THEME_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
-const API_KEY_STORAGE = "eesti-ai-api-key";
+
+const DEMO_ITEMS: ThemePracticeItem[] = [
+  {
+    id: "demo-family",
+    theme: "family",
+    sentence: "Minu perekonnas on neli inimest ja üks koer.",
+    englishTranslation: "My family has four people and one dog.",
+    attempts: [],
+    status: "in_progress",
+    revealed: false,
+    createdAt: 3,
+    isDemo: true,
+  },
+  {
+    id: "demo-hädas-olema",
+    theme: "hädas olema",
+    sentence: "Ta helistas mulle, kuna oli suures hädas.",
+    englishTranslation: "He called me because he was in serious trouble.",
+    attempts: [],
+    status: "in_progress",
+    revealed: false,
+    createdAt: 2,
+    isDemo: true,
+  },
+  {
+    id: "demo-coffee",
+    theme: "coffee",
+    sentence: "Ma joon igal hommikul kohvi.",
+    englishTranslation: "I drink coffee every morning.",
+    attempts: [],
+    status: "in_progress",
+    revealed: false,
+    createdAt: 1,
+    isDemo: true,
+  },
+];
 
 function historyItemStatus(item: ThemePracticeItem): HistoryItemStatus {
   if (item.status === "generating") return "generating";
@@ -84,12 +121,12 @@ function GenerationErrorDetailView({
 }
 
 function FromThemeMode() {
-  const apiKey = localStorage.getItem(API_KEY_STORAGE)!;
+  const { apiKey, setApiKey } = useApiKey();
 
   const [items, setItems] = useState<ThemePracticeItem[]>(() => {
+    const stored = localStorage.getItem(FROM_THEME_HISTORY_KEY);
+    if (!stored) return apiKey ? [] : DEMO_ITEMS;
     try {
-      const stored = localStorage.getItem(FROM_THEME_HISTORY_KEY);
-      if (!stored) return [];
       const parsed = JSON.parse(stored) as ThemePracticeItem[];
       return parsed.map((it) =>
         it.status === "generating"
@@ -113,6 +150,9 @@ function FromThemeMode() {
   >(null);
   const isGenerating = generatingSource !== null;
   const { isOpen, toggle, close } = useCollapsibleSidebar();
+  const [pendingGeneration, setPendingGeneration] = useState<
+    ((key: string) => void) | null
+  >(null);
 
   useEffect(() => {
     localStorage.setItem(FROM_THEME_HISTORY_KEY, JSON.stringify(items));
@@ -122,14 +162,30 @@ function FromThemeMode() {
     setItems((prev) => prev.map((it) => (it.id === updated.id ? updated : it)));
   }
 
+  function withApiKey(action: (key: string) => void) {
+    if (apiKey) {
+      action(apiKey);
+    } else {
+      setPendingGeneration(() => action);
+    }
+  }
+
+  function handleApiKeySubmit(key: string) {
+    setApiKey(key);
+    const action = pendingGeneration;
+    setPendingGeneration(null);
+    action?.(key);
+  }
+
   async function generateSentenceForItem(
     item: ThemePracticeItem,
     previousSentences: string[],
+    key: string,
   ): Promise<ThemePracticeItem> {
     try {
       const result = await generateThemeSentence(
         item.theme,
-        apiKey,
+        key,
         previousSentences,
       );
       return {
@@ -138,6 +194,7 @@ function FromThemeMode() {
         englishTranslation: result.englishTranslation,
         status: "in_progress",
         errorMessage: undefined,
+        isDemo: false,
       };
     } catch (err) {
       return {
@@ -153,6 +210,7 @@ function FromThemeMode() {
     theme: string,
     count: number,
     source: "single" | "batch" | "another",
+    key: string,
   ) {
     if (!theme || isGenerating) return;
     setGeneratingSource(source);
@@ -191,6 +249,7 @@ function FromThemeMode() {
       const resolved = await generateSentenceForItem(
         placeholders[i],
         previousSentences,
+        key,
       );
       updateItem(resolved);
       if (resolved.status === "in_progress") {
@@ -202,7 +261,7 @@ function FromThemeMode() {
     setGeneratingSource(null);
   }
 
-  async function retryItem(item: ThemePracticeItem) {
+  async function retryItem(item: ThemePracticeItem, key: string) {
     if (isGenerating) return;
     setGeneratingSource("retry");
     updateItem({ ...item, status: "generating", errorMessage: undefined });
@@ -215,19 +274,27 @@ function FromThemeMode() {
       .slice(0, MAX_PREVIOUS_SENTENCES)
       .map((it) => it.sentence);
 
-    const resolved = await generateSentenceForItem(item, previousSentences);
+    const resolved = await generateSentenceForItem(
+      item,
+      previousSentences,
+      key,
+    );
     updateItem(resolved);
     if (resolved.status === "in_progress") playSentenceReadySound();
     setGeneratingSource(null);
   }
 
-  async function handleGenerate(e: React.FormEvent) {
+  function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
-    await generateBatch(themeInput.trim(), 1, "single");
+    const theme = themeInput.trim();
+    if (!theme) return;
+    withApiKey((key) => generateBatch(theme, 1, "single", key));
   }
 
-  async function handleGenerateBatch() {
-    await generateBatch(themeInput.trim(), 3, "batch");
+  function handleGenerateBatch() {
+    const theme = themeInput.trim();
+    if (!theme) return;
+    withApiKey((key) => generateBatch(theme, 3, "batch", key));
   }
 
   function handleSubmitAttempt(userAnswer: string, wordValues: string[]) {
@@ -276,6 +343,13 @@ function FromThemeMode() {
               <br />- Or if you type "hädas olema", you might get "Ta helistas
               mulle, kuna oli suures hädas". <br />
               Generating a sentence will make some requests to Anthropic API.
+              {!apiKey && (
+                <>
+                  {" "}
+                  Try the pregenerated examples in the history for free — you'll
+                  be asked for an API key only when you generate your own.
+                </>
+              )}
             </TabDescription>
             <GenerateForm
               value={themeInput}
@@ -326,7 +400,7 @@ function FromThemeMode() {
             <GenerationErrorDetailView
               theme={selectedItem.theme}
               errorMessage={selectedItem.errorMessage}
-              onRetry={() => retryItem(selectedItem)}
+              onRetry={() => withApiKey((key) => retryItem(selectedItem, key))}
               spinning={generatingSource === "retry"}
               disabled={isGenerating}
             />
@@ -336,20 +410,35 @@ function FromThemeMode() {
               selectedItem.status === "completed") && (
               <TranslationExerciseView
                 header={
-                  <div className="flex items-end bg-red-10X0  gap-3">
-                    <div>
-                      <p className="text-xs text-gray-400">Theme: </p>
-                      <p className="text-sm font-medium text-gray-600">
-                        {selectedItem.theme}
+                  <div className="flex flex-col gap-3">
+                    {selectedItem.isDemo && !apiKey && (
+                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 w-fit">
+                        This is a pregenerated example. Generating your own
+                        sentences needs an Anthropic API key.
                       </p>
+                    )}
+                    <div className="flex items-end bg-red-10X0  gap-3">
+                      <div>
+                        <p className="text-xs text-gray-400">Theme: </p>
+                        <p className="text-sm font-medium text-gray-600">
+                          {selectedItem.theme}
+                        </p>
+                      </div>
+                      <GenerateAnotherButton
+                        onClick={() =>
+                          withApiKey((key) =>
+                            generateBatch(
+                              selectedItem.theme,
+                              1,
+                              "another",
+                              key,
+                            ),
+                          )
+                        }
+                        spinning={generatingSource === "another"}
+                        disabled={isGenerating}
+                      />
                     </div>
-                    <GenerateAnotherButton
-                      onClick={() =>
-                        generateBatch(selectedItem.theme, 1, "another")
-                      }
-                      spinning={generatingSource === "another"}
-                      disabled={isGenerating}
-                    />
                   </div>
                 }
                 targetEstonian={selectedItem.sentence}
@@ -363,6 +452,13 @@ function FromThemeMode() {
               />
             )}
         </SidebarLayout>
+      )}
+
+      {pendingGeneration && (
+        <ApiKeyModal
+          onSubmit={handleApiKeySubmit}
+          onCancel={() => setPendingGeneration(null)}
+        />
       )}
     </main>
   );
