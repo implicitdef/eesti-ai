@@ -7,7 +7,10 @@ import { isExactMatch } from "./estonianDiff";
 import { generateThemeSentence } from "./from-theme-api";
 import GenerateAnotherButton from "./GenerateAnotherButton";
 import GenerateForm from "./GenerateForm";
-import HistoryPanel, { type HistoryItemStatus } from "./HistoryPanel";
+import HistoryPanel, {
+  type HistoryItemStatus,
+  type HistoryView,
+} from "./HistoryPanel";
 import SidebarLayout, {
   SidebarToggleButton,
   useCollapsibleSidebar,
@@ -21,7 +24,8 @@ import TabDescription from "./TabDescription";
 import TranslationExerciseView from "./TranslationExerciseView";
 import type { ThemePracticeItem } from "./types";
 
-const FROM_THEME_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
+const USER_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
+const DEMO_STATE_KEY = "eesti-ai-from-theme-demo-state";
 
 const DEMO_ITEMS: ThemePracticeItem[] = [
   {
@@ -33,7 +37,6 @@ const DEMO_ITEMS: ThemePracticeItem[] = [
     status: "in_progress",
     revealed: false,
     createdAt: 3,
-    isDemo: true,
   },
   {
     id: "demo-hädas-olema",
@@ -44,7 +47,6 @@ const DEMO_ITEMS: ThemePracticeItem[] = [
     status: "in_progress",
     revealed: false,
     createdAt: 2,
-    isDemo: true,
   },
   {
     id: "demo-coffee",
@@ -55,7 +57,6 @@ const DEMO_ITEMS: ThemePracticeItem[] = [
     status: "in_progress",
     revealed: false,
     createdAt: 1,
-    isDemo: true,
   },
 ];
 
@@ -123,27 +124,44 @@ function GenerationErrorDetailView({
 function FromThemeMode() {
   const { apiKey, setApiKey } = useApiKey();
 
-  const [items, setItems] = useState<ThemePracticeItem[]>(() => {
-    const stored = localStorage.getItem(FROM_THEME_HISTORY_KEY);
-    if (!stored) return apiKey ? [] : DEMO_ITEMS;
+  const [userItems, setUserItems] = useState<ThemePracticeItem[]>(() => {
+    const stored = localStorage.getItem(USER_HISTORY_KEY);
+    if (!stored) return [];
     try {
       const parsed = JSON.parse(stored) as ThemePracticeItem[];
-      return parsed.map((it) =>
-        it.status === "generating"
-          ? {
-              ...it,
-              status: "error" as const,
-              errorMessage: "Generation was interrupted (page reload).",
-            }
-          : it,
-      );
+      return parsed
+        .filter((it) => !it.id.startsWith("demo-"))
+        .map((it) =>
+          it.status === "generating"
+            ? {
+                ...it,
+                status: "error" as const,
+                errorMessage: "Generation was interrupted (page reload).",
+              }
+            : it,
+        );
     } catch {
       return [];
     }
   });
-  const [selectedId, setSelectedId] = useState<string | null>(
-    () => items[0]?.id ?? null,
+  const [demoItems, setDemoItems] = useState<ThemePracticeItem[]>(() => {
+    const stored = localStorage.getItem(DEMO_STATE_KEY);
+    if (!stored) return DEMO_ITEMS;
+    try {
+      const parsed = JSON.parse(stored) as ThemePracticeItem[];
+      if (parsed.length !== DEMO_ITEMS.length) return DEMO_ITEMS;
+      return parsed;
+    } catch {
+      return DEMO_ITEMS;
+    }
+  });
+  const [view, setView] = useState<HistoryView>(() =>
+    userItems.length > 0 ? "mine" : "demo",
   );
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    const initialList = view === "demo" ? demoItems : userItems;
+    return initialList[0]?.id ?? null;
+  });
   const [themeInput, setThemeInput] = useState("");
   const [generatingSource, setGeneratingSource] = useState<
     "single" | "batch" | "another" | "retry" | null
@@ -155,11 +173,53 @@ function FromThemeMode() {
   >(null);
 
   useEffect(() => {
-    localStorage.setItem(FROM_THEME_HISTORY_KEY, JSON.stringify(items));
-  }, [items]);
+    localStorage.setItem(USER_HISTORY_KEY, JSON.stringify(userItems));
+  }, [userItems]);
 
-  function updateItem(updated: ThemePracticeItem) {
-    setItems((prev) => prev.map((it) => (it.id === updated.id ? updated : it)));
+  useEffect(() => {
+    localStorage.setItem(DEMO_STATE_KEY, JSON.stringify(demoItems));
+  }, [demoItems]);
+
+  const currentList = view === "demo" ? demoItems : userItems;
+  const selectedItem = currentList.find((it) => it.id === selectedId) ?? null;
+
+  function updateGeneratedItem(updated: ThemePracticeItem) {
+    setUserItems((prev) =>
+      prev.map((it) => (it.id === updated.id ? updated : it)),
+    );
+  }
+
+  function updateItemInCurrentView(updated: ThemePracticeItem) {
+    if (view === "demo") {
+      setDemoItems((prev) =>
+        prev.map((it) => (it.id === updated.id ? updated : it)),
+      );
+    } else {
+      setUserItems((prev) =>
+        prev.map((it) => (it.id === updated.id ? updated : it)),
+      );
+    }
+  }
+
+  function handleSwitchView(next: HistoryView) {
+    if (next === "mine" && userItems.length === 0) return;
+    setView(next);
+    const list = next === "demo" ? demoItems : userItems;
+    setSelectedId(list[0]?.id ?? null);
+    close();
+  }
+
+  function handleClearMine() {
+    setUserItems([]);
+    setView("demo");
+    setSelectedId(demoItems[0]?.id ?? null);
+    close();
+  }
+
+  function handleResetDemo() {
+    setDemoItems(DEMO_ITEMS);
+    if (view === "demo") setSelectedId(DEMO_ITEMS[0]?.id ?? null);
+    close();
   }
 
   function withApiKey(action: (key: string) => void) {
@@ -194,7 +254,6 @@ function FromThemeMode() {
         englishTranslation: result.englishTranslation,
         status: "in_progress",
         errorMessage: undefined,
-        isDemo: false,
       };
     } catch (err) {
       return {
@@ -214,8 +273,9 @@ function FromThemeMode() {
   ) {
     if (!theme || isGenerating) return;
     setGeneratingSource(source);
+    setView("mine");
 
-    const existingForTheme = items
+    const existingForTheme = userItems
       .filter((it) => it.theme === theme && it.sentence)
       .sort((a, b) => b.createdAt - a.createdAt)
       .map((it) => it.sentence);
@@ -235,7 +295,7 @@ function FromThemeMode() {
       }),
     );
 
-    setItems((prev) => [...[...placeholders].reverse(), ...prev]);
+    setUserItems((prev) => [...[...placeholders].reverse(), ...prev]);
     setThemeInput("");
     setSelectedId(placeholders[0].id);
 
@@ -251,7 +311,7 @@ function FromThemeMode() {
         previousSentences,
         key,
       );
-      updateItem(resolved);
+      updateGeneratedItem(resolved);
       if (resolved.status === "in_progress") {
         generatedThisBatch.unshift(resolved.sentence);
         playSentenceReadySound();
@@ -264,9 +324,13 @@ function FromThemeMode() {
   async function retryItem(item: ThemePracticeItem, key: string) {
     if (isGenerating) return;
     setGeneratingSource("retry");
-    updateItem({ ...item, status: "generating", errorMessage: undefined });
+    updateGeneratedItem({
+      ...item,
+      status: "generating",
+      errorMessage: undefined,
+    });
 
-    const previousSentences = items
+    const previousSentences = userItems
       .filter(
         (it) => it.theme === item.theme && it.id !== item.id && it.sentence,
       )
@@ -279,7 +343,7 @@ function FromThemeMode() {
       previousSentences,
       key,
     );
-    updateItem(resolved);
+    updateGeneratedItem(resolved);
     if (resolved.status === "in_progress") playSentenceReadySound();
     setGeneratingSource(null);
   }
@@ -298,13 +362,15 @@ function FromThemeMode() {
   }
 
   function handleSubmitAttempt(userAnswer: string, wordValues: string[]) {
-    const item = items.find((it) => it.id === selectedId);
-    if (!item) return;
-    const isCorrect = isExactMatch(item.sentence, userAnswer);
-    updateItem({
-      ...item,
-      attempts: [...item.attempts, { userAnswer, isCorrect, wordValues }],
-      status: isCorrect ? "completed" : item.status,
+    if (!selectedItem) return;
+    const isCorrect = isExactMatch(selectedItem.sentence, userAnswer);
+    updateItemInCurrentView({
+      ...selectedItem,
+      attempts: [
+        ...selectedItem.attempts,
+        { userAnswer, isCorrect, wordValues },
+      ],
+      status: isCorrect ? "completed" : selectedItem.status,
     });
     if (isCorrect) {
       playCorrectSound();
@@ -314,25 +380,28 @@ function FromThemeMode() {
   }
 
   function handleShowAnswer() {
-    const item = items.find((it) => it.id === selectedId);
-    if (!item) return;
-    updateItem({ ...item, revealed: true, status: "completed" });
+    if (!selectedItem) return;
+    updateItemInCurrentView({
+      ...selectedItem,
+      revealed: true,
+      status: "completed",
+    });
   }
 
   function handleHideAnswer() {
-    const item = items.find((it) => it.id === selectedId);
-    if (!item) return;
-    updateItem({ ...item, revealed: false, status: "in_progress" });
+    if (!selectedItem) return;
+    updateItemInCurrentView({
+      ...selectedItem,
+      revealed: false,
+      status: "in_progress",
+    });
   }
-
-  const selectedItem = items.find((it) => it.id === selectedId) ?? null;
-  const hasItems = items.length > 0;
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-center">
         <div className="flex flex-col md:flex-row md:items-start gap-3 w-full max-w-2xl">
-          {hasItems && <SidebarToggleButton onClick={toggle} />}
+          <SidebarToggleButton onClick={toggle} />
           <div className="flex-1 flex flex-col gap-2">
             <TabDescription>
               Translation exercise, English to Estonian.
@@ -346,8 +415,8 @@ function FromThemeMode() {
               {!apiKey && (
                 <>
                   {" "}
-                  Try the pregenerated examples in the history for free — you'll
-                  be asked for an API key only when you generate your own.
+                  Try the demo sentences for free — you'll be asked for an API
+                  key only when you generate your own.
                 </>
               )}
             </TabDescription>
@@ -369,90 +438,83 @@ function FromThemeMode() {
         </div>
       </div>
 
-      {hasItems && (
-        <SidebarLayout
-          isOpen={isOpen}
-          onClose={close}
-          sidebar={
-            <HistoryPanel
-              items={items.map((it) => ({
-                id: it.id,
-                label: it.theme,
-                status: historyItemStatus(it),
-              }))}
-              selectedId={selectedId}
-              onSelect={(id) => {
-                setSelectedId(id);
-                close();
-              }}
-              onClear={() => {
-                setItems([]);
-                setSelectedId(null);
-                close();
-              }}
-            />
-          }
-        >
-          {selectedItem?.status === "generating" && (
-            <GeneratingDetailView theme={selectedItem.theme} />
-          )}
-          {selectedItem?.status === "error" && (
-            <GenerationErrorDetailView
-              theme={selectedItem.theme}
-              errorMessage={selectedItem.errorMessage}
-              onRetry={() => withApiKey((key) => retryItem(selectedItem, key))}
-              spinning={generatingSource === "retry"}
-              disabled={isGenerating}
-            />
-          )}
-          {selectedItem &&
-            (selectedItem.status === "in_progress" ||
-              selectedItem.status === "completed") && (
-              <TranslationExerciseView
-                header={
-                  <div className="flex flex-col gap-3">
-                    {selectedItem.isDemo && !apiKey && (
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 w-fit">
-                        This is a pregenerated example. Generating your own
-                        sentences needs an Anthropic API key.
+      <SidebarLayout
+        isOpen={isOpen}
+        onClose={close}
+        sidebar={
+          <HistoryPanel
+            items={currentList.map((it) => ({
+              id: it.id,
+              label: it.theme,
+              status: historyItemStatus(it),
+            }))}
+            selectedId={selectedId}
+            onSelect={(id) => {
+              setSelectedId(id);
+              close();
+            }}
+            view={view}
+            onSwitchView={handleSwitchView}
+            hasMineItems={userItems.length > 0}
+            onClearMine={handleClearMine}
+            onResetDemo={handleResetDemo}
+          />
+        }
+      >
+        {selectedItem?.status === "generating" && (
+          <GeneratingDetailView theme={selectedItem.theme} />
+        )}
+        {selectedItem?.status === "error" && (
+          <GenerationErrorDetailView
+            theme={selectedItem.theme}
+            errorMessage={selectedItem.errorMessage}
+            onRetry={() => withApiKey((key) => retryItem(selectedItem, key))}
+            spinning={generatingSource === "retry"}
+            disabled={isGenerating}
+          />
+        )}
+        {selectedItem &&
+          (selectedItem.status === "in_progress" ||
+            selectedItem.status === "completed") && (
+            <TranslationExerciseView
+              header={
+                <div className="flex flex-col gap-3">
+                  {view === "demo" && !apiKey && (
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 w-fit">
+                      This is a pregenerated example. Generating your own
+                      sentences needs an Anthropic API key.
+                    </p>
+                  )}
+                  <div className="flex items-end gap-3">
+                    <div>
+                      <p className="text-xs text-gray-400">Theme: </p>
+                      <p className="text-sm font-medium text-gray-600">
+                        {selectedItem.theme}
                       </p>
-                    )}
-                    <div className="flex items-end bg-red-10X0  gap-3">
-                      <div>
-                        <p className="text-xs text-gray-400">Theme: </p>
-                        <p className="text-sm font-medium text-gray-600">
-                          {selectedItem.theme}
-                        </p>
-                      </div>
-                      <GenerateAnotherButton
-                        onClick={() =>
-                          withApiKey((key) =>
-                            generateBatch(
-                              selectedItem.theme,
-                              1,
-                              "another",
-                              key,
-                            ),
-                          )
-                        }
-                        spinning={generatingSource === "another"}
-                        disabled={isGenerating}
-                      />
                     </div>
+                    <GenerateAnotherButton
+                      onClick={() =>
+                        withApiKey((key) =>
+                          generateBatch(selectedItem.theme, 1, "another", key),
+                        )
+                      }
+                      spinning={generatingSource === "another"}
+                      disabled={isGenerating}
+                    />
                   </div>
-                }
-                targetEstonian={selectedItem.sentence}
-                englishToTranslate={selectedItem.englishTranslation}
-                attempts={selectedItem.attempts}
-                status={selectedItem.status}
-                revealed={selectedItem.revealed}
-                onSubmitAttempt={handleSubmitAttempt}
-                onShowAnswer={handleShowAnswer}
-                onHideAnswer={handleHideAnswer}
-              />
-            )}
-        </SidebarLayout>
-      )}
+                </div>
+              }
+              targetEstonian={selectedItem.sentence}
+              englishToTranslate={selectedItem.englishTranslation}
+              attempts={selectedItem.attempts}
+              status={selectedItem.status}
+              revealed={selectedItem.revealed}
+              onSubmitAttempt={handleSubmitAttempt}
+              onShowAnswer={handleShowAnswer}
+              onHideAnswer={handleHideAnswer}
+            />
+          )}
+      </SidebarLayout>
 
       {pendingGeneration && (
         <ApiKeyModal

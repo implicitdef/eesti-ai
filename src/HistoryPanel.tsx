@@ -1,11 +1,13 @@
 import {
   Check,
+  ChevronDown,
   CircleAlert,
   Dot,
   Eye,
   PencilLine,
   RefreshCcw,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export type HistoryItemStatus =
   | "not_started"
@@ -15,11 +17,22 @@ export type HistoryItemStatus =
   | "generating"
   | "error";
 
+export type HistoryView = "demo" | "mine";
+
+const VIEW_LABELS: Record<HistoryView, string> = {
+  demo: "Demo sentences",
+  mine: "Your sentences",
+};
+
 interface Props {
   items: { id: string; label: string; status: HistoryItemStatus }[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  onClear: () => void;
+  view: HistoryView;
+  onSwitchView: (view: HistoryView) => void;
+  hasMineItems: boolean;
+  onClearMine: () => void;
+  onResetDemo: () => void;
 }
 
 function StatusIcon({ status }: { status: HistoryItemStatus }) {
@@ -78,20 +91,112 @@ function StatusIcon({ status }: { status: HistoryItemStatus }) {
   }
 }
 
-function HistoryPanel({ items, selectedId, onSelect, onClear }: Props) {
+function ViewSwitcher({
+  view,
+  onSwitchView,
+  hasMineItems,
+}: {
+  view: HistoryView;
+  onSwitchView: (view: HistoryView) => void;
+  hasMineItems: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointerDown(e: MouseEvent) {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [open]);
+
+  function handlePick(next: HistoryView) {
+    if (next === "mine" && !hasMineItems) return;
+    setOpen(false);
+    onSwitchView(next);
+  }
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1 text-sm font-semibold text-gray-700 hover:text-blue-700 transition-colors"
+      >
+        {VIEW_LABELS[view]}
+        <ChevronDown
+          size={14}
+          className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-20 mt-1 w-44 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+          {(["demo", "mine"] as const).map((v) => {
+            const disabled = v === "mine" && !hasMineItems;
+            return (
+              <button
+                key={v}
+                onClick={() => handlePick(v)}
+                disabled={disabled}
+                className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${
+                  disabled
+                    ? "cursor-not-allowed text-gray-300"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <Check
+                  size={14}
+                  className={view === v ? "text-blue-600" : "text-transparent"}
+                />
+                {VIEW_LABELS[v]}
+                {disabled && (
+                  <span className="ml-auto text-xs text-gray-300">empty</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HistoryPanel({
+  items,
+  selectedId,
+  onSelect,
+  view,
+  onSwitchView,
+  hasMineItems,
+  onClearMine,
+  onResetDemo,
+}: Props) {
   return (
     <div className="w-52 shrink-0 overflow-y-auto flex flex-col bg-slate-200 h-full">
-      <div className="flex items-center justify-between px-4 pt-5 pb-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-          History
-        </p>
-        <button
-          onClick={onClear}
-          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-          title="Clear history"
-        >
-          Clear
-        </button>
+      <div className="flex items-center justify-between gap-2 px-4 pt-5 pb-2">
+        <ViewSwitcher
+          view={view}
+          onSwitchView={onSwitchView}
+          hasMineItems={hasMineItems}
+        />
+        {view === "demo" ? (
+          <button
+            onClick={onResetDemo}
+            className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
+            title="Reset demo sentences to their original unsolved state"
+          >
+            Reset
+          </button>
+        ) : (
+          <button
+            onClick={onClearMine}
+            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            title="Clear your sentences"
+          >
+            Clear
+          </button>
+        )}
       </div>
       <ul className="flex flex-col pb-2">
         {items.map((item) => (

@@ -16,8 +16,6 @@ export interface ThemePracticeItem {
   createdAt: number;
   // Set only when status === "error".
   errorMessage?: string;
-  // Pregenerated example shown before the user has an API key set.
-  isDemo?: boolean;
 }
 
 export interface SubtitleCue {
