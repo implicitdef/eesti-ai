@@ -4,11 +4,6 @@ import { useState } from "react";
 import { ApiKeyProvider, useApiKey } from "./ApiKeyContext";
 import ApiKeyModal from "./ApiKeyModal";
 
-const PAGE_TITLES: Record<string, string> = {
-  "/": "Translation exercise",
-  "/video": "Watch video with vocab",
-};
-
 function ApiKeyFooterStatus() {
   const { apiKey, setApiKey, clearApiKey } = useApiKey();
   const [showModal, setShowModal] = useState(false);
@@ -58,7 +53,9 @@ function ApiKeyFooterStatus() {
 
 function RootLayout() {
   const { pathname } = useLocation();
-  const pageTitle = PAGE_TITLES[pathname] ?? PAGE_TITLES["/"];
+  const pageTitle = pathname.startsWith("/video")
+    ? "Watch video with vocab"
+    : "Translation exercise";
 
   return (
     <ApiKeyProvider>

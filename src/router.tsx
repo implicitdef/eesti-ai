@@ -5,15 +5,36 @@ import {
   createHashHistory,
 } from "@tanstack/react-router";
 import RootLayout from "./RootLayout";
-import FromThemeMode from "./FromThemeMode";
+import FromThemeProvider from "./FromThemeContext";
+import SentenceListPage from "./SentenceListPage";
+import SentencePage from "./SentencePage";
+import GenerationPage from "./GenerationPage";
 import VideoMode from "./VideoMode";
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
-const fromThemeRoute = createRoute({
+const fromThemeLayoutRoute = createRoute({
+  id: "fromThemeLayout",
   getParentRoute: () => rootRoute,
+  component: FromThemeProvider,
+});
+
+const sentenceListRoute = createRoute({
+  getParentRoute: () => fromThemeLayoutRoute,
   path: "/",
-  component: FromThemeMode,
+  component: SentenceListPage,
+});
+
+const sentenceRoute = createRoute({
+  getParentRoute: () => fromThemeLayoutRoute,
+  path: "/sentence/$id",
+  component: SentencePage,
+});
+
+const generateRoute = createRoute({
+  getParentRoute: () => fromThemeLayoutRoute,
+  path: "/generate",
+  component: GenerationPage,
 });
 
 const videoRoute = createRoute({
@@ -22,7 +43,14 @@ const videoRoute = createRoute({
   component: VideoMode,
 });
 
-const routeTree = rootRoute.addChildren([fromThemeRoute, videoRoute]);
+const routeTree = rootRoute.addChildren([
+  fromThemeLayoutRoute.addChildren([
+    sentenceListRoute,
+    sentenceRoute,
+    generateRoute,
+  ]),
+  videoRoute,
+]);
 
 export const router = createRouter({
   routeTree,
