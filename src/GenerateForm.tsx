@@ -43,16 +43,6 @@ function GenerateForm({
 }: Props) {
   return (
     <form onSubmit={onSubmit} className="flex gap-2 max-w-4xl">
-      <select
-        value={level}
-        onChange={(e) => onLevelChange(e.target.value as SentenceLevel)}
-        disabled={disabled}
-        title="Sentence difficulty level"
-        className={selectClassName}
-      >
-        <option value="A1">A1</option>
-        <option value="B1">B1</option>
-      </select>
       {multiline ? (
         <textarea
           value={value}
@@ -72,6 +62,16 @@ function GenerateForm({
           className={fieldClassName}
         />
       )}
+      <select
+        value={level}
+        onChange={(e) => onLevelChange(e.target.value as SentenceLevel)}
+        disabled={disabled}
+        title="Sentence difficulty level"
+        className={selectClassName}
+      >
+        <option value="A1">Easy</option>
+        <option value="B1">Difficult</option>
+      </select>
       <button
         type="submit"
         disabled={!value.trim() || disabled}
