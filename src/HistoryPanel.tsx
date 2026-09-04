@@ -194,7 +194,7 @@ function HistoryPanel({
             className="self-start text-xs text-gray-400 hover:text-blue-600 transition-colors"
             title="Reset demo sentences to their original unsolved state"
           >
-            Reset
+            Reset your answers
           </button>
         ) : (
           <button
@@ -202,7 +202,7 @@ function HistoryPanel({
             className="self-start text-xs text-gray-400 hover:text-red-500 transition-colors"
             title="Clear your sentences"
           >
-            Clear
+            Clear all
           </button>
         )}
       </div>
