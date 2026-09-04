@@ -1,5 +1,5 @@
 import { Link, Outlet } from "@tanstack/react-router";
-import { NotebookPen, Play, X, KeyRound } from "lucide-react";
+import { KeyRound, NotebookPen, Play, X } from "lucide-react";
 import { useState } from "react";
 import { ApiKeyProvider, useApiKey } from "./ApiKeyContext";
 import ApiKeyModal from "./ApiKeyModal";
@@ -84,7 +84,7 @@ function RootLayout() {
                     size={16}
                     className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
                   />
-                  From theme or words
+                  Translation exercise
                 </>
               )}
             </Link>
