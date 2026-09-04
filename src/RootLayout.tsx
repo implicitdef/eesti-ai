@@ -1,16 +1,13 @@
-import { Link, Outlet } from "@tanstack/react-router";
-import { KeyRound, NotebookPen, Play, X } from "lucide-react";
+import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import { KeyRound, X } from "lucide-react";
 import { useState } from "react";
 import { ApiKeyProvider, useApiKey } from "./ApiKeyContext";
 import ApiKeyModal from "./ApiKeyModal";
 
-const activeLinkClass =
-  "px-2 flex items-center gap-1.5 border-b-3 border-blue-500 text-blue-700  pb-2 pt-2";
-const inactiveLinkClass =
-  "px-2 flex items-center gap-1.5 border-b-3 border-transparent text-black hover:text-gray-800 pb-2 pt-2 transition-colors";
-
-const activeIconColorClass = "text-blue-600";
-const inactiveIconColorClass = "text-gray-400";
+const PAGE_TITLES: Record<string, string> = {
+  "/": "Translation exercise",
+  "/video": "Watch video with vocab",
+};
 
 function ApiKeyFooterStatus() {
   const { apiKey, setApiKey, clearApiKey } = useApiKey();
@@ -60,63 +57,38 @@ function ApiKeyFooterStatus() {
 }
 
 function RootLayout() {
+  const { pathname } = useLocation();
+  const pageTitle = PAGE_TITLES[pathname] ?? PAGE_TITLES["/"];
+
   return (
     <ApiKeyProvider>
       <div className="min-h-screen bg-white flex flex-col">
         <header className="bg-blue-900 text-white px-2 py-1 shadow">
-          <h1 className="text-2xl font-bold uppercase inline">Eesti AI</h1>
-          <span className="text-sm text-blXue-700 ml-2">
-            practice Estonian with AI
-          </span>
+          <Link to="/" className="no-underline">
+            <h1 className="text-2xl font-bold uppercase inline text-white">
+              Eesti AI
+            </h1>
+          </Link>
+          <span className="text-sm text-blue-200 ml-2">{pageTitle}</span>
         </header>
-
-        <nav className="flex items-end justify-between gap-6 border-b border-black">
-          <div className="flex items-end">
-            <Link
-              to="/"
-              activeProps={{ className: activeLinkClass }}
-              inactiveProps={{ className: inactiveLinkClass }}
-              activeOptions={{ exact: true }}
-            >
-              {({ isActive }) => (
-                <>
-                  <NotebookPen
-                    size={16}
-                    className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
-                  />
-                  Translation exercise
-                </>
-              )}
-            </Link>
-            <Link
-              to="/video"
-              activeProps={{ className: activeLinkClass }}
-              inactiveProps={{ className: inactiveLinkClass }}
-            >
-              {({ isActive }) => (
-                <>
-                  <Play
-                    size={16}
-                    className={`shrink-0 ${isActive ? activeIconColorClass : inactiveIconColorClass}`}
-                  />
-                  Watch video with subtitles and cheatsheet
-                </>
-              )}
-            </Link>
-          </div>
-        </nav>
 
         <Outlet />
 
         <footer className="border-t border-gray-400">
           <div className="flex items-center justify-end sm:justify-between px-4 sm:px-6 py-3">
-            <div className="hidden sm:flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <code
-                className="font-mono text-xs text-gray-500"
+                className="hidden sm:inline font-mono text-xs text-gray-500"
                 title="Build version"
               >
                 version: {__APP_VERSION__}
               </code>
+              <Link
+                to="/video"
+                className="text-xs text-gray-300 hover:text-gray-400 transition-colors"
+              >
+                video
+              </Link>
             </div>
             <ApiKeyFooterStatus />
           </div>
