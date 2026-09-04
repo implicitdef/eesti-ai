@@ -5,6 +5,8 @@ export interface SentencePracticeAttempt {
   wordValues?: string[];
 }
 
+export type SentenceLevel = "A1" | "B1";
+
 export interface ThemePracticeItem {
   id: string;
   theme: string;
@@ -14,6 +16,7 @@ export interface ThemePracticeItem {
   status: "generating" | "error" | "in_progress" | "completed";
   revealed: boolean;
   createdAt: number;
+  level: SentenceLevel;
   // Set only when status === "error".
   errorMessage?: string;
 }

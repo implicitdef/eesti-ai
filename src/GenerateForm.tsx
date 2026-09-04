@@ -1,4 +1,8 @@
 import { RefreshCcw } from "lucide-react";
+import type { SentenceLevel } from "./types";
+
+const selectClassName =
+  "border border-black rounded-md px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-2 bg-slate-100 text-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-300 disabled:cursor-not-allowed";
 
 const fieldClassName =
   "flex-1 border border-black rounded-md px-4 py-2.5 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-600 placeholder:italic border-2 bg-slate-100 text-blue-700 placeholder:text-sm disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-300 disabled:placeholder:text-gray-400 disabled:cursor-not-allowed disabled:shadow-inner";
@@ -20,6 +24,8 @@ interface Props {
   batchLoading: boolean;
   disabled: boolean;
   multiline?: boolean;
+  level: SentenceLevel;
+  onLevelChange: (level: SentenceLevel) => void;
 }
 
 function GenerateForm({
@@ -32,9 +38,21 @@ function GenerateForm({
   batchLoading,
   disabled,
   multiline = false,
+  level,
+  onLevelChange,
 }: Props) {
   return (
     <form onSubmit={onSubmit} className="flex gap-2 max-w-4xl">
+      <select
+        value={level}
+        onChange={(e) => onLevelChange(e.target.value as SentenceLevel)}
+        disabled={disabled}
+        title="Sentence difficulty level"
+        className={selectClassName}
+      >
+        <option value="A1">A1</option>
+        <option value="B1">B1</option>
+      </select>
       {multiline ? (
         <textarea
           value={value}

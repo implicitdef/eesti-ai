@@ -1,16 +1,28 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { avoidRepeatsNote, MODEL, responseText } from "./anthropic-response";
 import { fixSentenceIfNeeded, translateToEnglish } from "./translation-api";
+import type { SentenceLevel } from "./types";
 
 export interface ThemeSentenceResult {
   sentence: string;
   englishTranslation: string;
 }
 
+const LEVEL_REQUIREMENTS: Record<SentenceLevel, string> = {
+  A1: `- Approximately A1 level (absolute beginner)
+- Very short: 5 to 8 words
+- The most basic everyday vocabulary only; a single simple clause, present tense preferred
+- No subordinate clauses, no complex cases or verb forms`,
+  B1: `- Approximately B1 level
+- Short: 6 to 12 words
+- Simple, everyday vocabulary and grammar: one or two clauses at most`,
+};
+
 async function createSentenceFromTheme(
   theme: string,
   apiKey: string,
   previousSentences: string[],
+  level: SentenceLevel,
 ): Promise<string> {
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
@@ -24,9 +36,7 @@ You will be given a short input which is either (a) a theme or situation in Engl
 - If it's an Estonian idiom/expression, write ONE natural Estonian sentence that uses that idiom/expression naturally in context.
 
 Requirements:
-- Approximately B1 level
-- Short: 6 to 12 words
-- Simple, everyday vocabulary and grammar: one or two clauses at most
+${LEVEL_REQUIREMENTS[level]}
 - Natural spoken or written Estonian, not academic or literary
 - Grammatically correct${avoidRepeatsNote(previousSentences)}`,
     messages: [{ role: "user", content: `Input: ${theme}` }],
@@ -53,11 +63,13 @@ export async function generateThemeSentence(
   theme: string,
   apiKey: string,
   previousSentences: string[] = [],
+  level: SentenceLevel = "B1",
 ): Promise<ThemeSentenceResult> {
   const rawSentence = await createSentenceFromTheme(
     theme,
     apiKey,
     previousSentences,
+    level,
   );
   const sentence = await fixSentenceIfNeeded(rawSentence, apiKey);
   const englishTranslation = await translateToEnglish(sentence, apiKey);

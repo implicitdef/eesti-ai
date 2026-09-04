@@ -22,10 +22,11 @@ import {
 } from "./sound";
 import TabDescription from "./TabDescription";
 import TranslationExerciseView from "./TranslationExerciseView";
-import type { ThemePracticeItem } from "./types";
+import type { SentenceLevel, ThemePracticeItem } from "./types";
 
 const USER_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
 const DEMO_STATE_KEY = "eesti-ai-from-theme-demo-state";
+const LEVEL_KEY = "eesti-ai-from-theme-level";
 
 const DEMO_ITEMS: ThemePracticeItem[] = [
   {
@@ -37,6 +38,7 @@ const DEMO_ITEMS: ThemePracticeItem[] = [
     status: "in_progress",
     revealed: false,
     createdAt: 3,
+    level: "B1",
   },
   {
     id: "demo-hädas-olema",
@@ -47,6 +49,7 @@ const DEMO_ITEMS: ThemePracticeItem[] = [
     status: "in_progress",
     revealed: false,
     createdAt: 2,
+    level: "B1",
   },
   {
     id: "demo-coffee",
@@ -57,6 +60,7 @@ const DEMO_ITEMS: ThemePracticeItem[] = [
     status: "in_progress",
     revealed: false,
     createdAt: 1,
+    level: "B1",
   },
 ];
 
@@ -131,15 +135,16 @@ function FromThemeMode() {
       const parsed = JSON.parse(stored) as ThemePracticeItem[];
       return parsed
         .filter((it) => !it.id.startsWith("demo-"))
-        .map((it) =>
-          it.status === "generating"
+        .map((it) => ({
+          ...it,
+          level: it.level ?? "B1",
+          ...(it.status === "generating"
             ? {
-                ...it,
                 status: "error" as const,
                 errorMessage: "Generation was interrupted (page reload).",
               }
-            : it,
-        );
+            : {}),
+        }));
     } catch {
       return [];
     }
@@ -163,6 +168,10 @@ function FromThemeMode() {
     return initialList[0]?.id ?? null;
   });
   const [themeInput, setThemeInput] = useState("");
+  const [level, setLevel] = useState<SentenceLevel>(() => {
+    const stored = localStorage.getItem(LEVEL_KEY);
+    return stored === "A1" || stored === "B1" ? stored : "B1";
+  });
   const [generatingSource, setGeneratingSource] = useState<
     "single" | "batch" | "another" | "retry" | null
   >(null);
@@ -179,6 +188,10 @@ function FromThemeMode() {
   useEffect(() => {
     localStorage.setItem(DEMO_STATE_KEY, JSON.stringify(demoItems));
   }, [demoItems]);
+
+  useEffect(() => {
+    localStorage.setItem(LEVEL_KEY, level);
+  }, [level]);
 
   const currentList = view === "demo" ? demoItems : userItems;
   const selectedItem = currentList.find((it) => it.id === selectedId) ?? null;
@@ -247,6 +260,7 @@ function FromThemeMode() {
         item.theme,
         key,
         previousSentences,
+        item.level,
       );
       return {
         ...item,
@@ -270,6 +284,7 @@ function FromThemeMode() {
     count: number,
     source: "single" | "batch" | "another",
     key: string,
+    itemLevel: SentenceLevel,
   ) {
     if (!theme || isGenerating) return;
     setGeneratingSource(source);
@@ -292,6 +307,7 @@ function FromThemeMode() {
         status: "generating",
         revealed: false,
         createdAt: now + i,
+        level: itemLevel,
       }),
     );
 
@@ -352,13 +368,13 @@ function FromThemeMode() {
     e.preventDefault();
     const theme = themeInput.trim();
     if (!theme) return;
-    withApiKey((key) => generateBatch(theme, 1, "single", key));
+    withApiKey((key) => generateBatch(theme, 1, "single", key, level));
   }
 
   function handleGenerateBatch() {
     const theme = themeInput.trim();
     if (!theme) return;
-    withApiKey((key) => generateBatch(theme, 3, "batch", key));
+    withApiKey((key) => generateBatch(theme, 3, "batch", key, level));
   }
 
   function handleSubmitAttempt(userAnswer: string, wordValues: string[]) {
@@ -429,6 +445,8 @@ function FromThemeMode() {
               submitLoading={generatingSource === "single"}
               batchLoading={generatingSource === "batch"}
               disabled={isGenerating}
+              level={level}
+              onLevelChange={setLevel}
             />
             <p className="text-xs text-gray-400">
               e.g. "beach", "forest", "job interview", "at the gym", ... OR
@@ -495,7 +513,13 @@ function FromThemeMode() {
                     <GenerateAnotherButton
                       onClick={() =>
                         withApiKey((key) =>
-                          generateBatch(selectedItem.theme, 1, "another", key),
+                          generateBatch(
+                            selectedItem.theme,
+                            1,
+                            "another",
+                            key,
+                            selectedItem.level,
+                          ),
                         )
                       }
                       spinning={generatingSource === "another"}
