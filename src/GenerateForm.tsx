@@ -1,5 +1,5 @@
 import { RefreshCcw } from "lucide-react";
-import type { SentenceLevel } from "./types";
+import { SENTENCE_LEVEL_LABELS, type SentenceLevel } from "./types";
 
 const selectClassName =
   "border border-black rounded-md px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-2 bg-slate-100 text-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-300 disabled:cursor-not-allowed";
@@ -69,8 +69,8 @@ function GenerateForm({
         title="Sentence difficulty level"
         className={selectClassName}
       >
-        <option value="A1">Easy</option>
-        <option value="B1">Difficult</option>
+        <option value="A1">{SENTENCE_LEVEL_LABELS.A1}</option>
+        <option value="B1">{SENTENCE_LEVEL_LABELS.B1}</option>
       </select>
       <button
         type="submit"

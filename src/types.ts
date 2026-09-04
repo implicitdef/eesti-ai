@@ -7,6 +7,11 @@ export interface SentencePracticeAttempt {
 
 export type SentenceLevel = "A1" | "B1";
 
+export const SENTENCE_LEVEL_LABELS: Record<SentenceLevel, string> = {
+  A1: "Easy",
+  B1: "Difficult",
+};
+
 export interface ThemePracticeItem {
   id: string;
   theme: string;

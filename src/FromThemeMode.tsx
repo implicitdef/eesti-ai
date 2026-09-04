@@ -22,7 +22,11 @@ import {
 } from "./sound";
 import TabDescription from "./TabDescription";
 import TranslationExerciseView from "./TranslationExerciseView";
-import type { SentenceLevel, ThemePracticeItem } from "./types";
+import {
+  SENTENCE_LEVEL_LABELS,
+  type SentenceLevel,
+  type ThemePracticeItem,
+} from "./types";
 
 const USER_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
 const DEMO_STATE_KEY = "eesti-ai-from-theme-demo-state";
@@ -73,13 +77,27 @@ function historyItemStatus(item: ThemePracticeItem): HistoryItemStatus {
   return "not_started";
 }
 
-function GeneratingDetailView({ theme }: { theme: string }) {
+function ThemeLabel({ theme, level }: { theme: string; level: SentenceLevel }) {
+  return (
+    <div>
+      <p className="text-xs text-gray-400">
+        Theme ({SENTENCE_LEVEL_LABELS[level].toLowerCase()}):{" "}
+      </p>
+      <p className="text-sm font-medium text-gray-600">{theme}</p>
+    </div>
+  );
+}
+
+function GeneratingDetailView({
+  theme,
+  level,
+}: {
+  theme: string;
+  level: SentenceLevel;
+}) {
   return (
     <div className="flex flex-col gap-3">
-      <div>
-        <p className="text-xs text-gray-400">Theme: </p>
-        <p className="text-sm font-medium text-gray-600">{theme}</p>
-      </div>
+      <ThemeLabel theme={theme} level={level} />
       <div className="flex items-center gap-2 text-gray-500">
         <RefreshCcw size={18} className="animate-spin" />
         <p className="text-sm">Generating sentence…</p>
@@ -90,12 +108,14 @@ function GeneratingDetailView({ theme }: { theme: string }) {
 
 function GenerationErrorDetailView({
   theme,
+  level,
   errorMessage,
   onRetry,
   spinning,
   disabled,
 }: {
   theme: string;
+  level: SentenceLevel;
   errorMessage: string | undefined;
   onRetry: () => void;
   spinning: boolean;
@@ -103,10 +123,7 @@ function GenerationErrorDetailView({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div>
-        <p className="text-xs text-gray-400">Theme: </p>
-        <p className="text-sm font-medium text-gray-600">{theme}</p>
-      </div>
+      <ThemeLabel theme={theme} level={level} />
       <div className="bg-red-50 border border-red-200 rounded-lg px-5 py-4 flex flex-col gap-2">
         <p className="text-red-700 font-semibold text-sm">
           Couldn't generate a sentence for this theme.
@@ -480,11 +497,15 @@ function FromThemeMode() {
         }
       >
         {selectedItem?.status === "generating" && (
-          <GeneratingDetailView theme={selectedItem.theme} />
+          <GeneratingDetailView
+            theme={selectedItem.theme}
+            level={selectedItem.level}
+          />
         )}
         {selectedItem?.status === "error" && (
           <GenerationErrorDetailView
             theme={selectedItem.theme}
+            level={selectedItem.level}
             errorMessage={selectedItem.errorMessage}
             onRetry={() => withApiKey((key) => retryItem(selectedItem, key))}
             spinning={generatingSource === "retry"}
@@ -504,12 +525,10 @@ function FromThemeMode() {
                     </p>
                   )}
                   <div className="flex items-end gap-3">
-                    <div>
-                      <p className="text-xs text-gray-400">Theme: </p>
-                      <p className="text-sm font-medium text-gray-600">
-                        {selectedItem.theme}
-                      </p>
-                    </div>
+                    <ThemeLabel
+                      theme={selectedItem.theme}
+                      level={selectedItem.level}
+                    />
                     <GenerateAnotherButton
                       onClick={() =>
                         withApiKey((key) =>
