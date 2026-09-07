@@ -1,6 +1,7 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { RefreshCcw } from "lucide-react";
 import { useApiKey } from "./ApiKeyContext";
+import BackToListLink from "./BackToListLink";
 import { useFromTheme } from "./FromThemeContext";
 import { isExactMatch } from "./estonianDiff";
 import GenerateAnotherButton from "./GenerateAnotherButton";
@@ -8,17 +9,6 @@ import { playCorrectSound, playIncorrectSound } from "./sound";
 import ThemeLabel, { formatThemeLevel } from "./ThemeLabel";
 import TranslationExerciseView from "./TranslationExerciseView";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
-
-function BackToListLink() {
-  return (
-    <Link
-      to="/"
-      className="self-start text-sm text-gray-500 hover:text-blue-700 transition-colors"
-    >
-      ← Back to the sentences list
-    </Link>
-  );
-}
 
 function GeneratingDetailView({
   theme,

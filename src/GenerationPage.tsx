@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useApiKey } from "./ApiKeyContext";
+import BackToListLink from "./BackToListLink";
 import { useFromTheme } from "./FromThemeContext";
 import GenerateForm from "./GenerateForm";
 import TabDescription from "./TabDescription";
@@ -58,12 +58,7 @@ function GenerationPage() {
   return (
     <main className="flex-1 overflow-y-auto px-6 py-6">
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
-        <Link
-          to="/"
-          className="self-start text-sm text-gray-500 hover:text-blue-700 transition-colors"
-        >
-          ← Back to the sentences list
-        </Link>
+        <BackToListLink />
 
         <TabDescription>
           Generate a translation exercise, English to Estonian.
