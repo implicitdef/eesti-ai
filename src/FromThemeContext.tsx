@@ -59,6 +59,11 @@ interface FromThemeContextValue {
   findItem: (id: string) => ThemePracticeItem | undefined;
   siblingsFor: (id: string) => ThemePracticeItem[];
   generateNew: (theme: string, count: 1 | 3, itemLevel: SentenceLevel) => void;
+  generateFromList: (
+    themes: string[],
+    count: 1 | 3,
+    itemLevel: SentenceLevel,
+  ) => void;
   generateAnother: (item: ThemePracticeItem) => void;
   retry: (item: ThemePracticeItem) => void;
   updateItem: (updated: ThemePracticeItem) => void;
@@ -262,6 +267,90 @@ function FromThemeProvider() {
     );
   }
 
+  async function runGenerateList(
+    themes: string[],
+    count: number,
+    source: "single" | "batch",
+    key: string,
+    itemLevel: SentenceLevel,
+  ) {
+    setGeneratingSource(source);
+
+    const existingByTheme = new Map<string, string[]>();
+    for (const theme of themes) {
+      if (existingByTheme.has(theme)) continue;
+      existingByTheme.set(
+        theme,
+        userItems
+          .filter((it) => it.theme === theme && it.sentence)
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .map((it) => it.sentence),
+      );
+    }
+
+    const now = Date.now();
+    const placeholders: ThemePracticeItem[] = [];
+    themes.forEach((theme) => {
+      for (let i = 0; i < count; i++) {
+        placeholders.push({
+          id: crypto.randomUUID(),
+          theme,
+          sentence: "",
+          englishTranslation: "",
+          attempts: [],
+          status: "generating",
+          revealed: false,
+          createdAt: now + placeholders.length,
+          level: itemLevel,
+        });
+      }
+    });
+
+    setUserItems((prev) => [...[...placeholders].reverse(), ...prev]);
+    navigate({ to: "/sentence/$id", params: { id: placeholders[0].id } });
+
+    const generatedByTheme = new Map<string, string[]>();
+
+    for (const placeholder of placeholders) {
+      const generatedThisTheme = generatedByTheme.get(placeholder.theme) ?? [];
+      const existingForTheme = existingByTheme.get(placeholder.theme) ?? [];
+      const previousSentences = [
+        ...generatedThisTheme,
+        ...existingForTheme,
+      ].slice(0, MAX_PREVIOUS_SENTENCES);
+      const resolved = await generateSentenceForItem(
+        placeholder,
+        previousSentences,
+        key,
+      );
+      updateItem(resolved);
+      if (resolved.status === "in_progress") {
+        generatedThisTheme.unshift(resolved.sentence);
+        generatedByTheme.set(placeholder.theme, generatedThisTheme);
+        playSentenceReadySound();
+      }
+    }
+
+    setGeneratingSource(null);
+  }
+
+  function generateFromList(
+    themes: string[],
+    count: 1 | 3,
+    itemLevel: SentenceLevel,
+  ) {
+    if (themes.length === 0 || isGenerating) return;
+    withApiKey((key) =>
+      runGenerateList(
+        themes,
+        count,
+        count === 1 ? "single" : "batch",
+        key,
+        itemLevel,
+      ),
+    );
+  }
+
   function generateAnother(item: ThemePracticeItem) {
     if (isGenerating) return;
     withApiKey((key) => runGenerate(item.theme, 1, "another", key, item.level));
@@ -318,6 +407,7 @@ function FromThemeProvider() {
         findItem,
         siblingsFor,
         generateNew,
+        generateFromList,
         generateAnother,
         retry,
         updateItem,
