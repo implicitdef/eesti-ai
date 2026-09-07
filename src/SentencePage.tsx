@@ -5,6 +5,7 @@ import BackToListLink from "./BackToListLink";
 import { useFromTheme } from "./FromThemeContext";
 import { isExactMatch } from "./estonianDiff";
 import GenerateAnotherButton from "./GenerateAnotherButton";
+import PageMain from "./PageMain";
 import { playCorrectSound, playIncorrectSound } from "./sound";
 import ThemeLabel, { formatThemeLevel } from "./ThemeLabel";
 import TranslationExerciseView from "./TranslationExerciseView";
@@ -116,12 +117,10 @@ function SentencePage() {
 
   if (!item) {
     return (
-      <main className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="max-w-2xl mx-auto flex flex-col gap-4">
-          <BackToListLink />
-          <p className="text-sm text-gray-500">Sentence not found.</p>
-        </div>
-      </main>
+      <PageMain gap={4}>
+        <BackToListLink />
+        <p className="text-sm text-gray-500">Sentence not found.</p>
+      </PageMain>
     );
   }
 
@@ -154,63 +153,61 @@ function SentencePage() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto px-6 py-6">
-      <div className="max-w-2xl mx-auto flex flex-col gap-8">
-        <BackToListLink />
+    <PageMain>
+      <BackToListLink />
 
-        {item.status === "generating" && (
-          <GeneratingDetailView theme={item.theme} level={item.level} />
-        )}
-        {item.status === "error" && (
-          <GenerationErrorDetailView
-            theme={item.theme}
-            level={item.level}
-            errorMessage={item.errorMessage}
-            onRetry={() => retry(item)}
-            spinning={generatingSource === "retry"}
-            disabled={isGenerating}
-          />
-        )}
-        {(item.status === "in_progress" || item.status === "completed") && (
-          <TranslationExerciseView
-            header={
-              <div className="flex flex-col gap-3">
-                {isDemo && !apiKey && (
-                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 w-fit">
-                    This is a pregenerated example. Generating your own
-                    sentences needs an Anthropic API key.
-                  </p>
-                )}
-                <div className="flex flex-wrap items-end gap-3">
-                  <ThemeLabel theme={item.theme} level={item.level} />
-                  <GenerateAnotherButton
-                    onClick={() => generateAnother(item)}
-                    spinning={generatingSource === "another"}
-                    disabled={isGenerating}
-                  />
-                  <Link
-                    to="/generate"
-                    className="text-xs text-gray-500 hover:text-blue-700 underline transition-colors self-center"
-                  >
-                    Generate something different
-                  </Link>
-                </div>
+      {item.status === "generating" && (
+        <GeneratingDetailView theme={item.theme} level={item.level} />
+      )}
+      {item.status === "error" && (
+        <GenerationErrorDetailView
+          theme={item.theme}
+          level={item.level}
+          errorMessage={item.errorMessage}
+          onRetry={() => retry(item)}
+          spinning={generatingSource === "retry"}
+          disabled={isGenerating}
+        />
+      )}
+      {(item.status === "in_progress" || item.status === "completed") && (
+        <TranslationExerciseView
+          header={
+            <div className="flex flex-col gap-3">
+              {isDemo && !apiKey && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 w-fit">
+                  This is a pregenerated example. Generating your own sentences
+                  needs an Anthropic API key.
+                </p>
+              )}
+              <div className="flex flex-wrap items-end gap-3">
+                <ThemeLabel theme={item.theme} level={item.level} />
+                <GenerateAnotherButton
+                  onClick={() => generateAnother(item)}
+                  spinning={generatingSource === "another"}
+                  disabled={isGenerating}
+                />
+                <Link
+                  to="/generate"
+                  className="text-xs text-gray-500 hover:text-blue-700 underline transition-colors self-center"
+                >
+                  Generate something different
+                </Link>
               </div>
-            }
-            targetEstonian={item.sentence}
-            englishToTranslate={item.englishTranslation}
-            attempts={item.attempts}
-            status={item.status}
-            revealed={item.revealed}
-            onSubmitAttempt={handleSubmitAttempt}
-            onShowAnswer={handleShowAnswer}
-            onHideAnswer={handleHideAnswer}
-          />
-        )}
+            </div>
+          }
+          targetEstonian={item.sentence}
+          englishToTranslate={item.englishTranslation}
+          attempts={item.attempts}
+          status={item.status}
+          revealed={item.revealed}
+          onSubmitAttempt={handleSubmitAttempt}
+          onShowAnswer={handleShowAnswer}
+          onHideAnswer={handleHideAnswer}
+        />
+      )}
 
-        <SentenceNav prev={prev} next={next} />
-      </div>
-    </main>
+      <SentenceNav prev={prev} next={next} />
+    </PageMain>
   );
 }
 

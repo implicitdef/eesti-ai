@@ -3,6 +3,7 @@ import { useApiKey } from "./ApiKeyContext";
 import BackToListLink from "./BackToListLink";
 import { useFromTheme } from "./FromThemeContext";
 import GenerateForm from "./GenerateForm";
+import PageMain from "./PageMain";
 import TabDescription from "./TabDescription";
 
 function parseListLines(raw: string): string[] {
@@ -56,76 +57,73 @@ function GenerationPage() {
   }
 
   return (
-    <main className="flex-1 overflow-y-auto px-6 py-6">
-      <div className="max-w-2xl mx-auto flex flex-col gap-4">
-        <BackToListLink />
+    <PageMain gap={4}>
+      <BackToListLink />
 
-        <TabDescription>
-          Generate a translation exercise, English to Estonian.
+      <TabDescription>
+        Generate a translation exercise, English to Estonian.
+        <br />
+        The sentence to guess will be based on the little input you give.
+        <br />- For example, if you type "family", you might have to find the
+        sentence "Minu perekonnas on neli inimest ja üks koer".
+        <br />- Or if you type "hädas olema", you might get "Ta helistas mulle,
+        kuna oli suures hädas". <br />
+        Generating a sentence will make some requests to Anthropic API.
+        {!apiKey && (
+          <>
+            {" "}
+            Try the demo sentences for free — you'll be asked for an API key
+            only when you generate your own.
+          </>
+        )}
+      </TabDescription>
+
+      {listMode && (
+        <p className="text-xs text-gray-500">
+          Write a list of words (one by line). Each line will be used separately
+          to each generate one sentence (or 3, if you click the 3x button).
           <br />
-          The sentence to guess will be based on the little input you give.
-          <br />- For example, if you type "family", you might have to find the
-          sentence "Minu perekonnas on neli inimest ja üks koer".
-          <br />- Or if you type "hädas olema", you might get "Ta helistas
-          mulle, kuna oli suures hädas". <br />
-          Generating a sentence will make some requests to Anthropic API.
-          {!apiKey && (
-            <>
-              {" "}
-              Try the demo sentences for free — you'll be asked for an API key
-              only when you generate your own.
-            </>
-          )}
-        </TabDescription>
+          <span className="text-amber-600 font-medium">
+            If your list is very long, this might get expensive!
+          </span>
+        </p>
+      )}
 
-        {listMode && (
-          <p className="text-xs text-gray-500">
-            Write a list of words (one by line). Each line will be used
-            separately to each generate one sentence (or 3, if you click the 3x
-            button).
-            <br />
-            <span className="text-amber-600 font-medium">
-              If your list is very long, this might get expensive!
-            </span>
-          </p>
-        )}
+      <GenerateForm
+        value={themeInput}
+        onChange={setThemeInput}
+        onSubmit={handleSubmit}
+        onGenerateBatch={handleGenerateBatch}
+        placeholder={
+          listMode
+            ? "õun\nlahti tegema\njalkat\nminu arust\n..."
+            : "Type a theme (in English) or some words or idiom (in Estonian)"
+        }
+        submitLoading={generatingSource === "single"}
+        batchLoading={generatingSource === "batch"}
+        disabled={isGenerating}
+        multiline={listMode}
+        level={level}
+        onLevelChange={setLevel}
+      />
 
-        <GenerateForm
-          value={themeInput}
-          onChange={setThemeInput}
-          onSubmit={handleSubmit}
-          onGenerateBatch={handleGenerateBatch}
-          placeholder={
-            listMode
-              ? "õun\nlahti tegema\njalkat\nminu arust\n..."
-              : "Type a theme (in English) or some words or idiom (in Estonian)"
-          }
-          submitLoading={generatingSource === "single"}
-          batchLoading={generatingSource === "batch"}
+      <label className="flex items-center gap-2 text-sm text-gray-600">
+        <input
+          type="checkbox"
+          checked={listMode}
+          onChange={handleToggleListMode}
           disabled={isGenerating}
-          multiline={listMode}
-          level={level}
-          onLevelChange={setLevel}
         />
+        Generate from a vocabulary list
+      </label>
 
-        <label className="flex items-center gap-2 text-sm text-gray-600">
-          <input
-            type="checkbox"
-            checked={listMode}
-            onChange={handleToggleListMode}
-            disabled={isGenerating}
-          />
-          Generate from a vocabulary list
-        </label>
-
-        {!listMode && (
-          <p className="text-xs text-gray-400">
-            e.g. "beach", "forest", "job interview", "at the gym", ... OR "tööle
-            võtma", "rääkimata", "X-ks valmis", "ostma VS otsima", ...
-          </p>
-        )}
-      </div>
-    </main>
+      {!listMode && (
+        <p className="text-xs text-gray-400">
+          e.g. "beach", "forest", "job interview", "at the gym", ... OR "tööle
+          võtma", "rääkimata", "X-ks valmis", "ostma VS otsima", ...
+        </p>
+      )}
+    </PageMain>
   );
 }
 

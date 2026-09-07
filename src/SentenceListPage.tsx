@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useFromTheme } from "./FromThemeContext";
+import PageMain from "./PageMain";
 import { itemStatus, StatusIcon } from "./StatusIcon";
 import TabDescription from "./TabDescription";
 import { formatThemeLevel } from "./ThemeLabel";
@@ -27,62 +28,60 @@ function SentenceListPage() {
     useFromTheme();
 
   return (
-    <main className="flex-1 overflow-y-auto px-6 py-6">
-      <div className="max-w-2xl mx-auto flex flex-col gap-8">
-        <TabDescription>
-          Translation exercise, English to Estonian. Pick a sentence below to
-          practice, or generate new ones from a theme, some words, or an idiom.
-        </TabDescription>
+    <PageMain>
+      <TabDescription>
+        Translation exercise, English to Estonian. Pick a sentence below to
+        practice, or generate new ones from a theme, some words, or an idiom.
+      </TabDescription>
 
-        <section className="flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-bold text-gray-900">Your sentences</h2>
-            {userItems.length > 0 && (
-              <button
-                onClick={clearUserItems}
-                className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-                title="Clear your sentences"
-              >
-                Clear all
-              </button>
-            )}
-          </div>
-          <Link
-            to="/generate"
-            className="self-start text-sm font-semibold text-blue-700 hover:text-blue-800 underline"
-          >
-            {userItems.length === 0
-              ? "Generate your own sentences"
-              : "Generate more"}
-          </Link>
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-bold text-gray-900">Your sentences</h2>
           {userItems.length > 0 && (
-            <ul className="flex flex-col bg-blue-50 divide-y divide-gray-400 rounded-lg overflow-hidden mt-1">
-              {userItems.map((item) => (
-                <SentenceRow key={item.id} item={item} />
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-bold text-gray-900">Demo sentences</h2>
             <button
-              onClick={resetDemoItems}
-              className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
-              title="Reset demo sentences to their original unsolved state"
+              onClick={clearUserItems}
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+              title="Clear your sentences"
             >
-              Reset your answers
+              Clear all
             </button>
-          </div>
+          )}
+        </div>
+        <Link
+          to="/generate"
+          className="self-start text-sm font-semibold text-blue-700 hover:text-blue-800 underline"
+        >
+          {userItems.length === 0
+            ? "Generate your own sentences"
+            : "Generate more"}
+        </Link>
+        {userItems.length > 0 && (
           <ul className="flex flex-col bg-blue-50 divide-y divide-gray-400 rounded-lg overflow-hidden mt-1">
-            {demoItems.map((item) => (
+            {userItems.map((item) => (
               <SentenceRow key={item.id} item={item} />
             ))}
           </ul>
-        </section>
-      </div>
-    </main>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-bold text-gray-900">Demo sentences</h2>
+          <button
+            onClick={resetDemoItems}
+            className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
+            title="Reset demo sentences to their original unsolved state"
+          >
+            Reset your answers
+          </button>
+        </div>
+        <ul className="flex flex-col bg-blue-50 divide-y divide-gray-400 rounded-lg overflow-hidden mt-1">
+          {demoItems.map((item) => (
+            <SentenceRow key={item.id} item={item} />
+          ))}
+        </ul>
+      </section>
+    </PageMain>
   );
 }
 
