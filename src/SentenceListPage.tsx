@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { itemStatus, StatusIcon } from "./StatusIcon";
-import { formatThemeLevel } from "./ThemeLabel";
 import { useFromTheme } from "./FromThemeContext";
+import { itemStatus, StatusIcon } from "./StatusIcon";
 import TabDescription from "./TabDescription";
+import { formatThemeLevel } from "./ThemeLabel";
 import type { ThemePracticeItem } from "./types";
 
 function SentenceRow({ item }: { item: ThemePracticeItem }) {
@@ -11,7 +11,7 @@ function SentenceRow({ item }: { item: ThemePracticeItem }) {
       <Link
         to="/sentence/$id"
         params={{ id: item.id }}
-        className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-blue-100 transition-colors"
       >
         <StatusIcon status={itemStatus(item)} />
         <span className="truncate">
@@ -56,7 +56,7 @@ function SentenceListPage() {
               : "Generate more"}
           </Link>
           {userItems.length > 0 && (
-            <ul className="flex flex-col divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden mt-1">
+            <ul className="flex flex-col bg-blue-50 divide-y divide-gray-400 rounded-lg overflow-hidden mt-1">
               {userItems.map((item) => (
                 <SentenceRow key={item.id} item={item} />
               ))}
@@ -75,7 +75,7 @@ function SentenceListPage() {
               Reset your answers
             </button>
           </div>
-          <ul className="flex flex-col divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+          <ul className="flex flex-col bg-blue-50 divide-y divide-gray-400 rounded-lg overflow-hidden mt-1">
             {demoItems.map((item) => (
               <SentenceRow key={item.id} item={item} />
             ))}
