@@ -99,7 +99,7 @@ function FromThemeProvider() {
     try {
       const parsed = JSON.parse(stored) as ThemePracticeItem[];
       if (parsed.length !== DEMO_ITEMS.length) return DEMO_ITEMS;
-      return parsed;
+      return parsed.map((it) => ({ ...it, level: it.level ?? "B1" }));
     } catch {
       return DEMO_ITEMS;
     }
