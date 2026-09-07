@@ -3,7 +3,7 @@ import { useFromTheme } from "./FromThemeContext";
 import PageMain from "./PageMain";
 import { itemStatus, StatusIcon } from "./StatusIcon";
 import TabDescription from "./TabDescription";
-import { formatThemeLevel } from "./ThemeLabel";
+import { formatLevel } from "./ThemeLabel";
 import type { ThemePracticeItem } from "./types";
 
 function SentenceRow({ item }: { item: ThemePracticeItem }) {
@@ -16,7 +16,10 @@ function SentenceRow({ item }: { item: ThemePracticeItem }) {
       >
         <StatusIcon status={itemStatus(item)} />
         <span className="truncate">
-          {formatThemeLevel(item.theme, item.level)}
+          "{item.theme}"{" "}
+          <span className="text-gray-500 italic text-xs">
+            {formatLevel(item.level)}
+          </span>
         </span>
       </Link>
     </li>

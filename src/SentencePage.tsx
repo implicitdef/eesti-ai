@@ -7,7 +7,7 @@ import { useFromTheme } from "./FromThemeContext";
 import GenerateAnotherButton from "./GenerateAnotherButton";
 import PageMain from "./PageMain";
 import { playCorrectSound, playIncorrectSound } from "./sound";
-import ThemeLabel, { formatThemeLevel } from "./ThemeLabel";
+import ThemeLabel, { formatLevel } from "./ThemeLabel";
 import TranslationExerciseView from "./TranslationExerciseView";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
 
@@ -80,7 +80,7 @@ function SentenceNav({
           params={{ id: prev.id }}
           className="text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline"
         >
-          ← Previous sentence: {formatThemeLevel(prev.theme, prev.level)}
+          ← Previous sentence: "{prev.theme}" ({formatLevel(prev.level)})
         </Link>
       ) : (
         <span />
@@ -91,7 +91,7 @@ function SentenceNav({
           params={{ id: next.id }}
           className="text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline text-right"
         >
-          Next sentence: {formatThemeLevel(next.theme, next.level)} →
+          Next sentence: "{next.theme}" ({formatLevel(next.level)}) →
         </Link>
       ) : (
         <span />
@@ -179,19 +179,21 @@ function SentencePage() {
                   needs an Anthropic API key.
                 </p>
               )}
-              <div className="flex flex-wrap items-end gap-3">
+              <div className="flex flex-row justify-between gap-3">
                 <ThemeLabel theme={item.theme} level={item.level} />
-                <GenerateAnotherButton
-                  onClick={() => generateAnother(item)}
-                  spinning={generatingSource === "another"}
-                  disabled={isGenerating}
-                />
-                <Link
-                  to="/generate"
-                  className="text-xs text-gray-500 hover:text-blue-700 underline transition-colors self-center"
-                >
-                  Generate something different
-                </Link>
+                <div className="flex flex-col gap-2 items-end">
+                  <GenerateAnotherButton
+                    onClick={() => generateAnother(item)}
+                    spinning={generatingSource === "another"}
+                    disabled={isGenerating}
+                  />
+                  <Link
+                    to="/generate"
+                    className="text-xs text-gray-500 hover:text-blue-700 underline transition-colors "
+                  >
+                    Generate something different
+                  </Link>
+                </div>
               </div>
             </div>
           }

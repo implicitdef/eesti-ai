@@ -1,23 +1,19 @@
 import { SENTENCE_LEVEL_LABELS, type SentenceLevel } from "./types";
 
-export function formatThemeLevel(theme: string, level: SentenceLevel) {
-  return (
-    <>
-      "{theme}"{" "}
-      <span className="text-gray-500 italic text-xs">
-        {SENTENCE_LEVEL_LABELS[level].toLowerCase()}
-      </span>
-    </>
-  );
+export function formatLevel(level: SentenceLevel) {
+  return SENTENCE_LEVEL_LABELS[level].toLowerCase();
 }
 
-function ThemeLabel({ theme, level }: { theme: string; level: SentenceLevel }) {
+function ThemeLabel({ level, theme }: { theme: string; level: SentenceLevel }) {
   return (
     <div>
-      <p className="text-xs text-gray-400">
-        Theme ({SENTENCE_LEVEL_LABELS[level].toLowerCase()}):{" "}
-      </p>
-      <p className="text-sm font-medium text-gray-600">{theme}</p>
+      <span className="text-gray-500">Theme : </span>
+      <>
+        "<span className="font-mono">{theme}</span>"{" "}
+        <span className="text-sm text-gray-500 italic">
+          ({formatLevel(level)})
+        </span>
+      </>
     </div>
   );
 }
