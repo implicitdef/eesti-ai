@@ -4,7 +4,6 @@ import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import ApiKeyModal from "./ApiKeyModal";
 import { useApiKey } from "./ApiKeyContext";
 import { generateThemeSentence } from "./from-theme-api";
-import { playSentenceReadySound } from "./sound";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
 
 const USER_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
@@ -247,7 +246,6 @@ function FromThemeProvider() {
       updateItem(resolved);
       if (resolved.status === "in_progress") {
         generatedThisBatch.unshift(resolved.sentence);
-        playSentenceReadySound();
       }
     }
 
@@ -327,7 +325,6 @@ function FromThemeProvider() {
       if (resolved.status === "in_progress") {
         generatedThisTheme.unshift(resolved.sentence);
         generatedByTheme.set(placeholder.theme, generatedThisTheme);
-        playSentenceReadySound();
       }
     }
 
@@ -378,7 +375,6 @@ function FromThemeProvider() {
       key,
     );
     updateItem(resolved);
-    if (resolved.status === "in_progress") playSentenceReadySound();
     setGeneratingSource(null);
   }
 

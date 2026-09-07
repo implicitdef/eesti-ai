@@ -30,14 +30,6 @@ function playTone(
   oscillator.stop(startTime + duration);
 }
 
-export function playSentenceReadySound() {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  const now = ctx.currentTime;
-  playTone(ctx, 660, now, 0.12, 0.28);
-  playTone(ctx, 880, now + 0.08, 0.14, 0.28);
-}
-
 export function playCorrectSound() {
   const ctx = getAudioContext();
   if (!ctx) return;
