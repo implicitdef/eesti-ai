@@ -2,8 +2,8 @@ import { Link, useParams } from "@tanstack/react-router";
 import { RefreshCcw } from "lucide-react";
 import { useApiKey } from "./ApiKeyContext";
 import BackToListLink from "./BackToListLink";
-import { useFromTheme } from "./FromThemeContext";
 import { isExactMatch } from "./estonianDiff";
+import { useFromTheme } from "./FromThemeContext";
 import GenerateAnotherButton from "./GenerateAnotherButton";
 import PageMain from "./PageMain";
 import { playCorrectSound, playIncorrectSound } from "./sound";
@@ -117,7 +117,7 @@ function SentencePage() {
 
   if (!item) {
     return (
-      <PageMain gap={4}>
+      <PageMain>
         <BackToListLink />
         <p className="text-sm text-gray-500">Sentence not found.</p>
       </PageMain>
