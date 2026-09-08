@@ -15,25 +15,27 @@ interface Props {
 
 function optionClassName(
   option: string,
-  selected: string | null,
+  wrongOptions: Set<string>,
+  answeredCorrectly: boolean,
   correct: string,
 ) {
-  if (selected === null) {
-    return "border-gray-300 hover:border-blue-400 hover:bg-blue-50";
-  }
-  if (option === correct) {
+  if (answeredCorrectly && option === correct) {
     return "border-green-500 bg-green-50 text-green-700";
   }
-  if (option === selected) {
+  if (wrongOptions.has(option)) {
     return "border-red-400 bg-red-50 text-red-600";
   }
-  return "border-gray-200 text-gray-400";
+  if (answeredCorrectly) {
+    return "border-gray-200 text-gray-400";
+  }
+  return "border-gray-300 hover:border-blue-400 hover:bg-blue-50";
 }
 
 function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
   const [order] = useState(() => shuffleOrder(quizPairs.length));
   const [step, setStep] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [wrongOptions, setWrongOptions] = useState<Set<string>>(new Set());
+  const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const resultsRef = useRef<boolean[]>(new Array(quizPairs.length).fill(false));
 
@@ -46,35 +48,30 @@ function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
   const isLast = step === order.length - 1;
 
   function handleSelect(option: string) {
-    if (selected !== null) return;
-    setSelected(option);
-    const isCorrect = option.toLowerCase() === current.english.toLowerCase();
-    resultsRef.current[pairIndex] = isCorrect;
-    if (isCorrect) setCorrectCount((c) => c + 1);
-  }
-
-  function handleNext() {
-    if (isLast) {
-      onComplete(resultsRef.current);
-      return;
+    if (answeredCorrectly || wrongOptions.has(option)) return;
+    if (option.toLowerCase() === current.english.toLowerCase()) {
+      setAnsweredCorrectly(true);
+      const isFirstTry = wrongOptions.size === 0;
+      resultsRef.current[pairIndex] = isFirstTry;
+      if (isFirstTry) setCorrectCount((c) => c + 1);
+    } else {
+      setWrongOptions((prev) => new Set(prev).add(option));
     }
-    setStep((s) => s + 1);
-    setSelected(null);
   }
 
   useEffect(() => {
-    if (selected === null) return;
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      // A focused button (e.g. tabbed to "Next word") already handles
-      // Enter/Space natively — don't also trigger it from here.
-      if (event.target instanceof HTMLButtonElement) return;
-      event.preventDefault();
-      handleNext();
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
+    if (!answeredCorrectly) return;
+    const timer = setTimeout(() => {
+      if (isLast) {
+        onComplete(resultsRef.current);
+        return;
+      }
+      setStep((s) => s + 1);
+      setWrongOptions(new Set());
+      setAnsweredCorrectly(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [answeredCorrectly, isLast, onComplete]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -102,22 +99,13 @@ function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
           <button
             key={option}
             onClick={() => handleSelect(option)}
-            disabled={selected !== null}
-            className={`border rounded-lg px-4 py-2.5 text-sm text-left transition-colors disabled:cursor-default ${optionClassName(option, selected, current.english)}`}
+            disabled={answeredCorrectly || wrongOptions.has(option)}
+            className={`border rounded-lg px-4 py-2.5 text-sm text-left transition-colors disabled:cursor-default ${optionClassName(option, wrongOptions, answeredCorrectly, current.english)}`}
           >
             {option}
           </button>
         ))}
       </div>
-
-      {selected !== null && (
-        <button
-          onClick={handleNext}
-          className="self-center bg-blue-700 text-white rounded-lg px-6 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors"
-        >
-          {isLast ? "Finish" : "Next word"}
-        </button>
-      )}
     </div>
   );
 }
