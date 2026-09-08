@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { buildOptions, shuffleOrder } from "./vocabIngest";
 import type { VocabPair } from "./types";
 
@@ -61,6 +61,20 @@ function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
     setStep((s) => s + 1);
     setSelected(null);
   }
+
+  useEffect(() => {
+    if (selected === null) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      // A focused button (e.g. tabbed to "Next word") already handles
+      // Enter/Space natively — don't also trigger it from here.
+      if (event.target instanceof HTMLButtonElement) return;
+      event.preventDefault();
+      handleNext();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
 
   return (
     <div className="flex flex-col gap-6">
