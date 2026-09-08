@@ -1,10 +1,16 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { buildOptions, shuffleOrder } from "./vocabIngest";
 import type { VocabPair } from "./types";
 
 interface Props {
-  pairs: VocabPair[];
+  // The words asked this session, in caller-defined order (index-aligned
+  // with the `correctness` array passed to onComplete).
+  quizPairs: VocabPair[];
+  // Pool to draw wrong-answer options from — the whole deck, even when only
+  // a subset of it (e.g. previously missed words) is being quizzed.
+  optionPool: VocabPair[];
   onExit: () => void;
+  onComplete: (correctness: boolean[]) => void;
 }
 
 function optionClassName(
@@ -24,31 +30,32 @@ function optionClassName(
   return "border-gray-200 text-gray-400";
 }
 
-function IngestPractice({ pairs, onExit }: Props) {
-  const [order] = useState(() => shuffleOrder(pairs.length));
+function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
+  const [order] = useState(() => shuffleOrder(quizPairs.length));
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  const resultsRef = useRef<boolean[]>(new Array(quizPairs.length).fill(false));
 
   const pairIndex = order[step];
-  const current = pairs[pairIndex];
+  const current = quizPairs[pairIndex];
   const options = useMemo(
-    () => buildOptions(pairs, pairIndex),
-    [pairs, pairIndex],
+    () => buildOptions(current.english, optionPool),
+    [current, optionPool],
   );
   const isLast = step === order.length - 1;
 
   function handleSelect(option: string) {
     if (selected !== null) return;
     setSelected(option);
-    if (option.toLowerCase() === current.english.toLowerCase()) {
-      setCorrectCount((c) => c + 1);
-    }
+    const isCorrect = option.toLowerCase() === current.english.toLowerCase();
+    resultsRef.current[pairIndex] = isCorrect;
+    if (isCorrect) setCorrectCount((c) => c + 1);
   }
 
   function handleNext() {
     if (isLast) {
-      onExit();
+      onComplete(resultsRef.current);
       return;
     }
     setStep((s) => s + 1);

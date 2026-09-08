@@ -35,19 +35,14 @@ export function shuffleOrder(count: number): number[] {
 }
 
 /**
- * MCQ options for the word at `correctIndex`: its English translation plus
- * up to MAX_QUIZ_OPTIONS - 1 other translations drawn randomly from the rest
- * of the list, all shuffled together.
+ * MCQ options for `correct`: itself plus up to MAX_QUIZ_OPTIONS - 1 other
+ * translations drawn randomly from `pool` (e.g. the whole deck, even when
+ * only a subset of it is being quizzed), all shuffled together.
  */
-export function buildOptions(
-  pairs: VocabPair[],
-  correctIndex: number,
-): string[] {
-  const correct = pairs[correctIndex].english;
+export function buildOptions(correct: string, pool: VocabPair[]): string[] {
   const distractorPool = Array.from(
     new Set(
-      pairs
-        .filter((_, i) => i !== correctIndex)
+      pool
         .map((p) => p.english)
         .filter((english) => english.toLowerCase() !== correct.toLowerCase()),
     ),
