@@ -48,6 +48,10 @@ export interface VocabPair {
 
 export interface VocabList {
   id: string;
+  name: string;
   createdAt: number;
   pairs: VocabPair[];
+  // Indices into `pairs` last answered right / wrong; see IngestMode.
+  correctIndices: number[];
+  failedIndices: number[];
 }
