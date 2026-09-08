@@ -55,7 +55,9 @@ function RootLayout() {
   const { pathname } = useLocation();
   const pageTitle = pathname.startsWith("/video")
     ? "Watch video with vocab"
-    : "Translation exercise";
+    : pathname.startsWith("/ingest")
+      ? "Vocabulary practice"
+      : "Translation exercise";
 
   return (
     <ApiKeyProvider>
@@ -85,6 +87,12 @@ function RootLayout() {
                 className="text-xs text-gray-300 hover:text-gray-400 transition-colors"
               >
                 video
+              </Link>
+              <Link
+                to="/ingest"
+                className="text-xs text-gray-300 hover:text-gray-400 transition-colors"
+              >
+                ingest
               </Link>
             </div>
             <ApiKeyFooterStatus />

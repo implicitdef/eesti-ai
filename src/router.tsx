@@ -10,6 +10,7 @@ import SentenceListPage from "./SentenceListPage";
 import SentencePage from "./SentencePage";
 import GenerationPage from "./GenerationPage";
 import VideoMode from "./VideoMode";
+import IngestMode from "./IngestMode";
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
@@ -43,6 +44,12 @@ const videoRoute = createRoute({
   component: VideoMode,
 });
 
+const ingestRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ingest",
+  component: IngestMode,
+});
+
 const routeTree = rootRoute.addChildren([
   fromThemeLayoutRoute.addChildren([
     sentenceListRoute,
@@ -50,6 +57,7 @@ const routeTree = rootRoute.addChildren([
     generateRoute,
   ]),
   videoRoute,
+  ingestRoute,
 ]);
 
 export const router = createRouter({

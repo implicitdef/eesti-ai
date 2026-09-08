@@ -40,3 +40,14 @@ export interface ComplexVocabEntry {
   type: string;
   translations: string[];
 }
+
+export interface VocabPair {
+  estonian: string;
+  english: string;
+}
+
+export interface VocabList {
+  id: string;
+  createdAt: number;
+  pairs: VocabPair[];
+}
