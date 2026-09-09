@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buildOptions, shuffleOrder } from "./vocabIngest";
+import { playCorrectSound, playIncorrectSound } from "./sound";
 import type { VocabPair } from "./types";
 
 interface Props {
@@ -54,8 +55,10 @@ function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
       const isFirstTry = wrongOptions.size === 0;
       resultsRef.current[pairIndex] = isFirstTry;
       if (isFirstTry) setCorrectCount((c) => c + 1);
+      playCorrectSound();
     } else {
       setWrongOptions((prev) => new Set(prev).add(option));
+      playIncorrectSound();
     }
   }
 
