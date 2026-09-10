@@ -2,6 +2,10 @@ import type { VocabPair } from "./types";
 
 export const MAX_QUIZ_OPTIONS = 10;
 
+export const SPLIT_SUGGESTION_THRESHOLD = 20;
+export const BUCKET_SIZE_OPTIONS = [10, 20, 30] as const;
+export type BucketSize = (typeof BUCKET_SIZE_OPTIONS)[number];
+
 /**
  * Parses vocabulary pasted from a Google Sheets selection: one word pair per
  * line, Estonian and English separated by a tab. Lines that don't split into
@@ -32,6 +36,36 @@ function shuffle<T>(items: T[]): T[] {
 /** A random practice order visiting every word in the list exactly once. */
 export function shuffleOrder(count: number): number[] {
   return shuffle(Array.from({ length: count }, (_, i) => i));
+}
+
+/** How many buckets `splitIntoBuckets` would produce for this total/maxSize. */
+export function bucketCount(total: number, maxBucketSize: number): number {
+  return Math.max(1, Math.ceil(total / maxBucketSize));
+}
+
+/**
+ * Splits `pairs` into `bucketCount(pairs.length, maxBucketSize)` evenly
+ * balanced buckets (sizes differ by at most 1), mixing words across buckets
+ * rather than chunking the original paste order.
+ */
+export function splitIntoBuckets(
+  pairs: VocabPair[],
+  maxBucketSize: number,
+): VocabPair[][] {
+  const count = bucketCount(pairs.length, maxBucketSize);
+  const buckets: VocabPair[][] = Array.from({ length: count }, () => []);
+  shuffle(pairs).forEach((pair, i) => buckets[i % count].push(pair));
+  return buckets;
+}
+
+/** Applies the shared name, suffixed with its position when split into >1 list. */
+export function buildListName(
+  name: string,
+  index: number,
+  total: number,
+): string {
+  const base = name.trim() || "New list";
+  return total > 1 ? `${base} (${index + 1}/${total})` : base;
 }
 
 /**

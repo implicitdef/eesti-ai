@@ -2,8 +2,27 @@ import { BookOpen, Pencil, Plus, Redo2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import IngestPractice from "./IngestPractice";
 import TabDescription from "./TabDescription";
-import { parseVocabPaste } from "./vocabIngest";
+import {
+  BUCKET_SIZE_OPTIONS,
+  SPLIT_SUGGESTION_THRESHOLD,
+  bucketCount,
+  buildListName,
+  parseVocabPaste,
+  splitIntoBuckets,
+  type BucketSize,
+} from "./vocabIngest";
 import type { VocabList, VocabPair } from "./types";
+
+interface ListDraft {
+  name: string;
+  pairs: VocabPair[];
+}
+
+const fieldClassName =
+  "border-2 border-black rounded-md px-4 py-2.5 text-sm bg-slate-100 text-blue-700 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+
+const selectClassName =
+  "border-2 border-black rounded-md px-2 py-2.5 text-sm bg-slate-100 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 const INGEST_LISTS_KEY = "eesti-ai-ingest-lists";
 // Superseded by INGEST_LISTS_KEY once multiple lists were supported; read
@@ -61,11 +80,24 @@ function IngestPasteForm({
   onLoad,
   onCancel,
 }: {
-  onLoad: (pairs: VocabPair[]) => void;
+  onLoad: (drafts: ListDraft[]) => void;
   onCancel?: () => void;
 }) {
+  const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [parsedPairs, setParsedPairs] = useState<VocabPair[] | null>(null);
+  const [bucketSize, setBucketSize] = useState<BucketSize>(
+    BUCKET_SIZE_OPTIONS[0],
+  );
+
+  function commit(drafts: ListDraft[]) {
+    onLoad(drafts);
+    setName("");
+    setText("");
+    setParsedPairs(null);
+    setBucketSize(BUCKET_SIZE_OPTIONS[0]);
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -77,18 +109,97 @@ function IngestPasteForm({
       return;
     }
     setError(null);
-    setText("");
-    onLoad(pairs);
+    if (pairs.length > SPLIT_SUGGESTION_THRESHOLD) {
+      setParsedPairs(pairs);
+    } else {
+      commit([{ name, pairs }]);
+    }
+  }
+
+  if (parsedPairs) {
+    const splitCount = bucketCount(parsedPairs.length, bucketSize);
+
+    return (
+      <div className="flex flex-col gap-3 max-w-xl">
+        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 w-fit">
+          {parsedPairs.length} words is a lot to tackle in one go — want to
+          split it into smaller lists?
+        </p>
+        <div className="flex items-center gap-2">
+          <label htmlFor="bucket-size" className="text-sm text-gray-600">
+            Max words per list
+          </label>
+          <select
+            id="bucket-size"
+            value={bucketSize}
+            onChange={(e) =>
+              setBucketSize(Number(e.target.value) as BucketSize)
+            }
+            className={selectClassName}
+          >
+            {BUCKET_SIZE_OPTIONS.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="text-sm text-gray-500">
+          {splitCount > 1
+            ? `→ ${splitCount} lists of about ${Math.round(parsedPairs.length / splitCount)} words each`
+            : "This size won't actually split your list — try a smaller max."}
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            disabled={splitCount <= 1}
+            onClick={() =>
+              commit(
+                splitIntoBuckets(parsedPairs, bucketSize).map((pairs) => ({
+                  name,
+                  pairs,
+                })),
+              )
+            }
+            className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <BookOpen size={16} />
+            Split into {splitCount} lists
+          </button>
+          <button
+            type="button"
+            onClick={() => commit([{ name, pairs: parsedPairs }])}
+            className="border border-amber-300 bg-amber-50 text-amber-700 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-amber-100 transition-colors"
+          >
+            Keep as one list
+          </button>
+          <button
+            type="button"
+            onClick={() => setParsedPairs(null)}
+            className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-xl">
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="New list"
+        className={fieldClassName}
+      />
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={"sool\tsalt\njõulud\tChristmas\nköha\tcough"}
         rows={10}
-        className="border-2 border-black rounded-md px-4 py-2.5 text-sm font-mono bg-slate-100 text-blue-700 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+        className={`${fieldClassName} font-mono resize-y`}
       />
       {error && <p className="text-sm text-red-500">{error}</p>}
       <div className="flex items-center gap-3">
@@ -249,16 +360,18 @@ function IngestMode() {
     localStorage.setItem(INGEST_LISTS_KEY, JSON.stringify(lists));
   }, [lists]);
 
-  function addList(pairs: VocabPair[]) {
-    const next: VocabList = {
+  function addLists(drafts: ListDraft[]) {
+    const total = drafts.length;
+    const createdAt = Date.now();
+    const next: VocabList[] = drafts.map((draft, i) => ({
       id: crypto.randomUUID(),
-      name: "New list",
-      createdAt: Date.now(),
-      pairs,
+      name: buildListName(draft.name, i, total),
+      createdAt: createdAt + i,
+      pairs: draft.pairs,
       correctIndices: [],
       failedIndices: [],
-    };
-    setLists((prev) => [next, ...prev]);
+    }));
+    setLists((prev) => [...next, ...prev]);
     setShowPasteForm(false);
   }
 
@@ -328,7 +441,7 @@ function IngestMode() {
 
         {pasteFormVisible ? (
           <IngestPasteForm
-            onLoad={addList}
+            onLoad={addLists}
             onCancel={
               lists.length > 0 ? () => setShowPasteForm(false) : undefined
             }
