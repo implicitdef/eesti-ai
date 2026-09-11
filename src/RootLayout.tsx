@@ -28,13 +28,41 @@ function ApiKeyBar() {
   );
 }
 
+interface Feature {
+  label: string;
+  to: string;
+  pageTitle: string;
+  isActive: (pathname: string) => boolean;
+}
+
+const FEATURES: Feature[] = [
+  {
+    label: "Translation exercise",
+    to: "/",
+    pageTitle: "Translation exercise",
+    isActive: (path) =>
+      !path.startsWith("/video") && !path.startsWith("/vocab-practice"),
+  },
+  {
+    label: "Vocab practice",
+    to: "/vocab-practice",
+    pageTitle: "Vocab practice",
+    isActive: (path) => path.startsWith("/vocab-practice"),
+  },
+  {
+    label: "Video",
+    to: "/video",
+    pageTitle: "Watch video with vocab",
+    isActive: (path) => path.startsWith("/video"),
+  },
+];
+
 function RootLayout() {
   const { pathname } = useLocation();
-  const pageTitle = pathname.startsWith("/video")
-    ? "Watch video with vocab"
-    : pathname.startsWith("/vocab-practice")
-      ? "Vocab practice"
-      : "Translation exercise";
+  const activeFeature =
+    FEATURES.find((feature) => feature.isActive(pathname)) ?? FEATURES[0];
+  const pageTitle = activeFeature.pageTitle;
+  const otherFeatures = FEATURES.filter((feature) => feature !== activeFeature);
 
   return (
     <ApiKeyProvider>
@@ -59,19 +87,25 @@ function RootLayout() {
               </div>
               <nav className="flex items-center gap-1.5 text-xs text-blue-200 flex-wrap">
                 <span className="text-blue-300">other features:</span>
-                <Link
-                  to="/vocab-practice"
-                  className="text-blue-100 underline decoration-blue-500 hover:text-white transition-colors"
-                >
-                  Vocab practice
-                </Link>
-                <span className="text-blue-400">/</span>
-                <Link
-                  to="/video"
-                  className="text-blue-100 underline decoration-blue-500 hover:text-white transition-colors"
-                >
-                  Video
-                </Link>
+                {otherFeatures.flatMap((feature, i) => [
+                  ...(i > 0
+                    ? [
+                        <span
+                          key={`${feature.to}-sep`}
+                          className="text-blue-400"
+                        >
+                          /
+                        </span>,
+                      ]
+                    : []),
+                  <Link
+                    key={feature.to}
+                    to={feature.to}
+                    className="text-blue-100 underline decoration-blue-500 hover:text-white transition-colors"
+                  >
+                    {feature.label}
+                  </Link>,
+                ])}
               </nav>
             </div>
           </div>
