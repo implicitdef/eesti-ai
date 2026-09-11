@@ -55,8 +55,8 @@ function RootLayout() {
   const { pathname } = useLocation();
   const pageTitle = pathname.startsWith("/video")
     ? "Watch video with vocab"
-    : pathname.startsWith("/ingest")
-      ? "Vocabulary practice"
+    : pathname.startsWith("/vocab-practice")
+      ? "Vocab practice"
       : "Translation exercise";
 
   return (
@@ -89,10 +89,10 @@ function RootLayout() {
                 video
               </Link>
               <Link
-                to="/ingest"
+                to="/vocab-practice"
                 className="text-xs text-gray-300 hover:text-gray-400 transition-colors"
               >
-                ingest
+                Vocab practice
               </Link>
             </div>
             <ApiKeyFooterStatus />

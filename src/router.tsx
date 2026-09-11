@@ -46,7 +46,7 @@ const videoRoute = createRoute({
 
 const ingestRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/ingest",
+  path: "/vocab-practice",
   component: IngestMode,
 });
 
