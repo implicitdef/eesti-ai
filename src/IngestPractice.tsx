@@ -10,6 +10,9 @@ interface Props {
   // Pool to draw wrong-answer options from — the whole deck, even when only
   // a subset of it (e.g. previously missed words) is being quizzed.
   optionPool: VocabPair[];
+  // When true, the English translation is shown and the Estonian word must
+  // be guessed instead of the other way around.
+  reversed: boolean;
   onExit: () => void;
   onComplete: (correctness: boolean[]) => void;
 }
@@ -32,7 +35,13 @@ function optionClassName(
   return "border-gray-300 hover:border-blue-400 hover:bg-blue-50";
 }
 
-function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
+function IngestPractice({
+  quizPairs,
+  optionPool,
+  reversed,
+  onExit,
+  onComplete,
+}: Props) {
   const [order] = useState(() => shuffleOrder(quizPairs.length));
   const [step, setStep] = useState(0);
   const [wrongOptions, setWrongOptions] = useState<Set<string>>(new Set());
@@ -42,15 +51,17 @@ function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
 
   const pairIndex = order[step];
   const current = quizPairs[pairIndex];
+  const prompt = reversed ? current.english : current.estonian;
+  const correct = reversed ? current.estonian : current.english;
   const options = useMemo(
-    () => buildOptions(current.english, optionPool),
-    [current, optionPool],
+    () => buildOptions(correct, optionPool, reversed ? "estonian" : "english"),
+    [correct, optionPool, reversed],
   );
   const isLast = step === order.length - 1;
 
   function handleSelect(option: string) {
     if (answeredCorrectly || wrongOptions.has(option)) return;
-    if (option.toLowerCase() === current.english.toLowerCase()) {
+    if (option.toLowerCase() === correct.toLowerCase()) {
       setAnsweredCorrectly(true);
       const isFirstTry = wrongOptions.size === 0;
       resultsRef.current[pairIndex] = isFirstTry;
@@ -92,9 +103,11 @@ function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
 
       <div className="text-center">
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
-          What does this mean?
+          {reversed
+            ? "How do you say this in Estonian?"
+            : "What does this mean?"}
         </p>
-        <p className="text-3xl font-bold text-gray-900">{current.estonian}</p>
+        <p className="text-3xl font-bold text-gray-900">{prompt}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -103,7 +116,7 @@ function IngestPractice({ quizPairs, optionPool, onExit, onComplete }: Props) {
             key={option}
             onClick={() => handleSelect(option)}
             disabled={answeredCorrectly || wrongOptions.has(option)}
-            className={`border rounded-lg px-4 py-2.5 text-sm text-left transition-colors disabled:cursor-default ${optionClassName(option, wrongOptions, answeredCorrectly, current.english)}`}
+            className={`border rounded-lg px-4 py-2.5 text-sm text-left transition-colors disabled:cursor-default ${optionClassName(option, wrongOptions, answeredCorrectly, correct)}`}
           >
             {option}
           </button>

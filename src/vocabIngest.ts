@@ -74,16 +74,37 @@ export function buildListName(
 /**
  * MCQ options for `correct`: itself plus up to MAX_QUIZ_OPTIONS - 1 other
  * translations drawn randomly from `pool` (e.g. the whole deck, even when
- * only a subset of it is being quizzed), all shuffled together.
+ * only a subset of it is being quizzed), all shuffled together. `field`
+ * selects which side of the pair to draw distractors from — "english" for
+ * the normal direction, "estonian" for reversed practice.
  */
-export function buildOptions(correct: string, pool: VocabPair[]): string[] {
+export function buildOptions(
+  correct: string,
+  pool: VocabPair[],
+  field: "estonian" | "english" = "english",
+): string[] {
   const distractorPool = Array.from(
     new Set(
       pool
-        .map((p) => p.english)
-        .filter((english) => english.toLowerCase() !== correct.toLowerCase()),
+        .map((p) => p[field])
+        .filter((value) => value.toLowerCase() !== correct.toLowerCase()),
     ),
   );
   const distractors = shuffle(distractorPool).slice(0, MAX_QUIZ_OPTIONS - 1);
   return shuffle([correct, ...distractors]);
+}
+
+/**
+ * Reversed practice (guess the Estonian word from its English translation)
+ * only makes sense if each English translation maps back to a single
+ * Estonian word — otherwise the prompt would be ambiguous.
+ */
+export function hasAmbiguousEnglish(pairs: VocabPair[]): boolean {
+  const seen = new Set<string>();
+  for (const pair of pairs) {
+    const key = pair.english.trim().toLowerCase();
+    if (seen.has(key)) return true;
+    seen.add(key);
+  }
+  return false;
 }

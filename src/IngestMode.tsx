@@ -7,6 +7,7 @@ import {
   SPLIT_SUGGESTION_THRESHOLD,
   bucketCount,
   buildListName,
+  hasAmbiguousEnglish,
   parseVocabPaste,
   splitIntoBuckets,
   type BucketSize,
@@ -330,6 +331,7 @@ function IngestListCard({
   list,
   nameEditable,
   canSplit,
+  reversed,
   onRename,
   onRemove,
   onPractice,
@@ -338,6 +340,7 @@ function IngestListCard({
   list: VocabList;
   nameEditable: boolean;
   canSplit: boolean;
+  reversed: boolean;
   onRename: (name: string) => void;
   onRemove: () => void;
   onPractice: (indices: number[]) => void;
@@ -348,6 +351,7 @@ function IngestListCard({
   const [bucketSize, setBucketSize] = useState<BucketSize>(
     BUCKET_SIZE_OPTIONS[0],
   );
+  const reversalBlocked = reversed && hasAmbiguousEnglish(list.pairs);
 
   return (
     <div className="flex flex-col gap-4 border border-gray-300 rounded-lg px-5 py-4 bg-white">
@@ -410,25 +414,32 @@ function IngestListCard({
           <Trash2 size={16} />
         </button>
       </div>
-      <div className="flex items-center gap-4 flex-wrap">
-        <button
-          onClick={() => onPractice(list.pairs.map((_, i) => i))}
-          className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors"
-        >
-          <BookOpen size={16} />
-          {hasStats ? "Practice again" : "Practice"}
-        </button>
-        {list.failedIndices.length > 0 && (
+      {reversalBlocked ? (
+        <p className="text-sm text-red-500">
+          Reversed practice is not possible for this list since it has several
+          Estonian words with the same English translation.
+        </p>
+      ) : (
+        <div className="flex items-center gap-4 flex-wrap">
           <button
-            onClick={() => onPractice(list.failedIndices)}
-            className="flex items-center gap-1.5 border border-amber-300 bg-amber-50 text-amber-700 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-amber-100 transition-colors"
+            onClick={() => onPractice(list.pairs.map((_, i) => i))}
+            className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors"
           >
-            <Redo2 size={16} />
-            Practice the {list.failedIndices.length} missed word
-            {list.failedIndices.length === 1 ? "" : "s"}
+            <BookOpen size={16} />
+            {hasStats ? "Practice again" : "Practice"}
           </button>
-        )}
-      </div>
+          {list.failedIndices.length > 0 && (
+            <button
+              onClick={() => onPractice(list.failedIndices)}
+              className="flex items-center gap-1.5 border border-amber-300 bg-amber-50 text-amber-700 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-amber-100 transition-colors"
+            >
+              <Redo2 size={16} />
+              Practice the {list.failedIndices.length} missed word
+              {list.failedIndices.length === 1 ? "" : "s"}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -469,6 +480,7 @@ function IngestMode() {
   );
   const [practicing, setPracticing] = useState<PracticeSession | null>(null);
   const [showPasteForm, setShowPasteForm] = useState(false);
+  const [reversed, setReversed] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(INGEST_LISTS_KEY, JSON.stringify(lists));
@@ -588,6 +600,7 @@ function IngestMode() {
           <IngestPractice
             quizPairs={practicing.indices.map((i) => activeList.pairs[i])}
             optionPool={activeList.pairs}
+            reversed={reversed}
             onExit={() => setPracticing(null)}
             onComplete={handlePracticeComplete}
           />
@@ -606,6 +619,16 @@ function IngestMode() {
           English translation, one pair per line) and practice guessing the
           translations.
         </TabDescription>
+
+        <label className="flex items-center gap-2 text-sm text-gray-700 -mt-4">
+          <input
+            type="checkbox"
+            checked={reversed}
+            onChange={(e) => setReversed(e.target.checked)}
+            className="h-4 w-4 accent-blue-700"
+          />
+          Practice in reverse (show English, guess the Estonian word)
+        </label>
 
         {pasteFormVisible ? (
           <IngestPasteForm
@@ -635,6 +658,7 @@ function IngestMode() {
                   canSplit={
                     block.list.pairs.length > SPLIT_SUGGESTION_THRESHOLD
                   }
+                  reversed={reversed}
                   onRename={(name) => renameList(block.list.id, name)}
                   onRemove={() => removeList(block.list.id)}
                   onPractice={(indices) =>
@@ -667,6 +691,7 @@ function IngestMode() {
                       list={list}
                       nameEditable={false}
                       canSplit={false}
+                      reversed={reversed}
                       onRename={(name) => renameList(list.id, name)}
                       onRemove={() => removeList(list.id)}
                       onPractice={(indices) =>
