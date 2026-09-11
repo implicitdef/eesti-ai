@@ -50,7 +50,7 @@ function RootLayout() {
               <span className="text-sm text-blue-200 ml-2">{pageTitle}</span>
             </div>
 
-            <div className="flex flex-row sm:flex-col items-center sm:items-end flex-wrap gap-x-2 gap-y-1">
+            <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end flex-wrap gap-x-2 gap-y-1 w-full sm:w-auto">
               <div
                 className="font-mono text-[11px] text-blue-300"
                 title="Build version"
