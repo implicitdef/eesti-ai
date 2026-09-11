@@ -1,41 +1,18 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { KeyRound, X } from "lucide-react";
-import { useState } from "react";
+import { X } from "lucide-react";
 import { ApiKeyProvider, useApiKey } from "./ApiKeyContext";
-import ApiKeyModal from "./ApiKeyModal";
 
-function ApiKeyFooterStatus() {
-  const { apiKey, setApiKey, clearApiKey } = useApiKey();
-  const [showModal, setShowModal] = useState(false);
+/** Secondary header showing the active API key, shown only once a key is set. */
+function ApiKeyBar() {
+  const { apiKey, clearApiKey } = useApiKey();
 
-  if (!apiKey) {
-    return (
-      <>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 rounded-full border border-gray-300 bg-gray-100 px-3 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-200"
-        >
-          <KeyRound size={12} />
-          <span>Set API key</span>
-        </button>
-        {showModal && (
-          <ApiKeyModal
-            onSubmit={(key) => {
-              setApiKey(key);
-              setShowModal(false);
-            }}
-            onCancel={() => setShowModal(false)}
-          />
-        )}
-      </>
-    );
-  }
+  if (!apiKey) return null;
 
   const keyTail = apiKey.slice(-5);
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1.5 rounded-full border border-gray-300 bg-gray-100 px-3 py-1">
+    <div className="bg-blue-50 border-b border-blue-100 px-4 sm:px-6 py-1.5 flex items-center justify-end gap-2">
+      <div className="flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1">
         <span className="text-xs text-gray-400">API key ending in</span>
         <code className="font-mono text-xs text-gray-600">{keyTail}</code>
       </div>
@@ -62,42 +39,47 @@ function RootLayout() {
   return (
     <ApiKeyProvider>
       <div className="min-h-screen bg-white flex flex-col">
-        <header className="bg-blue-900 text-white px-2 py-1 shadow">
-          <Link to="/" className="no-underline">
-            <h1 className="text-2xl font-bold uppercase inline text-white">
-              Eesti AI
-            </h1>
-          </Link>
-          <span className="text-sm text-blue-200 ml-2">{pageTitle}</span>
-        </header>
+        <header className="bg-blue-900 text-white px-4 py-2 shadow">
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+            <div>
+              <Link to="/" className="no-underline">
+                <h1 className="text-2xl font-bold uppercase inline text-white">
+                  Eesti AI
+                </h1>
+              </Link>
+              <span className="text-sm text-blue-200 ml-2">{pageTitle}</span>
+            </div>
 
-        <Outlet />
-
-        <footer className="border-t border-gray-400">
-          <div className="flex items-center justify-end sm:justify-between px-4 sm:px-6 py-3">
-            <div className="flex items-center gap-2">
-              <code
-                className="hidden sm:inline font-mono text-xs text-gray-500"
+            <div className="flex flex-row sm:flex-col items-center sm:items-end flex-wrap gap-x-2 gap-y-1">
+              <div
+                className="font-mono text-[11px] text-blue-300"
                 title="Build version"
               >
                 version: {__APP_VERSION__}
-              </code>
-              <Link
-                to="/video"
-                className="text-xs text-gray-300 hover:text-gray-400 transition-colors"
-              >
-                video
-              </Link>
-              <Link
-                to="/vocab-practice"
-                className="text-xs text-gray-300 hover:text-gray-400 transition-colors"
-              >
-                Vocab practice
-              </Link>
+              </div>
+              <nav className="flex items-center gap-1.5 text-xs text-blue-200 flex-wrap">
+                <span className="text-blue-300">other features:</span>
+                <Link
+                  to="/vocab-practice"
+                  className="text-blue-100 underline decoration-blue-500 hover:text-white transition-colors"
+                >
+                  Vocab practice
+                </Link>
+                <span className="text-blue-400">/</span>
+                <Link
+                  to="/video"
+                  className="text-blue-100 underline decoration-blue-500 hover:text-white transition-colors"
+                >
+                  Video
+                </Link>
+              </nav>
             </div>
-            <ApiKeyFooterStatus />
           </div>
-        </footer>
+        </header>
+
+        <ApiKeyBar />
+
+        <Outlet />
       </div>
     </ApiKeyProvider>
   );
