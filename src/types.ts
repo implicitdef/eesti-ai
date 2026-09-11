@@ -54,4 +54,11 @@ export interface VocabList {
   // Indices into `pairs` last answered right / wrong; see IngestMode.
   correctIndices: number[];
   failedIndices: number[];
+  // Set when this list is a member of a VocabListGroup produced by a split.
+  groupId?: string;
+}
+
+export interface VocabListGroup {
+  id: string;
+  name: string;
 }

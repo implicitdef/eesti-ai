@@ -11,7 +11,7 @@ import {
   splitIntoBuckets,
   type BucketSize,
 } from "./vocabIngest";
-import type { VocabList, VocabPair } from "./types";
+import type { VocabList, VocabListGroup, VocabPair } from "./types";
 
 interface ListDraft {
   name: string;
@@ -25,6 +25,7 @@ const selectClassName =
   "border-2 border-black rounded-md px-2 py-2.5 text-sm bg-slate-100 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 const INGEST_LISTS_KEY = "eesti-ai-ingest-lists";
+const INGEST_GROUPS_KEY = "eesti-ai-ingest-groups";
 // Superseded by INGEST_LISTS_KEY once multiple lists were supported; read
 // once to migrate anyone's single in-progress list rather than lose it.
 const LEGACY_INGEST_LIST_KEY = "eesti-ai-ingest-list";
@@ -66,6 +67,16 @@ function readStoredLists(): VocabList[] {
   return migrateLegacyList();
 }
 
+function readStoredGroups(): VocabListGroup[] {
+  try {
+    const stored = localStorage.getItem(INGEST_GROUPS_KEY);
+    if (stored) return JSON.parse(stored) as VocabListGroup[];
+  } catch {
+    return [];
+  }
+  return [];
+}
+
 function previewWords(pairs: VocabPair[]): string {
   const words = pairs.map((p) => p.estonian);
   if (words.length <= PREVIEW_HEAD_COUNT + PREVIEW_TAIL_COUNT) {
@@ -74,6 +85,44 @@ function previewWords(pairs: VocabPair[]): string {
   const head = words.slice(0, PREVIEW_HEAD_COUNT).join(", ");
   const tail = words.slice(-PREVIEW_TAIL_COUNT).join(", ");
   return `${head}, ..., ${tail}`;
+}
+
+function BucketSizePicker({
+  bucketSize,
+  onChange,
+  totalWords,
+}: {
+  bucketSize: BucketSize;
+  onChange: (size: BucketSize) => void;
+  totalWords: number;
+}) {
+  const splitCount = bucketCount(totalWords, bucketSize);
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <label htmlFor="bucket-size" className="text-sm text-gray-600">
+          Max words per list
+        </label>
+        <select
+          id="bucket-size"
+          value={bucketSize}
+          onChange={(e) => onChange(Number(e.target.value) as BucketSize)}
+          className={selectClassName}
+        >
+          {BUCKET_SIZE_OPTIONS.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p className="text-sm text-gray-500">
+        {splitCount > 1
+          ? `→ ${splitCount} lists of about ${Math.round(totalWords / splitCount)} words each`
+          : "This size won't actually split your list — try a smaller max."}
+      </p>
+    </>
+  );
 }
 
 function IngestPasteForm({
@@ -125,30 +174,11 @@ function IngestPasteForm({
           {parsedPairs.length} words is a lot to tackle in one go — want to
           split it into smaller lists?
         </p>
-        <div className="flex items-center gap-2">
-          <label htmlFor="bucket-size" className="text-sm text-gray-600">
-            Max words per list
-          </label>
-          <select
-            id="bucket-size"
-            value={bucketSize}
-            onChange={(e) =>
-              setBucketSize(Number(e.target.value) as BucketSize)
-            }
-            className={selectClassName}
-          >
-            {BUCKET_SIZE_OPTIONS.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </div>
-        <p className="text-sm text-gray-500">
-          {splitCount > 1
-            ? `→ ${splitCount} lists of about ${Math.round(parsedPairs.length / splitCount)} words each`
-            : "This size won't actually split your list — try a smaller max."}
-        </p>
+        <BucketSizePicker
+          bucketSize={bucketSize}
+          onChange={setBucketSize}
+          totalWords={parsedPairs.length}
+        />
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -277,28 +307,79 @@ function EditableListName({
 
 function IngestListCard({
   list,
+  nameEditable,
+  canSplit,
   onRename,
   onRemove,
   onPractice,
+  onSplit,
 }: {
   list: VocabList;
+  nameEditable: boolean;
+  canSplit: boolean;
   onRename: (name: string) => void;
   onRemove: () => void;
   onPractice: (indices: number[]) => void;
+  onSplit: (bucketSize: BucketSize) => void;
 }) {
   const hasStats = list.correctIndices.length + list.failedIndices.length > 0;
+  const [splitting, setSplitting] = useState(false);
+  const [bucketSize, setBucketSize] = useState<BucketSize>(
+    BUCKET_SIZE_OPTIONS[0],
+  );
 
   return (
-    <div className="flex flex-col gap-4 border border-gray-300 rounded-lg px-5 py-4">
+    <div className="flex flex-col gap-4 border border-gray-300 rounded-lg px-5 py-4 bg-white">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <EditableListName name={list.name} onRename={onRename} />
+          {nameEditable ? (
+            <EditableListName name={list.name} onRename={onRename} />
+          ) : (
+            <span className="text-lg font-bold text-gray-900">{list.name}</span>
+          )}
           <p className="text-sm text-gray-500">
             {list.pairs.length} word{list.pairs.length === 1 ? "" : "s"}
           </p>
           <p className="text-sm text-gray-500 truncate">
             {previewWords(list.pairs)}
           </p>
+          {canSplit && !splitting && (
+            <button
+              onClick={() => setSplitting(true)}
+              className="text-xs text-blue-700 hover:text-blue-800 underline mt-1"
+            >
+              Split into smaller lists
+            </button>
+          )}
+          {canSplit && splitting && (
+            <div className="flex flex-col gap-2 mt-2 max-w-xs">
+              <BucketSizePicker
+                bucketSize={bucketSize}
+                onChange={setBucketSize}
+                totalWords={list.pairs.length}
+              />
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={bucketCount(list.pairs.length, bucketSize) <= 1}
+                  onClick={() => {
+                    onSplit(bucketSize);
+                    setSplitting(false);
+                  }}
+                  className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-4 py-1.5 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Split into {bucketCount(list.pairs.length, bucketSize)} lists
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSplitting(false)}
+                  className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
           {hasStats && (
             <p className="text-sm mt-2">
               <span className="text-green-600 font-semibold">
@@ -351,8 +432,35 @@ interface PracticeSession {
   indices: number[];
 }
 
+type DisplayBlock =
+  | { kind: "solo"; list: VocabList }
+  | { kind: "group"; groupId: string; lists: VocabList[] };
+
+/** Groups a flat list array into solo/group blocks, preserving array order. */
+function buildDisplayBlocks(lists: VocabList[]): DisplayBlock[] {
+  const blocks: DisplayBlock[] = [];
+  const seenGroups = new Set<string>();
+  for (const list of lists) {
+    if (!list.groupId) {
+      blocks.push({ kind: "solo", list });
+      continue;
+    }
+    if (seenGroups.has(list.groupId)) continue;
+    seenGroups.add(list.groupId);
+    blocks.push({
+      kind: "group",
+      groupId: list.groupId,
+      lists: lists.filter((l) => l.groupId === list.groupId),
+    });
+  }
+  return blocks;
+}
+
 function IngestMode() {
   const [lists, setLists] = useState<VocabList[]>(() => readStoredLists());
+  const [groups, setGroups] = useState<VocabListGroup[]>(() =>
+    readStoredGroups(),
+  );
   const [practicing, setPracticing] = useState<PracticeSession | null>(null);
   const [showPasteForm, setShowPasteForm] = useState(false);
 
@@ -360,9 +468,14 @@ function IngestMode() {
     localStorage.setItem(INGEST_LISTS_KEY, JSON.stringify(lists));
   }, [lists]);
 
+  useEffect(() => {
+    localStorage.setItem(INGEST_GROUPS_KEY, JSON.stringify(groups));
+  }, [groups]);
+
   function addLists(drafts: ListDraft[]) {
     const total = drafts.length;
     const createdAt = Date.now();
+    const groupId = total > 1 ? crypto.randomUUID() : undefined;
     const next: VocabList[] = drafts.map((draft, i) => ({
       id: crypto.randomUUID(),
       name: buildListName(draft.name, i, total),
@@ -370,9 +483,58 @@ function IngestMode() {
       pairs: draft.pairs,
       correctIndices: [],
       failedIndices: [],
+      groupId,
     }));
+    if (groupId) {
+      setGroups((prev) => [
+        { id: groupId, name: drafts[0].name.trim() || "New list" },
+        ...prev,
+      ]);
+    }
     setLists((prev) => [...next, ...prev]);
     setShowPasteForm(false);
+  }
+
+  function splitExistingList(id: string, bucketSize: BucketSize) {
+    const target = lists.find((l) => l.id === id);
+    if (!target) return;
+    const buckets = splitIntoBuckets(target.pairs, bucketSize);
+    if (buckets.length <= 1) return;
+    const groupId = crypto.randomUUID();
+    const now = Date.now();
+    const members: VocabList[] = buckets.map((pairs, i) => ({
+      id: crypto.randomUUID(),
+      name: buildListName("", i, buckets.length),
+      createdAt: now + i,
+      pairs,
+      correctIndices: [],
+      failedIndices: [],
+      groupId,
+    }));
+    setGroups((prev) => [{ id: groupId, name: target.name }, ...prev]);
+    setLists((prev) => prev.flatMap((l) => (l.id === id ? members : l)));
+  }
+
+  function mergeGroup(groupId: string) {
+    const members = lists.filter((l) => l.groupId === groupId);
+    if (members.length === 0) return;
+    const group = groups.find((g) => g.id === groupId);
+    const merged: VocabList = {
+      id: crypto.randomUUID(),
+      name: group?.name ?? "Merged list",
+      createdAt: Date.now(),
+      pairs: members.flatMap((l) => l.pairs),
+      correctIndices: [],
+      failedIndices: [],
+    };
+    setLists((prev) => {
+      const firstIndex = prev.findIndex((l) => l.groupId === groupId);
+      return prev.flatMap((l, i) => {
+        if (l.groupId !== groupId) return [l];
+        return i === firstIndex ? [merged] : [];
+      });
+    });
+    setGroups((prev) => prev.filter((g) => g.id !== groupId));
   }
 
   function renameList(id: string, name: string) {
@@ -458,17 +620,58 @@ function IngestMode() {
 
         {lists.length > 0 && (
           <div className="flex flex-col gap-4">
-            {lists.map((list) => (
-              <IngestListCard
-                key={list.id}
-                list={list}
-                onRename={(name) => renameList(list.id, name)}
-                onRemove={() => removeList(list.id)}
-                onPractice={(indices) =>
-                  setPracticing({ listId: list.id, indices })
-                }
-              />
-            ))}
+            {buildDisplayBlocks(lists).map((block) =>
+              block.kind === "solo" ? (
+                <IngestListCard
+                  key={block.list.id}
+                  list={block.list}
+                  nameEditable
+                  canSplit={
+                    block.list.pairs.length > SPLIT_SUGGESTION_THRESHOLD
+                  }
+                  onRename={(name) => renameList(block.list.id, name)}
+                  onRemove={() => removeList(block.list.id)}
+                  onPractice={(indices) =>
+                    setPracticing({ listId: block.list.id, indices })
+                  }
+                  onSplit={(bucketSize) =>
+                    splitExistingList(block.list.id, bucketSize)
+                  }
+                />
+              ) : (
+                <div
+                  key={block.groupId}
+                  className="flex flex-col gap-3 bg-gray-100 rounded-xl p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold text-gray-600">
+                      {groups.find((g) => g.id === block.groupId)?.name ??
+                        "Group"}
+                    </span>
+                    <button
+                      onClick={() => mergeGroup(block.groupId)}
+                      className="text-xs text-blue-700 hover:text-blue-800 underline"
+                    >
+                      Merge into one list
+                    </button>
+                  </div>
+                  {block.lists.map((list) => (
+                    <IngestListCard
+                      key={list.id}
+                      list={list}
+                      nameEditable={false}
+                      canSplit={false}
+                      onRename={(name) => renameList(list.id, name)}
+                      onRemove={() => removeList(list.id)}
+                      onPractice={(indices) =>
+                        setPracticing({ listId: list.id, indices })
+                      }
+                      onSplit={() => {}}
+                    />
+                  ))}
+                </div>
+              ),
+            )}
           </div>
         )}
       </div>

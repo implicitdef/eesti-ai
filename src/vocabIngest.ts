@@ -58,14 +58,17 @@ export function splitIntoBuckets(
   return buckets;
 }
 
-/** Applies the shared name, suffixed with its position when split into >1 list. */
+/**
+ * A split member is just labeled by its position ("1/4") since the shared
+ * name lives on its VocabListGroup instead; a lone list keeps the typed name.
+ */
 export function buildListName(
   name: string,
   index: number,
   total: number,
 ): string {
-  const base = name.trim() || "New list";
-  return total > 1 ? `${base} (${index + 1}/${total})` : base;
+  if (total > 1) return `${index + 1}/${total}`;
+  return name.trim() || "New list";
 }
 
 /**
