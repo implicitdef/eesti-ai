@@ -87,18 +87,35 @@ function previewWords(pairs: VocabPair[]): string {
   return `${head}, ..., ${tail}`;
 }
 
-function BucketSizePicker({
-  bucketSize,
-  onChange,
+/**
+ * The "split this into smaller lists?" form: bucket-size picker, live
+ * preview, and the split/secondary/cancel actions. Shared by the paste flow
+ * (splitting brand-new pasted pairs) and by an existing standalone list's
+ * "Split into smaller lists" action, so both look and behave identically.
+ */
+function SplitOfferPanel({
   totalWords,
+  bucketSize,
+  onBucketSizeChange,
+  message,
+  onSplit,
+  secondaryAction,
+  onCancel,
+  cancelLabel = "Cancel",
 }: {
-  bucketSize: BucketSize;
-  onChange: (size: BucketSize) => void;
   totalWords: number;
+  bucketSize: BucketSize;
+  onBucketSizeChange: (size: BucketSize) => void;
+  message?: string;
+  onSplit: () => void;
+  secondaryAction?: { label: string; onClick: () => void };
+  onCancel: () => void;
+  cancelLabel?: string;
 }) {
   const splitCount = bucketCount(totalWords, bucketSize);
   return (
-    <>
+    <div className="flex flex-col gap-3 border border-gray-300 rounded-lg bg-gray-50 p-4 max-w-xl">
+      {message && <p className="text-sm text-gray-700">{message}</p>}
       <div className="flex items-center gap-2">
         <label htmlFor="bucket-size" className="text-sm text-gray-600">
           Max words per list
@@ -106,7 +123,9 @@ function BucketSizePicker({
         <select
           id="bucket-size"
           value={bucketSize}
-          onChange={(e) => onChange(Number(e.target.value) as BucketSize)}
+          onChange={(e) =>
+            onBucketSizeChange(Number(e.target.value) as BucketSize)
+          }
           className={selectClassName}
         >
           {BUCKET_SIZE_OPTIONS.map((size) => (
@@ -121,7 +140,34 @@ function BucketSizePicker({
           ? `→ ${splitCount} lists of about ${Math.round(totalWords / splitCount)} words each`
           : "This size won't actually split your list — try a smaller max."}
       </p>
-    </>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          disabled={splitCount <= 1}
+          onClick={onSplit}
+          className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <BookOpen size={16} />
+          Split into {splitCount} lists
+        </button>
+        {secondaryAction && (
+          <button
+            type="button"
+            onClick={secondaryAction.onClick}
+            className="border border-amber-300 bg-amber-50 text-amber-700 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-amber-100 transition-colors"
+          >
+            {secondaryAction.label}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+        >
+          {cancelLabel}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -166,52 +212,27 @@ function IngestPasteForm({
   }
 
   if (parsedPairs) {
-    const splitCount = bucketCount(parsedPairs.length, bucketSize);
-
     return (
-      <div className="flex flex-col gap-3 max-w-xl">
-        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 w-fit">
-          {parsedPairs.length} words is a lot to tackle in one go — want to
-          split it into smaller lists?
-        </p>
-        <BucketSizePicker
-          bucketSize={bucketSize}
-          onChange={setBucketSize}
-          totalWords={parsedPairs.length}
-        />
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            disabled={splitCount <= 1}
-            onClick={() =>
-              commit(
-                splitIntoBuckets(parsedPairs, bucketSize).map((pairs) => ({
-                  name,
-                  pairs,
-                })),
-              )
-            }
-            className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <BookOpen size={16} />
-            Split into {splitCount} lists
-          </button>
-          <button
-            type="button"
-            onClick={() => commit([{ name, pairs: parsedPairs }])}
-            className="border border-amber-300 bg-amber-50 text-amber-700 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-amber-100 transition-colors"
-          >
-            Keep as one list
-          </button>
-          <button
-            type="button"
-            onClick={() => setParsedPairs(null)}
-            className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
-          >
-            ← Back
-          </button>
-        </div>
-      </div>
+      <SplitOfferPanel
+        totalWords={parsedPairs.length}
+        bucketSize={bucketSize}
+        onBucketSizeChange={setBucketSize}
+        message={`${parsedPairs.length} words is a lot to tackle in one go — want to split it into smaller lists?`}
+        onSplit={() =>
+          commit(
+            splitIntoBuckets(parsedPairs, bucketSize).map((pairs) => ({
+              name,
+              pairs,
+            })),
+          )
+        }
+        secondaryAction={{
+          label: "Keep as one list",
+          onClick: () => commit([{ name, pairs: parsedPairs }]),
+        }}
+        onCancel={() => setParsedPairs(null)}
+        cancelLabel="← Back"
+      />
     );
   }
 
@@ -352,32 +373,17 @@ function IngestListCard({
             </button>
           )}
           {canSplit && splitting && (
-            <div className="flex flex-col gap-2 mt-2 max-w-xs">
-              <BucketSizePicker
-                bucketSize={bucketSize}
-                onChange={setBucketSize}
+            <div className="mt-2">
+              <SplitOfferPanel
                 totalWords={list.pairs.length}
+                bucketSize={bucketSize}
+                onBucketSizeChange={setBucketSize}
+                onSplit={() => {
+                  onSplit(bucketSize);
+                  setSplitting(false);
+                }}
+                onCancel={() => setSplitting(false)}
               />
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  disabled={bucketCount(list.pairs.length, bucketSize) <= 1}
-                  onClick={() => {
-                    onSplit(bucketSize);
-                    setSplitting(false);
-                  }}
-                  className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-4 py-1.5 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Split into {bucketCount(list.pairs.length, bucketSize)} lists
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSplitting(false)}
-                  className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
             </div>
           )}
           {hasStats && (
