@@ -27,7 +27,12 @@ interface Props {
   reversed: boolean;
   difficulty: Difficulty;
   onExit: () => void;
-  onComplete: (correctness: boolean[]) => void;
+  // Called immediately as each word's result becomes known — on the first
+  // wrong attempt (correct: false) and again once the word is finally
+  // answered right (correct: true only if it was never missed) — so
+  // progress survives leaving mid-session. `pairIndex` indexes `quizPairs`.
+  onAnswer: (pairIndex: number, correct: boolean) => void;
+  onComplete: () => void;
 }
 
 function optionClassName(
@@ -54,12 +59,14 @@ function MultipleChoiceStep({
   field,
   optionCount,
   onCorrect,
+  onWrongAttempt,
 }: {
   correct: string;
   optionPool: VocabPair[];
   field: "estonian" | "english";
   optionCount: number;
   onCorrect: (isFirstTry: boolean) => void;
+  onWrongAttempt: () => void;
 }) {
   const [wrongOptions, setWrongOptions] = useState<Set<string>>(new Set());
   const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
@@ -76,6 +83,7 @@ function MultipleChoiceStep({
       playCorrectSound();
       onCorrect(isFirstTry);
     } else {
+      if (wrongOptions.size === 0) onWrongAttempt();
       setWrongOptions((prev) => new Set(prev).add(option));
       playIncorrectSound();
     }
@@ -100,9 +108,11 @@ function MultipleChoiceStep({
 function TypedAnswerStep({
   correct,
   onCorrect,
+  onWrongAttempt,
 }: {
   correct: string;
   onCorrect: (isFirstTry: boolean) => void;
+  onWrongAttempt: () => void;
 }) {
   const tokens = useMemo(() => tokenizeSentence(correct), [correct]);
   const wordTexts = useMemo(() => wordTokenTexts(tokens), [tokens]);
@@ -136,6 +146,7 @@ function TypedAnswerStep({
       return;
     }
 
+    if (!hasErrored) onWrongAttempt();
     setHasErrored(true);
     playIncorrectSound();
     const nextValues = wordValues.map((value, i) =>
@@ -174,13 +185,13 @@ function IngestPractice({
   reversed,
   difficulty,
   onExit,
+  onAnswer,
   onComplete,
 }: Props) {
   const [order] = useState(() => shuffleOrder(quizPairs.length));
   const [step, setStep] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [advancePending, setAdvancePending] = useState(false);
-  const resultsRef = useRef<boolean[]>(new Array(quizPairs.length).fill(false));
 
   const pairIndex = order[step];
   const current = quizPairs[pairIndex];
@@ -188,8 +199,12 @@ function IngestPractice({
   const correct = reversed ? current.estonian : current.english;
   const isLast = step === order.length - 1;
 
+  function handleAnswer(isCorrect: boolean) {
+    onAnswer(pairIndex, isCorrect);
+  }
+
   function handleCorrect(isFirstTry: boolean) {
-    resultsRef.current[pairIndex] = isFirstTry;
+    handleAnswer(isFirstTry);
     if (isFirstTry) setCorrectCount((c) => c + 1);
     setAdvancePending(true);
   }
@@ -198,7 +213,7 @@ function IngestPractice({
     if (!advancePending) return;
     const timer = setTimeout(() => {
       if (isLast) {
-        onComplete(resultsRef.current);
+        onComplete();
         return;
       }
       setStep((s) => s + 1);
@@ -235,12 +250,14 @@ function IngestPractice({
           key={step}
           correct={correct}
           onCorrect={handleCorrect}
+          onWrongAttempt={() => handleAnswer(false)}
         />
       ) : (
         <MultipleChoiceStep
           key={step}
           correct={correct}
           optionPool={optionPool}
+          onWrongAttempt={() => handleAnswer(false)}
           field={reversed ? "estonian" : "english"}
           optionCount={optionCountForDifficulty(difficulty)}
           onCorrect={handleCorrect}

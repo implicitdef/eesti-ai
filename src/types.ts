@@ -51,7 +51,11 @@ export interface VocabList {
   name: string;
   createdAt: number;
   pairs: VocabPair[];
-  // Indices into `pairs` last answered right / wrong; see IngestMode.
+  // Indices into `pairs` answered right / wrong, updated live as each word
+  // is answered during a practice session (see IngestMode). Reset to empty
+  // when a fresh "Practice" run starts, but left untouched when resuming
+  // "Practice the missed words". An index absent from both arrays has not
+  // been answered yet in the current run.
   correctIndices: number[];
   failedIndices: number[];
   // Set when this list is a member of a VocabListGroup produced by a split.

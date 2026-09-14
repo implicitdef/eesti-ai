@@ -4,6 +4,7 @@ import {
   ChevronRight,
   Gauge,
   Pencil,
+  Play,
   Plus,
   Redo2,
   Settings,
@@ -356,10 +357,21 @@ function IngestListCard({
   reversed: boolean;
   onRename: (name: string) => void;
   onRemove: () => void;
-  onPractice: (indices: number[]) => void;
+  onPractice: (indices: number[], resetStats: boolean) => void;
   onSplit: (bucketSize: BucketSize) => void;
 }) {
-  const hasStats = list.correctIndices.length + list.failedIndices.length > 0;
+  const correctCount = list.correctIndices.length;
+  const failedCount = list.failedIndices.length;
+  const answeredCount = correctCount + failedCount;
+  const unansweredCount = list.pairs.length - answeredCount;
+  const hasStats = answeredCount > 0;
+  const answeredIndices = new Set([
+    ...list.correctIndices,
+    ...list.failedIndices,
+  ]);
+  const unansweredIndices = list.pairs
+    .map((_, i) => i)
+    .filter((i) => !answeredIndices.has(i));
   const [splitting, setSplitting] = useState(false);
   const [bucketSize, setBucketSize] = useState<BucketSize>(
     BUCKET_SIZE_OPTIONS[0],
@@ -406,12 +418,20 @@ function IngestListCard({
           {hasStats && (
             <p className="text-sm mt-2">
               <span className="text-green-600 font-semibold">
-                {list.correctIndices.length} correct
+                {correctCount} correct
               </span>
               {" · "}
               <span className="text-red-500 font-semibold">
-                {list.failedIndices.length} wrong
+                {failedCount} wrong
               </span>
+              {unansweredCount > 0 && (
+                <>
+                  {" · "}
+                  <span className="text-gray-500 font-semibold">
+                    {unansweredCount} not answered
+                  </span>
+                </>
+              )}
               <span className="text-gray-400">
                 {" "}
                 (out of {list.pairs.length})
@@ -435,15 +455,29 @@ function IngestListCard({
       ) : (
         <div className="flex items-center gap-4 flex-wrap">
           <button
-            onClick={() => onPractice(list.pairs.map((_, i) => i))}
+            onClick={() =>
+              onPractice(
+                list.pairs.map((_, i) => i),
+                true,
+              )
+            }
             className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors"
           >
             <BookOpen size={16} />
-            {hasStats ? "Practice again" : "Practice"}
+            {hasStats ? "Restart the practice" : "Practice"}
           </button>
+          {hasStats && unansweredCount > 0 && (
+            <button
+              onClick={() => onPractice(unansweredIndices, false)}
+              className="flex items-center gap-1.5 border border-blue-300 bg-blue-50 text-blue-700 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-100 transition-colors"
+            >
+              <Play size={16} />
+              Continue ({unansweredCount} left)
+            </button>
+          )}
           {list.failedIndices.length > 0 && (
             <button
-              onClick={() => onPractice(list.failedIndices)}
+              onClick={() => onPractice(list.failedIndices, false)}
               className="flex items-center gap-1.5 border border-amber-300 bg-amber-50 text-amber-700 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-amber-100 transition-colors"
             >
               <Redo2 size={16} />
@@ -503,7 +537,11 @@ function GroupBlock({
   onMerge: () => void;
   onRenameList: (id: string, name: string) => void;
   onRemoveList: (id: string) => void;
-  onPracticeList: (listId: string, indices: number[]) => void;
+  onPracticeList: (
+    listId: string,
+    indices: number[],
+    resetStats: boolean,
+  ) => void;
 }) {
   const collapsed = group?.collapsed ?? false;
   const totalWords = lists.reduce((sum, l) => sum + l.pairs.length, 0);
@@ -549,7 +587,9 @@ function GroupBlock({
             reversed={reversed}
             onRename={(name) => onRenameList(list.id, name)}
             onRemove={() => onRemoveList(list.id)}
-            onPractice={(indices) => onPracticeList(list.id, indices)}
+            onPractice={(indices, resetStats) =>
+              onPracticeList(list.id, indices, resetStats)
+            }
             onSplit={() => {}}
           />
         ))}
@@ -656,22 +696,23 @@ function IngestMode() {
     setLists((prev) => prev.filter((l) => l.id !== id));
   }
 
-  function handlePracticeComplete(correctness: boolean[]) {
-    if (!practicing) return;
+  function recordAnswer(
+    listId: string,
+    originalIndex: number,
+    correct: boolean,
+  ) {
     setLists((prev) =>
       prev.map((l) => {
-        if (l.id !== practicing.listId) return l;
+        if (l.id !== listId) return l;
         const nextCorrect = new Set(l.correctIndices);
         const nextFailed = new Set(l.failedIndices);
-        practicing.indices.forEach((originalIndex, i) => {
-          if (correctness[i]) {
-            nextCorrect.add(originalIndex);
-            nextFailed.delete(originalIndex);
-          } else {
-            nextFailed.add(originalIndex);
-            nextCorrect.delete(originalIndex);
-          }
-        });
+        if (correct) {
+          nextCorrect.add(originalIndex);
+          nextFailed.delete(originalIndex);
+        } else {
+          nextFailed.add(originalIndex);
+          nextCorrect.delete(originalIndex);
+        }
         return {
           ...l,
           correctIndices: [...nextCorrect],
@@ -679,7 +720,21 @@ function IngestMode() {
         };
       }),
     );
-    setPracticing(null);
+  }
+
+  function startPractice(
+    listId: string,
+    indices: number[],
+    resetStats: boolean,
+  ) {
+    if (resetStats) {
+      setLists((prev) =>
+        prev.map((l) =>
+          l.id === listId ? { ...l, correctIndices: [], failedIndices: [] } : l,
+        ),
+      );
+    }
+    setPracticing({ listId, indices });
   }
 
   const activeList = practicing
@@ -696,7 +751,14 @@ function IngestMode() {
             reversed={reversed}
             difficulty={difficulty}
             onExit={() => setPracticing(null)}
-            onComplete={handlePracticeComplete}
+            onAnswer={(pairIndex, correct) =>
+              recordAnswer(
+                practicing.listId,
+                practicing.indices[pairIndex],
+                correct,
+              )
+            }
+            onComplete={() => setPracticing(null)}
           />
         </div>
       </main>
@@ -778,8 +840,8 @@ function IngestMode() {
                   reversed={reversed}
                   onRename={(name) => renameList(block.list.id, name)}
                   onRemove={() => removeList(block.list.id)}
-                  onPractice={(indices) =>
-                    setPracticing({ listId: block.list.id, indices })
+                  onPractice={(indices, resetStats) =>
+                    startPractice(block.list.id, indices, resetStats)
                   }
                   onSplit={(bucketSize) =>
                     splitExistingList(block.list.id, bucketSize)
@@ -795,8 +857,8 @@ function IngestMode() {
                   onMerge={() => mergeGroup(block.groupId)}
                   onRenameList={renameList}
                   onRemoveList={removeList}
-                  onPracticeList={(listId, indices) =>
-                    setPracticing({ listId, indices })
+                  onPracticeList={(listId, indices, resetStats) =>
+                    startPractice(listId, indices, resetStats)
                   }
                 />
               ),
