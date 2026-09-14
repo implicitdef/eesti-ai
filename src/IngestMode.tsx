@@ -2,14 +2,17 @@ import {
   BookOpen,
   ChevronDown,
   ChevronRight,
+  Gauge,
   Pencil,
   Plus,
   Redo2,
+  Settings,
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import IngestPractice from "./IngestPractice";
 import TabDescription from "./TabDescription";
+import type { VocabList, VocabListGroup, VocabPair } from "./types";
 import {
   BUCKET_SIZE_OPTIONS,
   DIFFICULTIES,
@@ -23,7 +26,6 @@ import {
   type BucketSize,
   type Difficulty,
 } from "./vocabIngest";
-import type { VocabList, VocabListGroup, VocabPair } from "./types";
 
 interface ListDraft {
   name: string;
@@ -34,7 +36,7 @@ const fieldClassName =
   "border-2 border-black rounded-md px-4 py-2.5 text-sm bg-slate-100 text-blue-700 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 const selectClassName =
-  "border-2 border-black rounded-md px-2 py-2.5 text-sm bg-slate-100 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+  "border-2 border-black rounded-md px-2 py-1 text-sm bg-slate-100 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 const INGEST_LISTS_KEY = "eesti-ai-ingest-lists";
 const INGEST_GROUPS_KEY = "eesti-ai-ingest-groups";
@@ -712,30 +714,37 @@ function IngestMode() {
           translations.
         </TabDescription>
 
-        <div className="flex items-center gap-4 flex-wrap -mt-4">
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={reversed}
-              onChange={(e) => setReversed(e.target.checked)}
-              className="h-4 w-4 accent-blue-700"
-            />
-            Practice in reverse (show English, guess the Estonian word)
-          </label>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            Difficulty
-            <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-              className={selectClassName}
-            >
-              {DIFFICULTIES.map((d) => (
-                <option key={d} value={d}>
-                  {DIFFICULTY_LABELS[d]}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="flex flex-col gap-3 bg-gray-200 p-4 -mt-4">
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+            <Settings size={16} className="text-gray-500" />
+            Practice settings
+          </div>
+          <div className="flex items-center gap-4 flex-wrap">
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={reversed}
+                onChange={(e) => setReversed(e.target.checked)}
+                className="h-4 w-4 accent-blue-700"
+              />
+              Practice in reverse (show English, guess the Estonian word)
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <Gauge size={16} className="text-gray-500" />
+              Difficulty
+              <select
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+                className={selectClassName}
+              >
+                {DIFFICULTIES.map((d) => (
+                  <option key={d} value={d}>
+                    {DIFFICULTY_LABELS[d]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
 
         {pasteFormVisible ? (
