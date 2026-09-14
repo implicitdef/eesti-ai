@@ -12,6 +12,8 @@ import IngestPractice from "./IngestPractice";
 import TabDescription from "./TabDescription";
 import {
   BUCKET_SIZE_OPTIONS,
+  DIFFICULTIES,
+  DIFFICULTY_LABELS,
   SPLIT_SUGGESTION_THRESHOLD,
   bucketCount,
   buildListName,
@@ -19,6 +21,7 @@ import {
   parseVocabPaste,
   splitIntoBuckets,
   type BucketSize,
+  type Difficulty,
 } from "./vocabIngest";
 import type { VocabList, VocabListGroup, VocabPair } from "./types";
 
@@ -560,6 +563,7 @@ function IngestMode() {
   const [practicing, setPracticing] = useState<PracticeSession | null>(null);
   const [showPasteForm, setShowPasteForm] = useState(false);
   const [reversed, setReversed] = useState(false);
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
 
   useEffect(() => {
     localStorage.setItem(INGEST_LISTS_KEY, JSON.stringify(lists));
@@ -688,6 +692,7 @@ function IngestMode() {
             quizPairs={practicing.indices.map((i) => activeList.pairs[i])}
             optionPool={activeList.pairs}
             reversed={reversed}
+            difficulty={difficulty}
             onExit={() => setPracticing(null)}
             onComplete={handlePracticeComplete}
           />
@@ -707,15 +712,31 @@ function IngestMode() {
           translations.
         </TabDescription>
 
-        <label className="flex items-center gap-2 text-sm text-gray-700 -mt-4">
-          <input
-            type="checkbox"
-            checked={reversed}
-            onChange={(e) => setReversed(e.target.checked)}
-            className="h-4 w-4 accent-blue-700"
-          />
-          Practice in reverse (show English, guess the Estonian word)
-        </label>
+        <div className="flex items-center gap-4 flex-wrap -mt-4">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={reversed}
+              onChange={(e) => setReversed(e.target.checked)}
+              className="h-4 w-4 accent-blue-700"
+            />
+            Practice in reverse (show English, guess the Estonian word)
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            Difficulty
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+              className={selectClassName}
+            >
+              {DIFFICULTIES.map((d) => (
+                <option key={d} value={d}>
+                  {DIFFICULTY_LABELS[d]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
         {pasteFormVisible ? (
           <IngestPasteForm

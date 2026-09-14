@@ -1,6 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildOptions, shuffleOrder } from "./vocabIngest";
+import { isExactMatch } from "./estonianDiff";
+import {
+  joinTokensWithWordValues,
+  tokenizeSentence,
+  wordTokenTexts,
+} from "./maskedHint";
+import MaskedSentenceInputs from "./MaskedWordInputs";
 import { playCorrectSound, playIncorrectSound } from "./sound";
+import {
+  buildOptions,
+  optionCountForDifficulty,
+  shuffleOrder,
+  type Difficulty,
+} from "./vocabIngest";
 import type { VocabPair } from "./types";
 
 interface Props {
@@ -13,6 +25,7 @@ interface Props {
   // When true, the English translation is shown and the Estonian word must
   // be guessed instead of the other way around.
   reversed: boolean;
+  difficulty: Difficulty;
   onExit: () => void;
   onComplete: (correctness: boolean[]) => void;
 }
@@ -35,57 +48,164 @@ function optionClassName(
   return "border-gray-300 hover:border-blue-400 hover:bg-blue-50";
 }
 
-function IngestPractice({
-  quizPairs,
+function MultipleChoiceStep({
+  correct,
   optionPool,
-  reversed,
-  onExit,
-  onComplete,
-}: Props) {
-  const [order] = useState(() => shuffleOrder(quizPairs.length));
-  const [step, setStep] = useState(0);
+  field,
+  optionCount,
+  onCorrect,
+}: {
+  correct: string;
+  optionPool: VocabPair[];
+  field: "estonian" | "english";
+  optionCount: number;
+  onCorrect: (isFirstTry: boolean) => void;
+}) {
   const [wrongOptions, setWrongOptions] = useState<Set<string>>(new Set());
   const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
-  const resultsRef = useRef<boolean[]>(new Array(quizPairs.length).fill(false));
-
-  const pairIndex = order[step];
-  const current = quizPairs[pairIndex];
-  const prompt = reversed ? current.english : current.estonian;
-  const correct = reversed ? current.estonian : current.english;
   const options = useMemo(
-    () => buildOptions(correct, optionPool, reversed ? "estonian" : "english"),
-    [correct, optionPool, reversed],
+    () => buildOptions(correct, optionPool, field, optionCount),
+    [correct, optionPool, field, optionCount],
   );
-  const isLast = step === order.length - 1;
 
   function handleSelect(option: string) {
     if (answeredCorrectly || wrongOptions.has(option)) return;
     if (option.toLowerCase() === correct.toLowerCase()) {
       setAnsweredCorrectly(true);
       const isFirstTry = wrongOptions.size === 0;
-      resultsRef.current[pairIndex] = isFirstTry;
-      if (isFirstTry) setCorrectCount((c) => c + 1);
       playCorrectSound();
+      onCorrect(isFirstTry);
     } else {
       setWrongOptions((prev) => new Set(prev).add(option));
       playIncorrectSound();
     }
   }
 
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {options.map((option) => (
+        <button
+          key={option}
+          onClick={() => handleSelect(option)}
+          disabled={answeredCorrectly || wrongOptions.has(option)}
+          className={`border rounded-lg px-4 py-2.5 text-sm text-left transition-colors disabled:cursor-default ${optionClassName(option, wrongOptions, answeredCorrectly, correct)}`}
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function TypedAnswerStep({
+  correct,
+  onCorrect,
+}: {
+  correct: string;
+  onCorrect: (isFirstTry: boolean) => void;
+}) {
+  const tokens = useMemo(() => tokenizeSentence(correct), [correct]);
+  const wordTexts = useMemo(() => wordTokenTexts(tokens), [tokens]);
+  const [wordValues, setWordValues] = useState<string[]>(() =>
+    wordTexts.map(() => ""),
+  );
+  const [hasErrored, setHasErrored] = useState(false);
+  const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  function registerInputRef(index: number, el: HTMLInputElement | null) {
+    inputRefs.current[index] = el;
+  }
+
+  function focusWord(index: number) {
+    inputRefs.current[index]?.focus();
+    inputRefs.current[index]?.select();
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (answeredCorrectly) return;
+    const hasContent = wordValues.some((value) => value.trim().length > 0);
+    if (!hasContent) return;
+
+    const attempt = joinTokensWithWordValues(tokens, wordValues).trim();
+    if (isExactMatch(correct, attempt)) {
+      setAnsweredCorrectly(true);
+      playCorrectSound();
+      onCorrect(!hasErrored);
+      return;
+    }
+
+    setHasErrored(true);
+    playIncorrectSound();
+    const nextValues = wordValues.map((value, i) =>
+      value.toLowerCase() === wordTexts[i]?.toLowerCase() ? value : "",
+    );
+    setWordValues(nextValues);
+    const firstBlank = nextValues.findIndex((value) => value === "");
+    if (firstBlank !== -1) focusWord(firstBlank);
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
+      <MaskedSentenceInputs
+        tokens={tokens}
+        wordValues={wordValues}
+        onChangeWord={(index, value) =>
+          setWordValues((prev) => prev.map((v, i) => (i === index ? value : v)))
+        }
+        registerInputRef={registerInputRef}
+        onFocusWord={focusWord}
+      />
+      <button
+        type="submit"
+        disabled={answeredCorrectly || !wordValues.some((v) => v.trim())}
+        className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
+      >
+        Check
+      </button>
+    </form>
+  );
+}
+
+function IngestPractice({
+  quizPairs,
+  optionPool,
+  reversed,
+  difficulty,
+  onExit,
+  onComplete,
+}: Props) {
+  const [order] = useState(() => shuffleOrder(quizPairs.length));
+  const [step, setStep] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [advancePending, setAdvancePending] = useState(false);
+  const resultsRef = useRef<boolean[]>(new Array(quizPairs.length).fill(false));
+
+  const pairIndex = order[step];
+  const current = quizPairs[pairIndex];
+  const prompt = reversed ? current.english : current.estonian;
+  const correct = reversed ? current.estonian : current.english;
+  const isLast = step === order.length - 1;
+
+  function handleCorrect(isFirstTry: boolean) {
+    resultsRef.current[pairIndex] = isFirstTry;
+    if (isFirstTry) setCorrectCount((c) => c + 1);
+    setAdvancePending(true);
+  }
+
   useEffect(() => {
-    if (!answeredCorrectly) return;
+    if (!advancePending) return;
     const timer = setTimeout(() => {
       if (isLast) {
         onComplete(resultsRef.current);
         return;
       }
       setStep((s) => s + 1);
-      setWrongOptions(new Set());
-      setAnsweredCorrectly(false);
+      setAdvancePending(false);
     }, 500);
     return () => clearTimeout(timer);
-  }, [answeredCorrectly, isLast, onComplete]);
+  }, [advancePending, isLast, onComplete]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -110,18 +230,22 @@ function IngestPractice({
         <p className="text-3xl font-bold text-gray-900">{prompt}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {options.map((option) => (
-          <button
-            key={option}
-            onClick={() => handleSelect(option)}
-            disabled={answeredCorrectly || wrongOptions.has(option)}
-            className={`border rounded-lg px-4 py-2.5 text-sm text-left transition-colors disabled:cursor-default ${optionClassName(option, wrongOptions, answeredCorrectly, correct)}`}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
+      {difficulty === "hard" ? (
+        <TypedAnswerStep
+          key={step}
+          correct={correct}
+          onCorrect={handleCorrect}
+        />
+      ) : (
+        <MultipleChoiceStep
+          key={step}
+          correct={correct}
+          optionPool={optionPool}
+          field={reversed ? "estonian" : "english"}
+          optionCount={optionCountForDifficulty(difficulty)}
+          onCorrect={handleCorrect}
+        />
+      )}
     </div>
   );
 }

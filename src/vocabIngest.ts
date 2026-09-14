@@ -6,6 +6,28 @@ export const SPLIT_SUGGESTION_THRESHOLD = 20;
 export const BUCKET_SIZE_OPTIONS = [10, 20, 30] as const;
 export type BucketSize = (typeof BUCKET_SIZE_OPTIONS)[number];
 
+export const DIFFICULTIES = ["very-easy", "easy", "medium", "hard"] as const;
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
+export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
+  "very-easy": "Very easy (3 options)",
+  easy: "Easy (6 options)",
+  medium: "Medium (10 options)",
+  hard: "Hard (type the answer)",
+};
+
+const DIFFICULTY_OPTION_COUNTS: Record<Exclude<Difficulty, "hard">, number> = {
+  "very-easy": 3,
+  easy: 6,
+  medium: MAX_QUIZ_OPTIONS,
+};
+
+export function optionCountForDifficulty(
+  difficulty: Exclude<Difficulty, "hard">,
+): number {
+  return DIFFICULTY_OPTION_COUNTS[difficulty];
+}
+
 /**
  * Parses vocabulary pasted from a Google Sheets selection: one word pair per
  * line, Estonian and English separated by a tab. Lines that don't split into
@@ -72,7 +94,7 @@ export function buildListName(
 }
 
 /**
- * MCQ options for `correct`: itself plus up to MAX_QUIZ_OPTIONS - 1 other
+ * MCQ options for `correct`: itself plus up to `optionCount` - 1 other
  * translations drawn randomly from `pool` (e.g. the whole deck, even when
  * only a subset of it is being quizzed), all shuffled together. `field`
  * selects which side of the pair to draw distractors from — "english" for
@@ -82,6 +104,7 @@ export function buildOptions(
   correct: string,
   pool: VocabPair[],
   field: "estonian" | "english" = "english",
+  optionCount: number = MAX_QUIZ_OPTIONS,
 ): string[] {
   const distractorPool = Array.from(
     new Set(
@@ -90,7 +113,7 @@ export function buildOptions(
         .filter((value) => value.toLowerCase() !== correct.toLowerCase()),
     ),
   );
-  const distractors = shuffle(distractorPool).slice(0, MAX_QUIZ_OPTIONS - 1);
+  const distractors = shuffle(distractorPool).slice(0, optionCount - 1);
   return shuffle([correct, ...distractors]);
 }
 
