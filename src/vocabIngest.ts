@@ -6,24 +6,35 @@ export const SPLIT_SUGGESTION_THRESHOLD = 20;
 export const BUCKET_SIZE_OPTIONS = [10, 20, 30] as const;
 export type BucketSize = (typeof BUCKET_SIZE_OPTIONS)[number];
 
-export const DIFFICULTIES = ["very-easy", "easy", "medium", "hard"] as const;
+export const DIFFICULTIES = [
+  "very-easy",
+  "easy",
+  "medium",
+  "hard",
+  "very-hard",
+] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   "very-easy": "Very easy (4 options)",
   easy: "Easy (6 options)",
   medium: "Medium (10 options)",
-  hard: "Hard (type the answer)",
+  hard: "Hard (30 options)",
+  "very-hard": "Very hard (type the answer)",
 };
 
-const DIFFICULTY_OPTION_COUNTS: Record<Exclude<Difficulty, "hard">, number> = {
+const DIFFICULTY_OPTION_COUNTS: Record<
+  Exclude<Difficulty, "very-hard">,
+  number
+> = {
   "very-easy": 4,
   easy: 6,
   medium: MAX_QUIZ_OPTIONS,
+  hard: 30,
 };
 
 export function optionCountForDifficulty(
-  difficulty: Exclude<Difficulty, "hard">,
+  difficulty: Exclude<Difficulty, "very-hard">,
 ): number {
   return DIFFICULTY_OPTION_COUNTS[difficulty];
 }
