@@ -1,4 +1,12 @@
-import { BookOpen, Pencil, Plus, Redo2, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Plus,
+  Redo2,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import IngestPractice from "./IngestPractice";
 import TabDescription from "./TabDescription";
@@ -473,6 +481,77 @@ function buildDisplayBlocks(lists: VocabList[]): DisplayBlock[] {
   return blocks;
 }
 
+function GroupBlock({
+  group,
+  lists,
+  reversed,
+  onToggleCollapsed,
+  onMerge,
+  onRenameList,
+  onRemoveList,
+  onPracticeList,
+}: {
+  group: VocabListGroup | undefined;
+  lists: VocabList[];
+  reversed: boolean;
+  onToggleCollapsed: () => void;
+  onMerge: () => void;
+  onRenameList: (id: string, name: string) => void;
+  onRemoveList: (id: string) => void;
+  onPracticeList: (listId: string, indices: number[]) => void;
+}) {
+  const collapsed = group?.collapsed ?? false;
+  const totalWords = lists.reduce((sum, l) => sum + l.pairs.length, 0);
+
+  return (
+    <div className="flex flex-col gap-3 bg-gray-100 rounded-xl p-4">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          onClick={onToggleCollapsed}
+          className="flex items-center gap-1.5 text-left min-w-0"
+        >
+          {collapsed ? (
+            <ChevronRight size={16} className="shrink-0 text-gray-500" />
+          ) : (
+            <ChevronDown size={16} className="shrink-0 text-gray-500" />
+          )}
+          <span className="text-sm font-semibold text-gray-600">
+            {group?.name ?? "Group"}
+          </span>
+          {collapsed && (
+            <span className="text-sm text-gray-500">
+              — {totalWords} word{totalWords === 1 ? "" : "s"} in {lists.length}{" "}
+              list{lists.length === 1 ? "" : "s"}
+            </span>
+          )}
+        </button>
+        {!collapsed && (
+          <button
+            onClick={onMerge}
+            className="text-xs text-blue-700 hover:text-blue-800 underline shrink-0"
+          >
+            Merge into one list
+          </button>
+        )}
+      </div>
+      {!collapsed &&
+        lists.map((list) => (
+          <IngestListCard
+            key={list.id}
+            list={list}
+            nameEditable={false}
+            canSplit={false}
+            reversed={reversed}
+            onRename={(name) => onRenameList(list.id, name)}
+            onRemove={() => onRemoveList(list.id)}
+            onPractice={(indices) => onPracticeList(list.id, indices)}
+            onSplit={() => {}}
+          />
+        ))}
+    </div>
+  );
+}
+
 function IngestMode() {
   const [lists, setLists] = useState<VocabList[]>(() => readStoredLists());
   const [groups, setGroups] = useState<VocabListGroup[]>(() =>
@@ -553,6 +632,14 @@ function IngestMode() {
       });
     });
     setGroups((prev) => prev.filter((g) => g.id !== groupId));
+  }
+
+  function toggleGroupCollapsed(groupId: string) {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId ? { ...g, collapsed: !g.collapsed } : g,
+      ),
+    );
   }
 
   function renameList(id: string, name: string) {
@@ -669,38 +756,19 @@ function IngestMode() {
                   }
                 />
               ) : (
-                <div
+                <GroupBlock
                   key={block.groupId}
-                  className="flex flex-col gap-3 bg-gray-100 rounded-xl p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-gray-600">
-                      {groups.find((g) => g.id === block.groupId)?.name ??
-                        "Group"}
-                    </span>
-                    <button
-                      onClick={() => mergeGroup(block.groupId)}
-                      className="text-xs text-blue-700 hover:text-blue-800 underline"
-                    >
-                      Merge into one list
-                    </button>
-                  </div>
-                  {block.lists.map((list) => (
-                    <IngestListCard
-                      key={list.id}
-                      list={list}
-                      nameEditable={false}
-                      canSplit={false}
-                      reversed={reversed}
-                      onRename={(name) => renameList(list.id, name)}
-                      onRemove={() => removeList(list.id)}
-                      onPractice={(indices) =>
-                        setPracticing({ listId: list.id, indices })
-                      }
-                      onSplit={() => {}}
-                    />
-                  ))}
-                </div>
+                  group={groups.find((g) => g.id === block.groupId)}
+                  lists={block.lists}
+                  reversed={reversed}
+                  onToggleCollapsed={() => toggleGroupCollapsed(block.groupId)}
+                  onMerge={() => mergeGroup(block.groupId)}
+                  onRenameList={renameList}
+                  onRemoveList={removeList}
+                  onPracticeList={(listId, indices) =>
+                    setPracticing({ listId, indices })
+                  }
+                />
               ),
             )}
           </div>

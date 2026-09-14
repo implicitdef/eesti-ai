@@ -61,4 +61,6 @@ export interface VocabList {
 export interface VocabListGroup {
   id: string;
   name: string;
+  // Whether this group's card is collapsed to a summary line in the UI.
+  collapsed?: boolean;
 }
