@@ -10,14 +10,14 @@ export const DIFFICULTIES = ["very-easy", "easy", "medium", "hard"] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  "very-easy": "Very easy (3 options)",
+  "very-easy": "Very easy (4 options)",
   easy: "Easy (6 options)",
   medium: "Medium (10 options)",
   hard: "Hard (type the answer)",
 };
 
 const DIFFICULTY_OPTION_COUNTS: Record<Exclude<Difficulty, "hard">, number> = {
-  "very-easy": 3,
+  "very-easy": 4,
   easy: 6,
   medium: MAX_QUIZ_OPTIONS,
 };
