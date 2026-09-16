@@ -16,7 +16,7 @@ function GeneratingDetailView({
   level,
 }: {
   theme: string;
-  level: SentenceLevel;
+  level: SentenceLevel | undefined;
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -38,7 +38,7 @@ function GenerationErrorDetailView({
   disabled,
 }: {
   theme: string;
-  level: SentenceLevel;
+  level: SentenceLevel | undefined;
   errorMessage: string | undefined;
   onRetry: () => void;
   spinning: boolean;
@@ -80,7 +80,8 @@ function SentenceNav({
           params={{ id: prev.id }}
           className="text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline"
         >
-          ← Previous sentence: "{prev.theme}" ({formatLevel(prev.level)})
+          ← Previous sentence: "{prev.theme}"
+          {formatLevel(prev.level) && ` (${formatLevel(prev.level)})`}
         </Link>
       ) : (
         <span />
@@ -91,7 +92,8 @@ function SentenceNav({
           params={{ id: next.id }}
           className="text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline text-right"
         >
-          Next sentence: "{next.theme}" ({formatLevel(next.level)}) →
+          Next sentence: "{next.theme}"
+          {formatLevel(next.level) && ` (${formatLevel(next.level)})`} →
         </Link>
       ) : (
         <span />
@@ -182,11 +184,13 @@ function SentencePage() {
               <div className="flex flex-row justify-between gap-3">
                 <ThemeLabel theme={item.theme} level={item.level} />
                 <div className="flex flex-col gap-2 items-end">
-                  <GenerateAnotherButton
-                    onClick={() => generateAnother(item)}
-                    spinning={generatingSource === "another"}
-                    disabled={isGenerating}
-                  />
+                  {!item.manual && (
+                    <GenerateAnotherButton
+                      onClick={() => generateAnother(item)}
+                      spinning={generatingSource === "another"}
+                      disabled={isGenerating}
+                    />
+                  )}
                   <Link
                     to="/generate"
                     className="text-xs text-gray-500 hover:text-blue-700 underline transition-colors "

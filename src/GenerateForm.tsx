@@ -26,6 +26,7 @@ interface Props {
   multiline?: boolean;
   level: SentenceLevel;
   onLevelChange: (level: SentenceLevel) => void;
+  manualMode?: boolean;
 }
 
 function GenerateForm({
@@ -40,6 +41,7 @@ function GenerateForm({
   multiline = false,
   level,
   onLevelChange,
+  manualMode = false,
 }: Props) {
   return (
     <form onSubmit={onSubmit} className="flex gap-2 max-w-4xl">
@@ -62,16 +64,18 @@ function GenerateForm({
           className={fieldClassName}
         />
       )}
-      <select
-        value={level}
-        onChange={(e) => onLevelChange(e.target.value as SentenceLevel)}
-        disabled={disabled}
-        title="Sentence difficulty level"
-        className={selectClassName}
-      >
-        <option value="A1">{SENTENCE_LEVEL_LABELS.A1}</option>
-        <option value="B1">{SENTENCE_LEVEL_LABELS.B1}</option>
-      </select>
+      {!manualMode && (
+        <select
+          value={level}
+          onChange={(e) => onLevelChange(e.target.value as SentenceLevel)}
+          disabled={disabled}
+          title="Sentence difficulty level"
+          className={selectClassName}
+        >
+          <option value="A1">{SENTENCE_LEVEL_LABELS.A1}</option>
+          <option value="B1">{SENTENCE_LEVEL_LABELS.B1}</option>
+        </select>
+      )}
       <button
         type="submit"
         disabled={!value.trim() || disabled}
@@ -81,21 +85,29 @@ function GenerateForm({
           size={20}
           className={`shrink-0 ${submitLoading ? "animate-spin" : ""}`}
         />
-        {submitLoading ? "Generating…" : "Generate"}
+        {manualMode
+          ? submitLoading
+            ? "Adding…"
+            : "Add this Estonian text as-is"
+          : submitLoading
+            ? "Generating…"
+            : "Generate"}
       </button>
-      <button
-        type="button"
-        onClick={onGenerateBatch}
-        disabled={!value.trim() || disabled}
-        title="Generate 3 sentences for this theme"
-        className={`${batchButtonClassName} ${multiline ? "self-start" : ""} ${batchLoading ? "btn-shimmer" : ""}`}
-      >
-        <RefreshCcw
-          size={18}
-          className={`shrink-0 ${batchLoading ? "animate-spin" : ""}`}
-        />
-        3x
-      </button>
+      {!manualMode && (
+        <button
+          type="button"
+          onClick={onGenerateBatch}
+          disabled={!value.trim() || disabled}
+          title="Generate 3 sentences for this theme"
+          className={`${batchButtonClassName} ${multiline ? "self-start" : ""} ${batchLoading ? "btn-shimmer" : ""}`}
+        >
+          <RefreshCcw
+            size={18}
+            className={`shrink-0 ${batchLoading ? "animate-spin" : ""}`}
+          />
+          3x
+        </button>
+      )}
     </form>
   );
 }

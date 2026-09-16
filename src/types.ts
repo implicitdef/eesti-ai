@@ -21,9 +21,12 @@ export interface ThemePracticeItem {
   status: "generating" | "error" | "in_progress" | "completed";
   revealed: boolean;
   createdAt: number;
-  level: SentenceLevel;
+  level?: SentenceLevel;
   // Set only when status === "error".
   errorMessage?: string;
+  // Set only for items inserted as-is via "Insert a manually generated
+  // Estonian sentence" (no AI sentence generation, only translation).
+  manual?: boolean;
 }
 
 export interface SubtitleCue {

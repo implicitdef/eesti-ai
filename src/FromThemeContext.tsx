@@ -4,6 +4,7 @@ import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import ApiKeyModal from "./ApiKeyModal";
 import { useApiKey } from "./ApiKeyContext";
 import { generateThemeSentence } from "./from-theme-api";
+import { translateToEnglish } from "./translation-api";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
 
 const USER_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
@@ -64,6 +65,7 @@ interface FromThemeContextValue {
     itemLevel: SentenceLevel,
   ) => void;
   generateAnother: (item: ThemePracticeItem) => void;
+  insertManual: (text: string) => void;
   retry: (item: ThemePracticeItem) => void;
   updateItem: (updated: ThemePracticeItem) => void;
   clearUserItems: () => void;
@@ -85,7 +87,6 @@ function FromThemeProvider() {
         .filter((it) => !it.id.startsWith("demo-"))
         .map((it) => ({
           ...it,
-          level: it.level ?? "B1",
           ...(it.status === "generating"
             ? {
                 status: "error" as const,
@@ -103,7 +104,7 @@ function FromThemeProvider() {
     try {
       const parsed = JSON.parse(stored) as ThemePracticeItem[];
       if (parsed.length !== DEMO_ITEMS.length) return DEMO_ITEMS;
-      return parsed.map((it) => ({ ...it, level: it.level ?? "B1" }));
+      return parsed;
     } catch {
       return DEMO_ITEMS;
     }
@@ -175,6 +176,15 @@ function FromThemeProvider() {
     key: string,
   ): Promise<ThemePracticeItem> {
     try {
+      if (item.manual) {
+        const englishTranslation = await translateToEnglish(item.sentence, key);
+        return {
+          ...item,
+          englishTranslation,
+          status: "in_progress",
+          errorMessage: undefined,
+        };
+      }
       const result = await generateThemeSentence(
         item.theme,
         key,
@@ -350,7 +360,40 @@ function FromThemeProvider() {
 
   function generateAnother(item: ThemePracticeItem) {
     if (isGenerating) return;
-    withApiKey((key) => runGenerate(item.theme, 1, "another", key, item.level));
+    withApiKey((key) =>
+      runGenerate(item.theme, 1, "another", key, item.level ?? "B1"),
+    );
+  }
+
+  async function runInsertManual(text: string, key: string) {
+    setGeneratingSource("single");
+
+    const placeholder: ThemePracticeItem = {
+      id: crypto.randomUUID(),
+      theme: "(manual entry)",
+      sentence: text,
+      englishTranslation: "",
+      attempts: [],
+      status: "generating",
+      revealed: false,
+      createdAt: Date.now(),
+      level: undefined,
+      manual: true,
+    };
+
+    setUserItems((prev) => [placeholder, ...prev]);
+    navigate({ to: "/sentence/$id", params: { id: placeholder.id } });
+
+    const resolved = await generateSentenceForItem(placeholder, [], key);
+    updateItem(resolved);
+
+    setGeneratingSource(null);
+  }
+
+  function insertManual(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || isGenerating) return;
+    withApiKey((key) => runInsertManual(trimmed, key));
   }
 
   async function runRetry(item: ThemePracticeItem, key: string) {
@@ -405,6 +448,7 @@ function FromThemeProvider() {
         generateNew,
         generateFromList,
         generateAnother,
+        insertManual,
         retry,
         updateItem,
         clearUserItems,

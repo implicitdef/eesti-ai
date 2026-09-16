@@ -17,9 +17,11 @@ function SentenceRow({ item }: { item: ThemePracticeItem }) {
         <StatusIcon status={itemStatus(item)} />
         <span className="truncate">
           "{item.theme}"{" "}
-          <span className="text-gray-500 italic text-xs">
-            {formatLevel(item.level)}
-          </span>
+          {formatLevel(item.level) && (
+            <span className="text-gray-500 italic text-xs">
+              {formatLevel(item.level)}
+            </span>
+          )}
         </span>
       </Link>
     </li>
