@@ -63,6 +63,7 @@ export function buildMaskedHintParts(
   target: string,
   typed: string,
   revealEndings = false,
+  fullyRevealed = false,
 ): MaskedHintPart[] {
   const parts: MaskedHintPart[] = [];
   // Words longer than 4 letters also give away their last 2 letters when
@@ -80,7 +81,11 @@ export function buildMaskedHintParts(
     const char = target[i];
     if (!isLetter(char)) {
       parts.push({ char, kind: "punctuation" });
-    } else if (!isLetter(target[i - 1]) || i >= endingHintFrom) {
+    } else if (
+      fullyRevealed ||
+      !isLetter(target[i - 1]) ||
+      i >= endingHintFrom
+    ) {
       parts.push({ char, kind: "hintLetter" });
     } else {
       parts.push({ char: "●", kind: "mask" });
@@ -94,4 +99,16 @@ export function buildMaskedHintParts(
   }
 
   return parts;
+}
+
+/**
+ * Whether every character already typed matches the target word so far
+ * (case-insensitive) — true for an empty `typed`, false as soon as one
+ * typed character is wrong, regardless of how much is left to type.
+ */
+export function isCorrectPrefix(target: string, typed: string): boolean {
+  for (let i = 0; i < typed.length; i++) {
+    if (typed[i].toLowerCase() !== target[i]?.toLowerCase()) return false;
+  }
+  return true;
 }

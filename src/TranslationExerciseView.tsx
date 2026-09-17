@@ -137,6 +137,9 @@ function TranslationExerciseView({
     wordTexts.map(() => ""),
   );
   const [revealEndings, setRevealEndings] = useState(() => readRevealEndings());
+  const [revealedIndices, setRevealedIndices] = useState<Set<number>>(
+    () => new Set(),
+  );
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -145,6 +148,7 @@ function TranslationExerciseView({
 
   useEffect(() => {
     setWordValues(wordTexts.map(() => ""));
+    setRevealedIndices(new Set());
   }, [targetEstonian]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function registerInputRef(index: number, el: HTMLInputElement | null) {
@@ -154,6 +158,10 @@ function TranslationExerciseView({
   function focusWord(index: number) {
     inputRefs.current[index]?.focus();
     inputRefs.current[index]?.select();
+  }
+
+  function revealWord(index: number) {
+    setRevealedIndices((prev) => new Set(prev).add(index));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -260,6 +268,7 @@ function TranslationExerciseView({
               tokens={tokens}
               wordValues={wordValues}
               revealEndings={revealEndings}
+              revealedIndices={revealedIndices}
               onChangeWord={(index, value) =>
                 setWordValues((prev) =>
                   prev.map((v, i) => (i === index ? value : v)),
@@ -267,6 +276,7 @@ function TranslationExerciseView({
               }
               registerInputRef={registerInputRef}
               onFocusWord={focusWord}
+              onRevealWord={revealWord}
             />
             <button
               type="submit"
@@ -276,6 +286,10 @@ function TranslationExerciseView({
               Check
             </button>
           </form>
+          <p className="text-xs text-gray-400">
+            Tip: press Ctrl+Enter (Cmd+Enter on Mac) while in a word to reveal
+            it.
+          </p>
           <button
             onClick={onShowAnswer}
             className="self-start text-xs text-gray-400 hover:text-gray-600 underline transition-colors"

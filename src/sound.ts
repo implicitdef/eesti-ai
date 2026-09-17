@@ -46,3 +46,11 @@ export function playIncorrectSound() {
   playTone(ctx, 220, now, 0.16, 0.35);
   playTone(ctx, 174.61, now + 0.12, 0.22, 0.35);
 }
+
+export function playRevealSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  playTone(ctx, 880, now, 0.08, 0.25); // A5
+  playTone(ctx, 1174.66, now + 0.05, 0.1, 0.25); // D6
+}
