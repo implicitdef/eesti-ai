@@ -8,6 +8,16 @@ import {
 } from "./maskedHint";
 import type { SentencePracticeAttempt } from "./types";
 
+const REVEAL_ENDINGS_KEY = "eesti-ai-translation-reveal-endings";
+
+function readRevealEndings(): boolean {
+  try {
+    return localStorage.getItem(REVEAL_ENDINGS_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 interface Props {
   header: React.ReactNode;
   englishToTranslate: string;
@@ -126,7 +136,12 @@ function TranslationExerciseView({
   const [wordValues, setWordValues] = useState<string[]>(() =>
     wordTexts.map(() => ""),
   );
+  const [revealEndings, setRevealEndings] = useState(() => readRevealEndings());
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    localStorage.setItem(REVEAL_ENDINGS_KEY, String(revealEndings));
+  }, [revealEndings]);
 
   useEffect(() => {
     setWordValues(wordTexts.map(() => ""));
@@ -167,7 +182,15 @@ function TranslationExerciseView({
   return (
     <div className="flex flex-col gap-8">
       {header}
-
+      <label className="self-start flex items-center gap-2 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={revealEndings}
+          onChange={(e) => setRevealEndings(e.target.checked)}
+          className="h-4 w-4 accent-blue-700"
+        />
+        Also reveal the word endings (for words of 5+ letters)
+      </label>
       <div>
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
           Translate to Estonian
@@ -236,6 +259,7 @@ function TranslationExerciseView({
             <MaskedSentenceInputs
               tokens={tokens}
               wordValues={wordValues}
+              revealEndings={revealEndings}
               onChangeWord={(index, value) =>
                 setWordValues((prev) =>
                   prev.map((v, i) => (i === index ? value : v)),

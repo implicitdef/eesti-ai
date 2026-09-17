@@ -62,8 +62,14 @@ function isLetter(char: string | undefined): boolean {
 export function buildMaskedHintParts(
   target: string,
   typed: string,
+  revealEndings = false,
 ): MaskedHintPart[] {
   const parts: MaskedHintPart[] = [];
+  // Words longer than 4 letters also give away their last 2 letters when
+  // `revealEndings` is on, in addition to the usual first-letter-of-each-
+  // subword hint.
+  const endingHintFrom =
+    revealEndings && target.length > 4 ? target.length - 2 : Infinity;
 
   for (let i = 0; i < target.length; i++) {
     if (i < typed.length) {
@@ -74,7 +80,7 @@ export function buildMaskedHintParts(
     const char = target[i];
     if (!isLetter(char)) {
       parts.push({ char, kind: "punctuation" });
-    } else if (!isLetter(target[i - 1])) {
+    } else if (!isLetter(target[i - 1]) || i >= endingHintFrom) {
       parts.push({ char, kind: "hintLetter" });
     } else {
       parts.push({ char: "●", kind: "mask" });

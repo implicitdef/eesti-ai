@@ -17,6 +17,7 @@ function maskedHintPartClassName(
 function WordInput({
   word,
   value,
+  revealEndings,
   onChange,
   onFilled,
   onFocusPrev,
@@ -24,12 +25,13 @@ function WordInput({
 }: {
   word: string;
   value: string;
+  revealEndings: boolean;
   onChange: (value: string) => void;
   onFilled: () => void;
   onFocusPrev: () => void;
   inputRef: (el: HTMLInputElement | null) => void;
 }) {
-  const parts = buildMaskedHintParts(word, value);
+  const parts = buildMaskedHintParts(word, value, revealEndings);
   const isComposingRef = useRef(false);
   return (
     <span
@@ -93,12 +95,14 @@ function WordInput({
 function MaskedSentenceInputs({
   tokens,
   wordValues,
+  revealEndings = false,
   onChangeWord,
   registerInputRef,
   onFocusWord,
 }: {
   tokens: SentenceToken[];
   wordValues: string[];
+  revealEndings?: boolean;
   onChangeWord: (index: number, value: string) => void;
   registerInputRef: (index: number, el: HTMLInputElement | null) => void;
   onFocusWord: (index: number) => void;
@@ -125,6 +129,7 @@ function MaskedSentenceInputs({
             key={i}
             word={token.text}
             value={wordValues[index] ?? ""}
+            revealEndings={revealEndings}
             onChange={(value) => onChangeWord(index, value)}
             onFilled={() => onFocusWord(index + 1)}
             onFocusPrev={() => onFocusWord(index - 1)}
