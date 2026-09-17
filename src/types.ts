@@ -61,13 +61,4 @@ export interface VocabList {
   // been answered yet in the current run.
   correctIndices: number[];
   failedIndices: number[];
-  // Set when this list is a member of a VocabListGroup produced by a split.
-  groupId?: string;
-}
-
-export interface VocabListGroup {
-  id: string;
-  name: string;
-  // Whether this group's card is collapsed to a summary line in the UI.
-  collapsed?: boolean;
 }

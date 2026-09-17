@@ -1,7 +1,5 @@
 import {
   BookOpen,
-  ChevronDown,
-  ChevronRight,
   Gauge,
   Pencil,
   Play,
@@ -13,18 +11,12 @@ import {
 import { useEffect, useState } from "react";
 import IngestPractice from "./IngestPractice";
 import TabDescription from "./TabDescription";
-import type { VocabList, VocabListGroup, VocabPair } from "./types";
+import type { VocabList, VocabPair } from "./types";
 import {
-  BUCKET_SIZE_OPTIONS,
   DIFFICULTIES,
   DIFFICULTY_LABELS,
-  SPLIT_SUGGESTION_THRESHOLD,
-  bucketCount,
-  buildListName,
   hasAmbiguousEnglish,
   parseVocabPaste,
-  splitIntoBuckets,
-  type BucketSize,
   type Difficulty,
 } from "./vocabIngest";
 
@@ -40,7 +32,9 @@ const selectClassName =
   "border-2 border-black rounded-md px-2 py-1 text-sm bg-slate-100 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 const INGEST_LISTS_KEY = "eesti-ai-ingest-lists";
-const INGEST_GROUPS_KEY = "eesti-ai-ingest-groups";
+// Superseded when the group/sublist feature was removed; a stale key from
+// that era is cleaned up rather than read.
+const LEGACY_INGEST_GROUPS_KEY = "eesti-ai-ingest-groups";
 // Superseded by INGEST_LISTS_KEY once multiple lists were supported; read
 // once to migrate anyone's single in-progress list rather than lose it.
 const LEGACY_INGEST_LIST_KEY = "eesti-ai-ingest-list";
@@ -73,23 +67,28 @@ function migrateLegacyList(): VocabList[] {
 }
 
 function readStoredLists(): VocabList[] {
+  localStorage.removeItem(LEGACY_INGEST_GROUPS_KEY);
   try {
     const stored = localStorage.getItem(INGEST_LISTS_KEY);
-    if (stored) return JSON.parse(stored) as VocabList[];
+    if (stored) {
+      const parsed = JSON.parse(stored) as VocabList[];
+      // Drop any fields from the now-removed group/sublist feature (e.g. a
+      // stale groupId) rather than carrying them forward.
+      return parsed.map(
+        ({ id, name, createdAt, pairs, correctIndices, failedIndices }) => ({
+          id,
+          name,
+          createdAt,
+          pairs,
+          correctIndices,
+          failedIndices,
+        }),
+      );
+    }
   } catch {
     return [];
   }
   return migrateLegacyList();
-}
-
-function readStoredGroups(): VocabListGroup[] {
-  try {
-    const stored = localStorage.getItem(INGEST_GROUPS_KEY);
-    if (stored) return JSON.parse(stored) as VocabListGroup[];
-  } catch {
-    return [];
-  }
-  return [];
 }
 
 function previewWords(pairs: VocabPair[]): string {
@@ -102,90 +101,6 @@ function previewWords(pairs: VocabPair[]): string {
   return `${head}, ..., ${tail}`;
 }
 
-/**
- * The "split this into smaller lists?" form: bucket-size picker, live
- * preview, and the split/secondary/cancel actions. Shared by the paste flow
- * (splitting brand-new pasted pairs) and by an existing standalone list's
- * "Split into smaller lists" action, so both look and behave identically.
- */
-function SplitOfferPanel({
-  totalWords,
-  bucketSize,
-  onBucketSizeChange,
-  message,
-  onSplit,
-  secondaryAction,
-  onCancel,
-  cancelLabel = "Cancel",
-}: {
-  totalWords: number;
-  bucketSize: BucketSize;
-  onBucketSizeChange: (size: BucketSize) => void;
-  message?: string;
-  onSplit: () => void;
-  secondaryAction?: { label: string; onClick: () => void };
-  onCancel: () => void;
-  cancelLabel?: string;
-}) {
-  const splitCount = bucketCount(totalWords, bucketSize);
-  return (
-    <div className="flex flex-col gap-3 border border-gray-300 rounded-lg bg-gray-50 p-4 max-w-xl">
-      {message && <p className="text-sm text-gray-700">{message}</p>}
-      <div className="flex items-center gap-2">
-        <label htmlFor="bucket-size" className="text-sm text-gray-600">
-          Max words per list
-        </label>
-        <select
-          id="bucket-size"
-          value={bucketSize}
-          onChange={(e) =>
-            onBucketSizeChange(Number(e.target.value) as BucketSize)
-          }
-          className={selectClassName}
-        >
-          {BUCKET_SIZE_OPTIONS.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-      </div>
-      <p className="text-sm text-gray-500">
-        {splitCount > 1
-          ? `→ ${splitCount} lists of about ${Math.round(totalWords / splitCount)} words each`
-          : "This size won't actually split your list — try a smaller max."}
-      </p>
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          disabled={splitCount <= 1}
-          onClick={onSplit}
-          className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <BookOpen size={16} />
-          Split into {splitCount} lists
-        </button>
-        {secondaryAction && (
-          <button
-            type="button"
-            onClick={secondaryAction.onClick}
-            className="border border-amber-300 bg-amber-50 text-amber-700 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-amber-100 transition-colors"
-          >
-            {secondaryAction.label}
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
-        >
-          {cancelLabel}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function IngestPasteForm({
   onLoad,
   onCancel,
@@ -196,17 +111,11 @@ function IngestPasteForm({
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [parsedPairs, setParsedPairs] = useState<VocabPair[] | null>(null);
-  const [bucketSize, setBucketSize] = useState<BucketSize>(
-    BUCKET_SIZE_OPTIONS[0],
-  );
 
-  function commit(drafts: ListDraft[]) {
-    onLoad(drafts);
+  function commit(draft: ListDraft) {
+    onLoad([draft]);
     setName("");
     setText("");
-    setParsedPairs(null);
-    setBucketSize(BUCKET_SIZE_OPTIONS[0]);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -219,36 +128,7 @@ function IngestPasteForm({
       return;
     }
     setError(null);
-    if (pairs.length > SPLIT_SUGGESTION_THRESHOLD) {
-      setParsedPairs(pairs);
-    } else {
-      commit([{ name, pairs }]);
-    }
-  }
-
-  if (parsedPairs) {
-    return (
-      <SplitOfferPanel
-        totalWords={parsedPairs.length}
-        bucketSize={bucketSize}
-        onBucketSizeChange={setBucketSize}
-        message={`${parsedPairs.length} words is a lot to tackle in one go — want to split it into smaller lists?`}
-        onSplit={() =>
-          commit(
-            splitIntoBuckets(parsedPairs, bucketSize).map((pairs) => ({
-              name,
-              pairs,
-            })),
-          )
-        }
-        secondaryAction={{
-          label: "Keep as one list",
-          onClick: () => commit([{ name, pairs: parsedPairs }]),
-        }}
-        onCancel={() => setParsedPairs(null)}
-        cancelLabel="← Back"
-      />
-    );
+    commit({ name, pairs });
   }
 
   return (
@@ -344,21 +224,17 @@ function EditableListName({
 function IngestListCard({
   list,
   nameEditable,
-  canSplit,
   reversed,
   onRename,
   onRemove,
   onPractice,
-  onSplit,
 }: {
   list: VocabList;
   nameEditable: boolean;
-  canSplit: boolean;
   reversed: boolean;
   onRename: (name: string) => void;
   onRemove: () => void;
   onPractice: (indices: number[], resetStats: boolean) => void;
-  onSplit: (bucketSize: BucketSize) => void;
 }) {
   const correctCount = list.correctIndices.length;
   const failedCount = list.failedIndices.length;
@@ -372,10 +248,6 @@ function IngestListCard({
   const unansweredIndices = list.pairs
     .map((_, i) => i)
     .filter((i) => !answeredIndices.has(i));
-  const [splitting, setSplitting] = useState(false);
-  const [bucketSize, setBucketSize] = useState<BucketSize>(
-    BUCKET_SIZE_OPTIONS[0],
-  );
   const reversalBlocked = reversed && hasAmbiguousEnglish(list.pairs);
 
   return (
@@ -393,28 +265,6 @@ function IngestListCard({
           <p className="text-sm text-gray-500 truncate">
             {previewWords(list.pairs)}
           </p>
-          {canSplit && !splitting && (
-            <button
-              onClick={() => setSplitting(true)}
-              className="text-xs text-blue-700 hover:text-blue-800 underline mt-1"
-            >
-              Split into smaller lists
-            </button>
-          )}
-          {canSplit && splitting && (
-            <div className="mt-2">
-              <SplitOfferPanel
-                totalWords={list.pairs.length}
-                bucketSize={bucketSize}
-                onBucketSizeChange={setBucketSize}
-                onSplit={() => {
-                  onSplit(bucketSize);
-                  setSplitting(false);
-                }}
-                onCancel={() => setSplitting(false)}
-              />
-            </div>
-          )}
           {hasStats && (
             <p className="text-sm mt-2">
               <span className="text-green-600 font-semibold">
@@ -496,112 +346,8 @@ interface PracticeSession {
   indices: number[];
 }
 
-type DisplayBlock =
-  | { kind: "solo"; list: VocabList }
-  | { kind: "group"; groupId: string; lists: VocabList[] };
-
-/** Groups a flat list array into solo/group blocks, preserving array order. */
-function buildDisplayBlocks(lists: VocabList[]): DisplayBlock[] {
-  const blocks: DisplayBlock[] = [];
-  const seenGroups = new Set<string>();
-  for (const list of lists) {
-    if (!list.groupId) {
-      blocks.push({ kind: "solo", list });
-      continue;
-    }
-    if (seenGroups.has(list.groupId)) continue;
-    seenGroups.add(list.groupId);
-    blocks.push({
-      kind: "group",
-      groupId: list.groupId,
-      lists: lists.filter((l) => l.groupId === list.groupId),
-    });
-  }
-  return blocks;
-}
-
-function GroupBlock({
-  group,
-  lists,
-  reversed,
-  onToggleCollapsed,
-  onMerge,
-  onRenameList,
-  onRemoveList,
-  onPracticeList,
-}: {
-  group: VocabListGroup | undefined;
-  lists: VocabList[];
-  reversed: boolean;
-  onToggleCollapsed: () => void;
-  onMerge: () => void;
-  onRenameList: (id: string, name: string) => void;
-  onRemoveList: (id: string) => void;
-  onPracticeList: (
-    listId: string,
-    indices: number[],
-    resetStats: boolean,
-  ) => void;
-}) {
-  const collapsed = group?.collapsed ?? false;
-  const totalWords = lists.reduce((sum, l) => sum + l.pairs.length, 0);
-
-  return (
-    <div className="flex flex-col gap-3 bg-gray-100 rounded-xl p-4">
-      <div className="flex items-center justify-between gap-3">
-        <button
-          onClick={onToggleCollapsed}
-          className="flex items-center gap-1.5 text-left min-w-0"
-        >
-          {collapsed ? (
-            <ChevronRight size={16} className="shrink-0 text-gray-500" />
-          ) : (
-            <ChevronDown size={16} className="shrink-0 text-gray-500" />
-          )}
-          <span className="text-sm font-semibold text-gray-600">
-            {group?.name ?? "Group"}
-          </span>
-          {collapsed && (
-            <span className="text-sm text-gray-500">
-              — {totalWords} word{totalWords === 1 ? "" : "s"} in {lists.length}{" "}
-              list{lists.length === 1 ? "" : "s"}
-            </span>
-          )}
-        </button>
-        {!collapsed && (
-          <button
-            onClick={onMerge}
-            className="text-xs text-blue-700 hover:text-blue-800 underline shrink-0"
-          >
-            Merge into one list
-          </button>
-        )}
-      </div>
-      {!collapsed &&
-        lists.map((list) => (
-          <IngestListCard
-            key={list.id}
-            list={list}
-            nameEditable={false}
-            canSplit={false}
-            reversed={reversed}
-            onRename={(name) => onRenameList(list.id, name)}
-            onRemove={() => onRemoveList(list.id)}
-            onPractice={(indices, resetStats) =>
-              onPracticeList(list.id, indices, resetStats)
-            }
-            onSplit={() => {}}
-          />
-        ))}
-    </div>
-  );
-}
-
 function IngestMode() {
   const [lists, setLists] = useState<VocabList[]>(() => readStoredLists());
-  const [groups, setGroups] = useState<VocabListGroup[]>(() =>
-    readStoredGroups(),
-  );
   const [practicing, setPracticing] = useState<PracticeSession | null>(null);
   const [showPasteForm, setShowPasteForm] = useState(false);
   const [reversed, setReversed] = useState(false);
@@ -611,81 +357,18 @@ function IngestMode() {
     localStorage.setItem(INGEST_LISTS_KEY, JSON.stringify(lists));
   }, [lists]);
 
-  useEffect(() => {
-    localStorage.setItem(INGEST_GROUPS_KEY, JSON.stringify(groups));
-  }, [groups]);
-
   function addLists(drafts: ListDraft[]) {
-    const total = drafts.length;
     const createdAt = Date.now();
-    const groupId = total > 1 ? crypto.randomUUID() : undefined;
     const next: VocabList[] = drafts.map((draft, i) => ({
       id: crypto.randomUUID(),
-      name: buildListName(draft.name, i, total),
+      name: draft.name.trim() || "New list",
       createdAt: createdAt + i,
       pairs: draft.pairs,
       correctIndices: [],
       failedIndices: [],
-      groupId,
     }));
-    if (groupId) {
-      setGroups((prev) => [
-        { id: groupId, name: drafts[0].name.trim() || "New list" },
-        ...prev,
-      ]);
-    }
     setLists((prev) => [...next, ...prev]);
     setShowPasteForm(false);
-  }
-
-  function splitExistingList(id: string, bucketSize: BucketSize) {
-    const target = lists.find((l) => l.id === id);
-    if (!target) return;
-    const buckets = splitIntoBuckets(target.pairs, bucketSize);
-    if (buckets.length <= 1) return;
-    const groupId = crypto.randomUUID();
-    const now = Date.now();
-    const members: VocabList[] = buckets.map((pairs, i) => ({
-      id: crypto.randomUUID(),
-      name: buildListName("", i, buckets.length),
-      createdAt: now + i,
-      pairs,
-      correctIndices: [],
-      failedIndices: [],
-      groupId,
-    }));
-    setGroups((prev) => [{ id: groupId, name: target.name }, ...prev]);
-    setLists((prev) => prev.flatMap((l) => (l.id === id ? members : l)));
-  }
-
-  function mergeGroup(groupId: string) {
-    const members = lists.filter((l) => l.groupId === groupId);
-    if (members.length === 0) return;
-    const group = groups.find((g) => g.id === groupId);
-    const merged: VocabList = {
-      id: crypto.randomUUID(),
-      name: group?.name ?? "Merged list",
-      createdAt: Date.now(),
-      pairs: members.flatMap((l) => l.pairs),
-      correctIndices: [],
-      failedIndices: [],
-    };
-    setLists((prev) => {
-      const firstIndex = prev.findIndex((l) => l.groupId === groupId);
-      return prev.flatMap((l, i) => {
-        if (l.groupId !== groupId) return [l];
-        return i === firstIndex ? [merged] : [];
-      });
-    });
-    setGroups((prev) => prev.filter((g) => g.id !== groupId));
-  }
-
-  function toggleGroupCollapsed(groupId: string) {
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId ? { ...g, collapsed: !g.collapsed } : g,
-      ),
-    );
   }
 
   function renameList(id: string, name: string) {
@@ -828,41 +511,19 @@ function IngestMode() {
 
         {lists.length > 0 && (
           <div className="flex flex-col gap-4">
-            {buildDisplayBlocks(lists).map((block) =>
-              block.kind === "solo" ? (
-                <IngestListCard
-                  key={block.list.id}
-                  list={block.list}
-                  nameEditable
-                  canSplit={
-                    block.list.pairs.length > SPLIT_SUGGESTION_THRESHOLD
-                  }
-                  reversed={reversed}
-                  onRename={(name) => renameList(block.list.id, name)}
-                  onRemove={() => removeList(block.list.id)}
-                  onPractice={(indices, resetStats) =>
-                    startPractice(block.list.id, indices, resetStats)
-                  }
-                  onSplit={(bucketSize) =>
-                    splitExistingList(block.list.id, bucketSize)
-                  }
-                />
-              ) : (
-                <GroupBlock
-                  key={block.groupId}
-                  group={groups.find((g) => g.id === block.groupId)}
-                  lists={block.lists}
-                  reversed={reversed}
-                  onToggleCollapsed={() => toggleGroupCollapsed(block.groupId)}
-                  onMerge={() => mergeGroup(block.groupId)}
-                  onRenameList={renameList}
-                  onRemoveList={removeList}
-                  onPracticeList={(listId, indices, resetStats) =>
-                    startPractice(listId, indices, resetStats)
-                  }
-                />
-              ),
-            )}
+            {lists.map((list) => (
+              <IngestListCard
+                key={list.id}
+                list={list}
+                nameEditable
+                reversed={reversed}
+                onRename={(name) => renameList(list.id, name)}
+                onRemove={() => removeList(list.id)}
+                onPractice={(indices, resetStats) =>
+                  startPractice(list.id, indices, resetStats)
+                }
+              />
+            ))}
           </div>
         )}
       </div>
