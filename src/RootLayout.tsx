@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { ApiKeyProvider, useApiKey } from "./ApiKeyContext";
+import { FEATURES } from "./features";
 
 /** Secondary header showing the active API key, shown only once a key is set. */
 function ApiKeyBar() {
@@ -28,49 +29,14 @@ function ApiKeyBar() {
   );
 }
 
-interface Feature {
-  label: string;
-  to: string;
-  pageTitle: string;
-  isActive: (pathname: string) => boolean;
-}
-
-const FEATURES: Feature[] = [
-  {
-    label: "Translation exercise",
-    to: "/",
-    pageTitle: "Translation exercise",
-    isActive: (path) =>
-      !path.startsWith("/video") &&
-      !path.startsWith("/vocab-practice") &&
-      !path.startsWith("/vocab-extract"),
-  },
-  {
-    label: "Vocab practice",
-    to: "/vocab-practice",
-    pageTitle: "Vocab practice",
-    isActive: (path) => path.startsWith("/vocab-practice"),
-  },
-  {
-    label: "Video",
-    to: "/video",
-    pageTitle: "Watch video with vocab",
-    isActive: (path) => path.startsWith("/video"),
-  },
-  {
-    label: "Vocab extract",
-    to: "/vocab-extract",
-    pageTitle: "Vocab extract",
-    isActive: (path) => path.startsWith("/vocab-extract"),
-  },
-];
-
 function RootLayout() {
   const { pathname } = useLocation();
-  const activeFeature =
-    FEATURES.find((feature) => feature.isActive(pathname)) ?? FEATURES[0];
-  const pageTitle = activeFeature.pageTitle;
-  const otherFeatures = FEATURES.filter((feature) => feature !== activeFeature);
+  const activeFeature = FEATURES.find((feature) => feature.isActive(pathname));
+  const pageTitle = pathname === "/" ? "Welcome" : activeFeature?.pageTitle;
+  const otherFeatures = activeFeature
+    ? FEATURES.filter((feature) => feature !== activeFeature)
+    : FEATURES;
+  const otherFeaturesLabel = activeFeature ? "other features:" : "features:";
 
   return (
     <ApiKeyProvider>
@@ -94,7 +60,7 @@ function RootLayout() {
                 version: {__APP_VERSION__}
               </div>
               <nav className="flex items-center gap-1.5 text-xs text-blue-200 flex-wrap">
-                <span className="text-blue-300">other features:</span>
+                <span className="text-blue-300">{otherFeaturesLabel}</span>
                 {otherFeatures.flatMap((feature, i) => [
                   ...(i > 0
                     ? [

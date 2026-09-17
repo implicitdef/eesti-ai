@@ -5,6 +5,7 @@ import {
   createHashHistory,
 } from "@tanstack/react-router";
 import RootLayout from "./RootLayout";
+import WelcomePage from "./WelcomePage";
 import FromThemeProvider from "./FromThemeContext";
 import SentenceListPage from "./SentenceListPage";
 import SentencePage from "./SentencePage";
@@ -15,6 +16,12 @@ import VocabExtractPage from "./VocabExtractPage";
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
+const welcomeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: WelcomePage,
+});
+
 const fromThemeLayoutRoute = createRoute({
   id: "fromThemeLayout",
   getParentRoute: () => rootRoute,
@@ -23,7 +30,7 @@ const fromThemeLayoutRoute = createRoute({
 
 const sentenceListRoute = createRoute({
   getParentRoute: () => fromThemeLayoutRoute,
-  path: "/",
+  path: "/translation-exercise",
   component: SentenceListPage,
 });
 
@@ -58,6 +65,7 @@ const vocabExtractRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
+  welcomeRoute,
   fromThemeLayoutRoute.addChildren([
     sentenceListRoute,
     sentenceRoute,
