@@ -1,11 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { isExactMatch } from "./estonianDiff";
-import {
-  joinTokensWithWordValues,
-  tokenizeSentence,
-  wordTokenTexts,
-} from "./maskedHint";
-import MaskedSentenceInputs from "./MaskedWordInputs";
+import { useEffect, useMemo, useState } from "react";
 import { playCorrectSound, playIncorrectSound } from "./sound";
 import {
   buildOptions,
@@ -105,80 +98,6 @@ function MultipleChoiceStep({
   );
 }
 
-function TypedAnswerStep({
-  correct,
-  onCorrect,
-  onWrongAttempt,
-}: {
-  correct: string;
-  onCorrect: (isFirstTry: boolean) => void;
-  onWrongAttempt: () => void;
-}) {
-  const tokens = useMemo(() => tokenizeSentence(correct), [correct]);
-  const wordTexts = useMemo(() => wordTokenTexts(tokens), [tokens]);
-  const [wordValues, setWordValues] = useState<string[]>(() =>
-    wordTexts.map(() => ""),
-  );
-  const [hasErrored, setHasErrored] = useState(false);
-  const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  function registerInputRef(index: number, el: HTMLInputElement | null) {
-    inputRefs.current[index] = el;
-  }
-
-  function focusWord(index: number) {
-    inputRefs.current[index]?.focus();
-    inputRefs.current[index]?.select();
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (answeredCorrectly) return;
-    const hasContent = wordValues.some((value) => value.trim().length > 0);
-    if (!hasContent) return;
-
-    const attempt = joinTokensWithWordValues(tokens, wordValues).trim();
-    if (isExactMatch(correct, attempt)) {
-      setAnsweredCorrectly(true);
-      playCorrectSound();
-      onCorrect(!hasErrored);
-      return;
-    }
-
-    if (!hasErrored) onWrongAttempt();
-    setHasErrored(true);
-    playIncorrectSound();
-    const nextValues = wordValues.map((value, i) =>
-      value.toLowerCase() === wordTexts[i]?.toLowerCase() ? value : "",
-    );
-    setWordValues(nextValues);
-    const firstBlank = nextValues.findIndex((value) => value === "");
-    if (firstBlank !== -1) focusWord(firstBlank);
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
-      <MaskedSentenceInputs
-        tokens={tokens}
-        wordValues={wordValues}
-        onChangeWord={(index, value) =>
-          setWordValues((prev) => prev.map((v, i) => (i === index ? value : v)))
-        }
-        registerInputRef={registerInputRef}
-        onFocusWord={focusWord}
-      />
-      <button
-        type="submit"
-        disabled={answeredCorrectly || !wordValues.some((v) => v.trim())}
-        className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
-      >
-        Check
-      </button>
-    </form>
-  );
-}
-
 function IngestPractice({
   quizPairs,
   optionPool,
@@ -245,24 +164,15 @@ function IngestPractice({
         <p className="text-3xl font-bold text-gray-900">{prompt}</p>
       </div>
 
-      {difficulty === "very-hard" ? (
-        <TypedAnswerStep
-          key={step}
-          correct={correct}
-          onCorrect={handleCorrect}
-          onWrongAttempt={() => handleAnswer(false)}
-        />
-      ) : (
-        <MultipleChoiceStep
-          key={step}
-          correct={correct}
-          optionPool={optionPool}
-          onWrongAttempt={() => handleAnswer(false)}
-          field={reversed ? "estonian" : "english"}
-          optionCount={optionCountForDifficulty(difficulty)}
-          onCorrect={handleCorrect}
-        />
-      )}
+      <MultipleChoiceStep
+        key={step}
+        correct={correct}
+        optionPool={optionPool}
+        onWrongAttempt={() => handleAnswer(false)}
+        field={reversed ? "estonian" : "english"}
+        optionCount={optionCountForDifficulty(difficulty)}
+        onCorrect={handleCorrect}
+      />
     </div>
   );
 }

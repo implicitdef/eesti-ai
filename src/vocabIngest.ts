@@ -2,36 +2,24 @@ import type { VocabPair } from "./types";
 
 export const MAX_QUIZ_OPTIONS = 10;
 
-export const DIFFICULTIES = [
-  "very-easy",
-  "easy",
-  "medium",
-  "hard",
-  "very-hard",
-] as const;
+export const DIFFICULTIES = ["very-easy", "easy", "medium", "hard"] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   "very-easy": "Very easy (4 options)",
   easy: "Easy (6 options)",
   medium: "Medium (10 options)",
-  hard: "Hard (30 options)",
-  "very-hard": "Very hard (type the answer)",
+  hard: "Hard (20 options)",
 };
 
-const DIFFICULTY_OPTION_COUNTS: Record<
-  Exclude<Difficulty, "very-hard">,
-  number
-> = {
+const DIFFICULTY_OPTION_COUNTS: Record<Difficulty, number> = {
   "very-easy": 4,
   easy: 6,
   medium: MAX_QUIZ_OPTIONS,
-  hard: 30,
+  hard: 20,
 };
 
-export function optionCountForDifficulty(
-  difficulty: Exclude<Difficulty, "very-hard">,
-): number {
+export function optionCountForDifficulty(difficulty: Difficulty): number {
   return DIFFICULTY_OPTION_COUNTS[difficulty];
 }
 
