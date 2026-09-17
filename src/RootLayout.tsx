@@ -41,7 +41,9 @@ const FEATURES: Feature[] = [
     to: "/",
     pageTitle: "Translation exercise",
     isActive: (path) =>
-      !path.startsWith("/video") && !path.startsWith("/vocab-practice"),
+      !path.startsWith("/video") &&
+      !path.startsWith("/vocab-practice") &&
+      !path.startsWith("/vocab-extract"),
   },
   {
     label: "Vocab practice",
@@ -54,6 +56,12 @@ const FEATURES: Feature[] = [
     to: "/video",
     pageTitle: "Watch video with vocab",
     isActive: (path) => path.startsWith("/video"),
+  },
+  {
+    label: "Vocab extract",
+    to: "/vocab-extract",
+    pageTitle: "Vocab extract",
+    isActive: (path) => path.startsWith("/vocab-extract"),
   },
 ];
 

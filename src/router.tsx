@@ -11,6 +11,7 @@ import SentencePage from "./SentencePage";
 import GenerationPage from "./GenerationPage";
 import VideoMode from "./VideoMode";
 import IngestMode from "./IngestMode";
+import VocabExtractPage from "./VocabExtractPage";
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
@@ -50,6 +51,12 @@ const ingestRoute = createRoute({
   component: IngestMode,
 });
 
+const vocabExtractRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/vocab-extract",
+  component: VocabExtractPage,
+});
+
 const routeTree = rootRoute.addChildren([
   fromThemeLayoutRoute.addChildren([
     sentenceListRoute,
@@ -58,6 +65,7 @@ const routeTree = rootRoute.addChildren([
   ]),
   videoRoute,
   ingestRoute,
+  vocabExtractRoute,
 ]);
 
 export const router = createRouter({
