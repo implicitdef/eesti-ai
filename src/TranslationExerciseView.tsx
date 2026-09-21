@@ -10,6 +10,7 @@ import type { SentencePracticeAttempt } from "./types";
 import { usePersistedState } from "./usePersistedState";
 
 const REVEAL_ENDINGS_KEY = "eesti-ai-translation-reveal-endings";
+const LONG_SENTENCE_THRESHOLD = 150;
 
 interface Props {
   header: React.ReactNode;
@@ -178,6 +179,8 @@ function TranslationExerciseView({
   const isCompleted = status === "completed";
   const lastAttempt = attempts[attempts.length - 1];
   const succeededOnLastAttempt = isCompleted && lastAttempt?.isCorrect === true;
+  const isLongSentence = targetEstonian.length >= LONG_SENTENCE_THRESHOLD;
+  const visibleAttempts = isLongSentence ? attempts.slice(-1) : attempts;
 
   return (
     <div className="flex flex-col gap-8">
@@ -200,11 +203,11 @@ function TranslationExerciseView({
 
       {attempts.length > 0 && (
         <div className="flex flex-col gap-4">
-          {attempts.map((attempt, i) => (
+          {visibleAttempts.map((attempt, i) => (
             <div key={i} className="flex flex-col gap-1">
               <div className="flex items-baseline gap-3">
                 <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                  Attempt {i + 1}
+                  {isLongSentence ? "Last attempt" : `Attempt ${i + 1}`}
                 </span>
               </div>
               <AttemptDiff
