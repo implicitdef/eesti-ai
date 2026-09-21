@@ -7,16 +7,9 @@ import {
   type SentenceToken,
 } from "./maskedHint";
 import type { SentencePracticeAttempt } from "./types";
+import { usePersistedState } from "./usePersistedState";
 
 const REVEAL_ENDINGS_KEY = "eesti-ai-translation-reveal-endings";
-
-function readRevealEndings(): boolean {
-  try {
-    return localStorage.getItem(REVEAL_ENDINGS_KEY) === "true";
-  } catch {
-    return false;
-  }
-}
 
 interface Props {
   header: React.ReactNode;
@@ -136,15 +129,14 @@ function TranslationExerciseView({
   const [wordValues, setWordValues] = useState<string[]>(() =>
     wordTexts.map(() => ""),
   );
-  const [revealEndings, setRevealEndings] = useState(() => readRevealEndings());
+  const [revealEndings, setRevealEndings] = usePersistedState(
+    REVEAL_ENDINGS_KEY,
+    false,
+  );
   const [revealedIndices, setRevealedIndices] = useState<Set<number>>(
     () => new Set(),
   );
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  useEffect(() => {
-    localStorage.setItem(REVEAL_ENDINGS_KEY, String(revealEndings));
-  }, [revealEndings]);
 
   useEffect(() => {
     setWordValues(wordTexts.map(() => ""));

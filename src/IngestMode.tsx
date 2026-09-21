@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import IngestPractice from "./IngestPractice";
 import TabDescription from "./TabDescription";
 import type { VocabList, VocabPair } from "./types";
+import { usePersistedState } from "./usePersistedState";
 import {
   DIFFICULTIES,
   DIFFICULTY_LABELS,
@@ -32,6 +33,8 @@ const selectClassName =
   "border-2 border-black rounded-md px-2 py-1 text-sm bg-slate-100 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 const INGEST_LISTS_KEY = "eesti-ai-ingest-lists";
+const INGEST_REVERSED_KEY = "eesti-ai-ingest-reversed";
+const INGEST_DIFFICULTY_KEY = "eesti-ai-ingest-difficulty";
 // Superseded when the group/sublist feature was removed; a stale key from
 // that era is cleaned up rather than read.
 const LEGACY_INGEST_GROUPS_KEY = "eesti-ai-ingest-groups";
@@ -350,8 +353,11 @@ function IngestMode() {
   const [lists, setLists] = useState<VocabList[]>(() => readStoredLists());
   const [practicing, setPracticing] = useState<PracticeSession | null>(null);
   const [showPasteForm, setShowPasteForm] = useState(false);
-  const [reversed, setReversed] = useState(false);
-  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [reversed, setReversed] = usePersistedState(INGEST_REVERSED_KEY, false);
+  const [difficulty, setDifficulty] = usePersistedState<Difficulty>(
+    INGEST_DIFFICULTY_KEY,
+    "medium",
+  );
 
   useEffect(() => {
     localStorage.setItem(INGEST_LISTS_KEY, JSON.stringify(lists));
