@@ -190,7 +190,7 @@ function TranslationExerciseView({
   return (
     <div className="flex flex-col gap-8">
       {header}
-      <SettingsBox title="Translation settings">
+      <SettingsBox title="Translation settings" stacked>
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input
             type="checkbox"
