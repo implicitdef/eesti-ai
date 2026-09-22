@@ -7,20 +7,25 @@ import { useFromTheme } from "./FromThemeContext";
 import GenerateAnotherButton from "./GenerateAnotherButton";
 import PageMain from "./PageMain";
 import { playCorrectSound, playIncorrectSound } from "./sound";
-import ThemeLabel, { formatLevel } from "./ThemeLabel";
+import ThemeLabel, { formatLevel, themeDisplayText } from "./ThemeLabel";
 import TranslationExerciseView from "./TranslationExerciseView";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
+import { usePersistedState } from "./usePersistedState";
+
+const HIDE_THEME_KEY = "eesti-ai-translation-hide-theme";
 
 function GeneratingDetailView({
   theme,
   level,
+  hideTheme,
 }: {
   theme: string;
   level: SentenceLevel | undefined;
+  hideTheme: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <ThemeLabel theme={theme} level={level} />
+      <ThemeLabel theme={theme} level={level} hideTheme={hideTheme} />
       <div className="flex items-center gap-2 text-gray-500">
         <RefreshCcw size={18} className="animate-spin" />
         <p className="text-sm">Generating sentence…</p>
@@ -32,6 +37,7 @@ function GeneratingDetailView({
 function GenerationErrorDetailView({
   theme,
   level,
+  hideTheme,
   errorMessage,
   onRetry,
   spinning,
@@ -39,6 +45,7 @@ function GenerationErrorDetailView({
 }: {
   theme: string;
   level: SentenceLevel | undefined;
+  hideTheme: boolean;
   errorMessage: string | undefined;
   onRetry: () => void;
   spinning: boolean;
@@ -46,7 +53,7 @@ function GenerationErrorDetailView({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <ThemeLabel theme={theme} level={level} />
+      <ThemeLabel theme={theme} level={level} hideTheme={hideTheme} />
       <div className="bg-red-50 border border-red-200 rounded-lg px-5 py-4 flex flex-col gap-2">
         <p className="text-red-700 font-semibold text-sm">
           Couldn't generate a sentence for this theme.
@@ -68,9 +75,11 @@ function GenerationErrorDetailView({
 function SentenceNav({
   prev,
   next,
+  hideTheme,
 }: {
   prev: ThemePracticeItem | undefined;
   next: ThemePracticeItem | undefined;
+  hideTheme: boolean;
 }) {
   return (
     <div className="flex items-center justify-between gap-3 pt-4 border-t border-gray-100">
@@ -80,7 +89,7 @@ function SentenceNav({
           params={{ id: prev.id }}
           className="text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline"
         >
-          ← Previous sentence: "{prev.theme}"
+          ← Previous sentence: {themeDisplayText(prev.theme, hideTheme)}
           {formatLevel(prev.level) && ` (${formatLevel(prev.level)})`}
         </Link>
       ) : (
@@ -92,7 +101,7 @@ function SentenceNav({
           params={{ id: next.id }}
           className="text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline text-right"
         >
-          Next sentence: "{next.theme}"
+          Next sentence: {themeDisplayText(next.theme, hideTheme)}
           {formatLevel(next.level) && ` (${formatLevel(next.level)})`} →
         </Link>
       ) : (
@@ -114,6 +123,7 @@ function SentencePage() {
     retry,
     updateItem,
   } = useFromTheme();
+  const [hideTheme, setHideTheme] = usePersistedState(HIDE_THEME_KEY, false);
 
   const item = findItem(id);
 
@@ -159,12 +169,17 @@ function SentencePage() {
       <BackToListLink />
 
       {item.status === "generating" && (
-        <GeneratingDetailView theme={item.theme} level={item.level} />
+        <GeneratingDetailView
+          theme={item.theme}
+          level={item.level}
+          hideTheme={hideTheme}
+        />
       )}
       {item.status === "error" && (
         <GenerationErrorDetailView
           theme={item.theme}
           level={item.level}
+          hideTheme={hideTheme}
           errorMessage={item.errorMessage}
           onRetry={() => retry(item)}
           spinning={generatingSource === "retry"}
@@ -173,6 +188,8 @@ function SentencePage() {
       )}
       {(item.status === "in_progress" || item.status === "completed") && (
         <TranslationExerciseView
+          hideTheme={hideTheme}
+          onHideThemeChange={setHideTheme}
           header={
             <div className="flex flex-col gap-3">
               {isDemo && !apiKey && (
@@ -182,7 +199,11 @@ function SentencePage() {
                 </p>
               )}
               <div className="flex flex-row justify-between gap-3">
-                <ThemeLabel theme={item.theme} level={item.level} />
+                <ThemeLabel
+                  theme={item.theme}
+                  level={item.level}
+                  hideTheme={hideTheme}
+                />
                 <div className="flex flex-col gap-2 items-end">
                   {!item.manual && (
                     <GenerateAnotherButton
@@ -212,7 +233,7 @@ function SentencePage() {
         />
       )}
 
-      <SentenceNav prev={prev} next={next} />
+      <SentenceNav prev={prev} next={next} hideTheme={hideTheme} />
     </PageMain>
   );
 }

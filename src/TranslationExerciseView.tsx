@@ -6,6 +6,7 @@ import {
   wordTokenTexts,
   type SentenceToken,
 } from "./maskedHint";
+import SettingsBox from "./SettingsBox";
 import type { SentencePracticeAttempt } from "./types";
 import { usePersistedState } from "./usePersistedState";
 
@@ -19,6 +20,8 @@ interface Props {
   attempts: SentencePracticeAttempt[];
   status: "in_progress" | "completed";
   revealed: boolean;
+  hideTheme: boolean;
+  onHideThemeChange: (hideTheme: boolean) => void;
   onSubmitAttempt: (userAnswer: string, wordValues: string[]) => void;
   onShowAnswer: () => void;
   onHideAnswer: () => void;
@@ -118,6 +121,8 @@ function TranslationExerciseView({
   attempts,
   status,
   revealed,
+  hideTheme,
+  onHideThemeChange,
   onSubmitAttempt,
   onShowAnswer,
   onHideAnswer,
@@ -185,15 +190,26 @@ function TranslationExerciseView({
   return (
     <div className="flex flex-col gap-8">
       {header}
-      <label className="self-start flex items-center gap-2 text-sm text-gray-700">
-        <input
-          type="checkbox"
-          checked={revealEndings}
-          onChange={(e) => setRevealEndings(e.target.checked)}
-          className="h-4 w-4 accent-blue-700"
-        />
-        Also reveal the word endings (for words of 5+ letters)
-      </label>
+      <SettingsBox title="Translation settings">
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={revealEndings}
+            onChange={(e) => setRevealEndings(e.target.checked)}
+            className="h-4 w-4 accent-blue-700"
+          />
+          Also reveal the word endings (for words of 5+ letters)
+        </label>
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={hideTheme}
+            onChange={(e) => onHideThemeChange(e.target.checked)}
+            className="h-4 w-4 accent-blue-700"
+          />
+          Hide the theme
+        </label>
+      </SettingsBox>
       <div>
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
           Translate to Estonian
