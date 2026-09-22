@@ -1,3 +1,4 @@
+import { shuffle } from "./shuffle";
 import type { VocabPair } from "./types";
 
 export const MAX_QUIZ_OPTIONS = 10;
@@ -39,15 +40,6 @@ export function parseVocabPaste(raw: string): VocabPair[] | null {
     pairs.push({ estonian: estonian.trim(), english });
   }
   return pairs.length > 0 ? pairs : null;
-}
-
-function shuffle<T>(items: T[]): T[] {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
 }
 
 /** A random practice order visiting every word in the list exactly once. */

@@ -88,7 +88,8 @@ function GenerationPage() {
       {mode === "list" && (
         <p className="text-xs text-gray-500">
           Write a list of words (one by line). Each line will be used separately
-          to each generate one sentence (or 3, if you click the 3x button).
+          to each generate one sentence (or 3, if you click the 3x button), in a
+          randomized order.
           <br />
           <span className="text-amber-600 font-medium">
             If your list is very long, this might get expensive!

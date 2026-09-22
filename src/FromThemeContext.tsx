@@ -4,6 +4,7 @@ import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import ApiKeyModal from "./ApiKeyModal";
 import { useApiKey } from "./ApiKeyContext";
 import { generateThemeSentence } from "./from-theme-api";
+import { shuffle } from "./shuffle";
 import { translateToEnglish } from "./translation-api";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
 
@@ -349,7 +350,7 @@ function FromThemeProvider() {
     if (themes.length === 0 || isGenerating) return;
     withApiKey((key) =>
       runGenerateList(
-        themes,
+        shuffle(themes),
         count,
         count === 1 ? "single" : "batch",
         key,
