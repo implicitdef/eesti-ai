@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import ApiKeyModal from "./ApiKeyModal";
 import { useApiKey } from "./ApiKeyContext";
+import { DEMO_SENTENCES } from "./demoSentences";
 import { generateThemeSentence } from "./from-theme-api";
 import { shuffle } from "./shuffle";
 import { translateToEnglish } from "./translation-api";
@@ -12,41 +13,17 @@ const USER_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
 const DEMO_STATE_KEY = "eesti-ai-from-theme-demo-state";
 const LEVEL_KEY = "eesti-ai-from-theme-level";
 
-const DEMO_ITEMS: ThemePracticeItem[] = [
-  {
-    id: "demo-family",
-    theme: "family",
-    sentence: "Minu perekonnas on neli inimest ja üks koer.",
-    englishTranslation: "My family has four people and one dog.",
-    attempts: [],
-    status: "in_progress",
-    revealed: false,
-    createdAt: 3,
-    level: "B1",
-  },
-  {
-    id: "demo-hädas-olema",
-    theme: "hädas olema",
-    sentence: "Ta helistas mulle, kuna oli suures hädas.",
-    englishTranslation: "He called me because he was in serious trouble.",
-    attempts: [],
-    status: "in_progress",
-    revealed: false,
-    createdAt: 2,
-    level: "B1",
-  },
-  {
-    id: "demo-coffee",
-    theme: "coffee",
-    sentence: "Ma joon igal hommikul kohvi.",
-    englishTranslation: "I drink coffee every morning.",
-    attempts: [],
-    status: "in_progress",
-    revealed: false,
-    createdAt: 1,
-    level: "B1",
-  },
-];
+const DEMO_ITEMS: ThemePracticeItem[] = DEMO_SENTENCES.map((demo, i) => ({
+  id: `demo-${i}`,
+  theme: demo.theme,
+  sentence: demo.sentence,
+  englishTranslation: demo.englishTranslation,
+  level: demo.level,
+  attempts: [],
+  status: "in_progress",
+  revealed: false,
+  createdAt: DEMO_SENTENCES.length - i,
+}));
 
 type GeneratingSource = "single" | "batch" | "another" | "retry" | null;
 
