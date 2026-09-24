@@ -31,7 +31,7 @@ function WelcomePage() {
           <p className="text-gray-700 max-w-2xl">{translation.description}</p>
         </Link>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {otherFeatures.map((feature) => (
             <Link
               key={feature.to}

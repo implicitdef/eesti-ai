@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useApiKey } from "./ApiKeyContext";
+import { useApiKey } from "./CredentialsContext";
 import BackToListLink from "./BackToListLink";
 import { useFromTheme } from "./FromThemeContext";
 import GenerateForm from "./GenerateForm";

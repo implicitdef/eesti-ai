@@ -13,6 +13,7 @@ import GenerationPage from "./GenerationPage";
 import VideoMode from "./VideoMode";
 import IngestMode from "./IngestMode";
 import VocabExtractPage from "./VocabExtractPage";
+import BaserowVocabPage from "./BaserowVocabPage";
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
@@ -64,6 +65,12 @@ const vocabExtractRoute = createRoute({
   component: VocabExtractPage,
 });
 
+const baserowVocabRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/baserow-vocab",
+  component: BaserowVocabPage,
+});
+
 const routeTree = rootRoute.addChildren([
   welcomeRoute,
   fromThemeLayoutRoute.addChildren([
@@ -74,6 +81,7 @@ const routeTree = rootRoute.addChildren([
   videoRoute,
   ingestRoute,
   vocabExtractRoute,
+  baserowVocabRoute,
 ]);
 
 export const router = createRouter({

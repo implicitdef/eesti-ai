@@ -1,7 +1,7 @@
 import { Check, Copy, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 import ApiKeyModal from "./ApiKeyModal";
-import { useApiKey } from "./ApiKeyContext";
+import { useApiKey } from "./CredentialsContext";
 import PageMain from "./PageMain";
 import TabDescription from "./TabDescription";
 import { extractVocabFromChunk } from "./vocab-extract-api";

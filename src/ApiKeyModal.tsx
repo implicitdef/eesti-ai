@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { X } from "lucide-react";
+import CredentialForm from "./CredentialForm";
+import { CREDENTIALS } from "./CredentialsContext";
 
 interface Props {
   onSubmit: (key: string) => void;
@@ -7,13 +8,7 @@ interface Props {
 }
 
 function ApiKeyModal({ onSubmit, onCancel }: Props) {
-  const [key, setKey] = useState("");
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = key.trim();
-    if (trimmed) onSubmit(trimmed);
-  }
+  const { title, description } = CREDENTIALS.anthropic;
 
   return (
     <div
@@ -32,31 +27,14 @@ function ApiKeyModal({ onSubmit, onCancel }: Props) {
           <X size={18} />
         </button>
         <div>
-          <h2 className="text-xl font-bold text-blue-700">
-            Enter your Anthropic API key
-          </h2>
-          <p className="text-gray-600 text-sm mt-2">
-            Generating a sentence needs an Anthropic API key. It will be saved
-            in your browser's local storage and can be cleared at any time.
-          </p>
+          <h2 className="text-xl font-bold text-blue-700">{title}</h2>
+          <p className="text-gray-600 text-sm mt-2">{description}</p>
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input
-            autoFocus
-            type="password"
-            placeholder="sk-ant-..."
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            disabled={!key.trim()}
-            className="bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
-          >
-            Save and generate
-          </button>
-        </form>
+        <CredentialForm
+          kind="anthropic"
+          submitLabel="Save and generate"
+          onSubmit={(values) => onSubmit(values.apiKey)}
+        />
       </div>
     </div>
   );

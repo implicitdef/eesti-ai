@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from "@tanstack/react-router";
 import { createContext, useContext, useEffect, useState } from "react";
 import { MAX_PREVIOUS_SENTENCES } from "./anthropic-response";
 import ApiKeyModal from "./ApiKeyModal";
-import { useApiKey } from "./ApiKeyContext";
+import { useApiKey } from "./CredentialsContext";
 import { DEMO_SENTENCES } from "./demoSentences";
 import { generateThemeSentence } from "./from-theme-api";
 import { shuffle } from "./shuffle";

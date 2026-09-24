@@ -1,4 +1,4 @@
-import { BookOpen, FileSearch, Languages, Video } from "lucide-react";
+import { BookOpen, Database, FileSearch, Languages, Video } from "lucide-react";
 import type { ComponentType } from "react";
 
 export interface Feature {
@@ -49,5 +49,14 @@ export const FEATURES: Feature[] = [
       "Paste an Estonian text and extract the vocabulary that isn't obvious for a B1 learner, with English translations, ready to paste into a spreadsheet.",
     icon: FileSearch,
     isActive: (path) => path.startsWith("/vocab-extract"),
+  },
+  {
+    label: "Add vocab to Baserow",
+    to: "/baserow-vocab",
+    pageTitle: "Add vocab to Baserow",
+    description:
+      "Paste new vocabulary and add it to your Baserow vocabulary table, choosing which translation to keep for words that are already there.",
+    icon: Database,
+    isActive: (path) => path.startsWith("/baserow-vocab"),
   },
 ];

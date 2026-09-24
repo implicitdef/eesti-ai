@@ -1,6 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { RefreshCcw } from "lucide-react";
-import { useApiKey } from "./ApiKeyContext";
+import { useApiKey } from "./CredentialsContext";
 import BackToListLink from "./BackToListLink";
 import { isExactMatch } from "./estonianDiff";
 import { useFromTheme } from "./FromThemeContext";
