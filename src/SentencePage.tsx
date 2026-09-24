@@ -6,6 +6,7 @@ import { isExactMatch } from "./estonianDiff";
 import { useFromTheme } from "./FromThemeContext";
 import GenerateAnotherButton from "./GenerateAnotherButton";
 import PageMain from "./PageMain";
+import { longTextPairs, solvedSentences } from "./sentenceSplit";
 import { playCorrectSound, playIncorrectSound } from "./sound";
 import ThemeLabel, { formatLevel, themeDisplayText } from "./ThemeLabel";
 import TranslationExerciseView from "./TranslationExerciseView";
@@ -142,12 +143,30 @@ function SentencePage() {
   const next = siblings[index - 1];
   const isDemo = item.id.startsWith("demo-");
 
-  const handleSubmitAttempt = (userAnswer: string, wordValues: string[]) => {
-    const isCorrect = isExactMatch(item.sentence, userAnswer);
+  const sentencePairs = longTextPairs(item.sentence, item.englishTranslation);
+
+  const handleSubmitAttempt = (
+    userAnswer: string,
+    wordValues: string[],
+    sentenceIndex?: number,
+  ) => {
+    const expected =
+      sentencePairs && sentenceIndex !== undefined
+        ? sentencePairs[sentenceIndex].estonian
+        : item.sentence;
+    const isCorrect = isExactMatch(expected, userAnswer);
+    const attempts = [
+      ...item.attempts,
+      { userAnswer, isCorrect, wordValues, sentenceIndex },
+    ];
+    const isTextSolved =
+      sentencePairs && sentenceIndex !== undefined
+        ? solvedSentences(sentencePairs, attempts, false).every(Boolean)
+        : isCorrect;
     updateItem({
       ...item,
-      attempts: [...item.attempts, { userAnswer, isCorrect, wordValues }],
-      status: isCorrect ? "completed" : item.status,
+      attempts,
+      status: isTextSolved ? "completed" : item.status,
     });
     if (isCorrect) {
       playCorrectSound();
@@ -180,6 +199,7 @@ function SentencePage() {
       )}
       {(item.status === "in_progress" || item.status === "completed") && (
         <TranslationExerciseView
+          key={item.id}
           hideTheme={hideTheme}
           onHideThemeChange={setHideTheme}
           header={
@@ -217,6 +237,7 @@ function SentencePage() {
           targetEstonian={item.sentence}
           englishToTranslate={item.englishTranslation}
           attempts={item.attempts}
+          sentencePairs={sentencePairs}
           status={item.status}
           onSubmitAttempt={handleSubmitAttempt}
         />

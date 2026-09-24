@@ -1,24 +1,7 @@
+import { splitIntoSentences } from "./sentenceSplit";
 import type { VocabPair } from "./types";
 
 export const DEFAULT_CHUNK_TARGET_CHARS = 750;
-
-/**
- * Splits Estonian text into sentence-like units for chunking. A pragmatic
- * regex, not a full tokenizer: splits after ., !, ?, or … when followed by
- * whitespace and then an uppercase letter, a digit, or an opening quote —
- * in practice this catches real sentence boundaries while leaving most
- * abbreviations (followed by a lowercase word) alone. Blank lines are also
- * treated as boundaries, since pasted text commonly uses them as
- * unpunctuated paragraph breaks.
- */
-export function splitIntoSentences(text: string): string[] {
-  const collapsed = text.trim().replace(/\n\s*\n+/g, "\n\n");
-  if (!collapsed) return [];
-  return collapsed
-    .split(/(?<=[.!?…])\s+(?=[A-ZÕÄÖÜ0-9"„])|\n\s*\n+/)
-    .map((s) => s.replace(/\s+/g, " ").trim())
-    .filter(Boolean);
-}
 
 /**
  * Greedily packs sentences into chunks of at most ~targetChars, joined by a

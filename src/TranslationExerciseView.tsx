@@ -4,24 +4,29 @@ import {
   joinTokensWithWordValues,
   tokenizeSentence,
   wordTokenTexts,
-  type SentenceToken,
 } from "./maskedHint";
+import { solvedSentences, type SentencePair } from "./sentenceSplit";
 import SettingsBox from "./SettingsBox";
 import type { SentencePracticeAttempt } from "./types";
 import { usePersistedState } from "./usePersistedState";
 
 const REVEAL_ENDINGS_KEY = "eesti-ai-translation-reveal-endings";
-const LONG_SENTENCE_THRESHOLD = 150;
 
 interface Props {
   header: React.ReactNode;
   englishToTranslate: string;
   targetEstonian: string;
   attempts: SentencePracticeAttempt[];
+  // Set for long texts, which are practised sentence by sentence.
+  sentencePairs: SentencePair[] | null;
   status: "in_progress" | "completed";
   hideTheme: boolean;
   onHideThemeChange: (hideTheme: boolean) => void;
-  onSubmitAttempt: (userAnswer: string, wordValues: string[]) => void;
+  onSubmitAttempt: (
+    userAnswer: string,
+    wordValues: string[],
+    sentenceIndex?: number,
+  ) => void;
 }
 
 function CharComparison({
@@ -69,15 +74,17 @@ function WordDiff({ expected, actual }: { expected: string; actual: string }) {
 
 function AttemptDiff({
   targetEstonian,
-  tokens,
-  wordTexts,
   attempt,
 }: {
   targetEstonian: string;
-  tokens: SentenceToken[];
-  wordTexts: string[];
   attempt: SentencePracticeAttempt;
 }) {
+  const tokens = useMemo(
+    () => tokenizeSentence(targetEstonian),
+    [targetEstonian],
+  );
+  const wordTexts = useMemo(() => wordTokenTexts(tokens), [tokens]);
+
   // Attempts recorded before per-word inputs existed don't have wordValues;
   // fall back to the old whole-string comparison for those.
   if (!attempt.wordValues) {
@@ -111,16 +118,18 @@ function AttemptDiff({
   );
 }
 
-function TranslationExerciseView({
-  header,
-  englishToTranslate,
+/** The masked word inputs, Check button and tip for one Estonian sentence. */
+function SentenceExercise({
   targetEstonian,
-  attempts,
-  status,
-  hideTheme,
-  onHideThemeChange,
+  revealEndings,
+  autoFocus,
   onSubmitAttempt,
-}: Props) {
+}: {
+  targetEstonian: string;
+  revealEndings: boolean;
+  autoFocus: boolean;
+  onSubmitAttempt: (userAnswer: string, wordValues: string[]) => void;
+}) {
   const tokens = useMemo(
     () => tokenizeSentence(targetEstonian),
     [targetEstonian],
@@ -128,10 +137,6 @@ function TranslationExerciseView({
   const wordTexts = useMemo(() => wordTokenTexts(tokens), [tokens]);
   const [wordValues, setWordValues] = useState<string[]>(() =>
     wordTexts.map(() => ""),
-  );
-  const [revealEndings, setRevealEndings] = usePersistedState(
-    REVEAL_ENDINGS_KEY,
-    false,
   );
   const [revealedIndices, setRevealedIndices] = useState<Set<number>>(
     () => new Set(),
@@ -142,6 +147,10 @@ function TranslationExerciseView({
     setWordValues(wordTexts.map(() => ""));
     setRevealedIndices(new Set());
   }, [targetEstonian]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (autoFocus) focusWord(0);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function registerInputRef(index: number, el: HTMLInputElement | null) {
     inputRefs.current[index] = el;
@@ -158,7 +167,6 @@ function TranslationExerciseView({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (status === "completed") return;
     const hasContent = wordValues.some((value) => value.trim().length > 0);
     if (!hasContent) return;
 
@@ -175,11 +183,130 @@ function TranslationExerciseView({
     if (firstBlank !== -1) focusWord(firstBlank);
   }
 
+  return (
+    <div className="flex flex-col gap-3">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-wrap items-start gap-3"
+      >
+        <MaskedSentenceInputs
+          tokens={tokens}
+          wordValues={wordValues}
+          revealEndings={revealEndings}
+          revealedIndices={revealedIndices}
+          onChangeWord={(index, value) =>
+            setWordValues((prev) =>
+              prev.map((v, i) => (i === index ? value : v)),
+            )
+          }
+          registerInputRef={registerInputRef}
+          onFocusWord={focusWord}
+          onRevealWord={revealWord}
+        />
+        <button
+          type="submit"
+          disabled={!wordValues.some((value) => value.trim())}
+          className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
+        >
+          Check
+        </button>
+      </form>
+      <p className="text-xs text-gray-400">
+        Tip: press Ctrl+Enter (Cmd+Enter on Mac) while in a word to reveal it.
+      </p>
+    </div>
+  );
+}
+
+function LongTextExercise({
+  sentencePairs,
+  attempts,
+  isCompleted,
+  revealEndings,
+  onSubmitAttempt,
+}: {
+  sentencePairs: SentencePair[];
+  attempts: SentencePracticeAttempt[];
+  isCompleted: boolean;
+  revealEndings: boolean;
+  onSubmitAttempt: Props["onSubmitAttempt"];
+}) {
+  const solved = solvedSentences(sentencePairs, attempts, isCompleted);
+  const currentIndex = solved.indexOf(false);
+  // Only move focus when the user progresses to a new sentence, not when
+  // the page first opens.
+  const initialIndexRef = useRef(currentIndex);
+
+  return (
+    <div className="flex flex-col gap-8">
+      {sentencePairs.map((pair, i) => {
+        if (solved[i]) {
+          return (
+            <div key={i} className="flex flex-col gap-1">
+              <p className="text-2xl font-bold text-gray-900">{pair.english}</p>
+              <p className="font-mono text-sm tracking-wide text-green-600">
+                ✓ {pair.estonian}
+              </p>
+            </div>
+          );
+        }
+        if (i !== currentIndex) {
+          return (
+            <p key={i} className="text-2xl font-bold text-gray-400">
+              {pair.english}
+            </p>
+          );
+        }
+        const sentenceAttempts = attempts.filter((a) => a.sentenceIndex === i);
+        const lastAttempt = sentenceAttempts[sentenceAttempts.length - 1];
+        return (
+          <div key={i} className="flex flex-col gap-4">
+            <p className="text-2xl font-bold text-gray-900">{pair.english}</p>
+            {lastAttempt && (
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                  Your last attempt
+                </span>
+                <AttemptDiff
+                  targetEstonian={pair.estonian}
+                  attempt={lastAttempt}
+                />
+              </div>
+            )}
+            <SentenceExercise
+              targetEstonian={pair.estonian}
+              revealEndings={revealEndings}
+              autoFocus={i !== initialIndexRef.current}
+              onSubmitAttempt={(userAnswer, wordValues) =>
+                onSubmitAttempt(userAnswer, wordValues, i)
+              }
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function TranslationExerciseView({
+  header,
+  englishToTranslate,
+  targetEstonian,
+  attempts,
+  sentencePairs,
+  status,
+  hideTheme,
+  onHideThemeChange,
+  onSubmitAttempt,
+}: Props) {
+  const [revealEndings, setRevealEndings] = usePersistedState(
+    REVEAL_ENDINGS_KEY,
+    false,
+  );
+
   const isCompleted = status === "completed";
   const lastAttempt = attempts[attempts.length - 1];
   const succeededOnLastAttempt = isCompleted && lastAttempt?.isCorrect === true;
-  const isLongSentence = targetEstonian.length >= LONG_SENTENCE_THRESHOLD;
-  const visibleAttempts = isLongSentence ? attempts.slice(-1) : attempts;
 
   return (
     <div className="flex flex-col gap-8">
@@ -204,38 +331,57 @@ function TranslationExerciseView({
           Hide the theme
         </label>
       </SettingsBox>
-      <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
-          Translate to Estonian
-        </p>
-        <p className="text-2xl font-bold text-gray-900">{englishToTranslate}</p>
-      </div>
+      {sentencePairs && (
+        <p className="text-xs text-gray-500 -mb-4">This is a long text</p>
+      )}
 
-      {attempts.length > 0 && (
-        <div className="flex flex-col gap-4">
-          {visibleAttempts.map((attempt, i) => (
-            <div key={i} className="flex flex-col gap-1">
-              <div className="flex items-baseline gap-3">
-                <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                  {isLongSentence ? "Last attempt" : `Attempt ${i + 1}`}
-                </span>
-              </div>
-              <AttemptDiff
-                targetEstonian={targetEstonian}
-                tokens={tokens}
-                wordTexts={wordTexts}
-                attempt={attempt}
-              />
-              {attempt.isCorrect && (
-                <>
-                  <p className="text-sm text-green-600 font-semibold">
-                    ✓ Correct!
-                  </p>
-                </>
-              )}
-            </div>
-          ))}
+      {sentencePairs ? (
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
+            Translate to Estonian
+          </p>
+          <LongTextExercise
+            sentencePairs={sentencePairs}
+            attempts={attempts}
+            isCompleted={isCompleted}
+            revealEndings={revealEndings}
+            onSubmitAttempt={onSubmitAttempt}
+          />
         </div>
+      ) : (
+        <>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
+              Translate to Estonian
+            </p>
+            <p className="text-2xl font-bold text-gray-900">
+              {englishToTranslate}
+            </p>
+          </div>
+
+          {attempts.length > 0 && (
+            <div className="flex flex-col gap-4">
+              {attempts.map((attempt, i) => (
+                <div key={i} className="flex flex-col gap-1">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                      Attempt {i + 1}
+                    </span>
+                  </div>
+                  <AttemptDiff
+                    targetEstonian={targetEstonian}
+                    attempt={attempt}
+                  />
+                  {attempt.isCorrect && (
+                    <p className="text-sm text-green-600 font-semibold">
+                      ✓ Correct!
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {succeededOnLastAttempt && (
@@ -246,39 +392,15 @@ function TranslationExerciseView({
         </div>
       )}
 
-      {!isCompleted && (
-        <div className="flex flex-col gap-3">
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-wrap items-start gap-3"
-          >
-            <MaskedSentenceInputs
-              tokens={tokens}
-              wordValues={wordValues}
-              revealEndings={revealEndings}
-              revealedIndices={revealedIndices}
-              onChangeWord={(index, value) =>
-                setWordValues((prev) =>
-                  prev.map((v, i) => (i === index ? value : v)),
-                )
-              }
-              registerInputRef={registerInputRef}
-              onFocusWord={focusWord}
-              onRevealWord={revealWord}
-            />
-            <button
-              type="submit"
-              disabled={!wordValues.some((value) => value.trim())}
-              className="bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-blue-800 transition-colors"
-            >
-              Check
-            </button>
-          </form>
-          <p className="text-xs text-gray-400">
-            Tip: press Ctrl+Enter (Cmd+Enter on Mac) while in a word to reveal
-            it.
-          </p>
-        </div>
+      {!isCompleted && !sentencePairs && (
+        <SentenceExercise
+          targetEstonian={targetEstonian}
+          revealEndings={revealEndings}
+          autoFocus={false}
+          onSubmitAttempt={(userAnswer, wordValues) =>
+            onSubmitAttempt(userAnswer, wordValues)
+          }
+        />
       )}
     </div>
   );

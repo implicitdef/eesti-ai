@@ -5,6 +5,7 @@ import ApiKeyModal from "./ApiKeyModal";
 import { useApiKey } from "./CredentialsContext";
 import { DEMO_SENTENCES } from "./demoSentences";
 import { generateThemeSentence } from "./from-theme-api";
+import { assertSentenceCountsMatch } from "./sentenceSplit";
 import { shuffle } from "./shuffle";
 import { translateToEnglish } from "./translation-api";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
@@ -155,6 +156,7 @@ function FromThemeProvider() {
     try {
       if (item.manual) {
         const englishTranslation = await translateToEnglish(item.sentence, key);
+        assertSentenceCountsMatch(item.sentence, englishTranslation);
         return {
           ...item,
           englishTranslation,
@@ -168,6 +170,7 @@ function FromThemeProvider() {
         previousSentences,
         item.level,
       );
+      assertSentenceCountsMatch(result.sentence, result.englishTranslation);
       return {
         ...item,
         sentence: result.sentence,

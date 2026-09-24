@@ -3,6 +3,8 @@ export interface SentencePracticeAttempt {
   isCorrect: boolean;
   // Absent on attempts recorded before per-word inputs existed.
   wordValues?: string[];
+  // Set only for attempts on one sentence of a long text (see sentenceSplit).
+  sentenceIndex?: number;
 }
 
 export type SentenceLevel = "A1" | "B1";

@@ -1,12 +1,22 @@
 import { Link } from "@tanstack/react-router";
 import { useFromTheme } from "./FromThemeContext";
 import PageMain from "./PageMain";
+import { longTextPairs, solvedSentences } from "./sentenceSplit";
 import { itemStatus, StatusIcon } from "./StatusIcon";
 import TabDescription from "./TabDescription";
 import { formatLevel } from "./ThemeLabel";
 import type { ThemePracticeItem } from "./types";
 
+function longTextLabel(item: ThemePracticeItem): string | null {
+  const pairs = longTextPairs(item.sentence, item.englishTranslation);
+  if (!pairs) return null;
+  if (item.status === "completed") return "(long text)";
+  const solved = solvedSentences(pairs, item.attempts, false).filter(Boolean);
+  return `(long text · ${solved.length}/${pairs.length})`;
+}
+
 function SentenceRow({ item }: { item: ThemePracticeItem }) {
+  const longText = longTextLabel(item);
   return (
     <li>
       <Link
@@ -21,6 +31,9 @@ function SentenceRow({ item }: { item: ThemePracticeItem }) {
             <span className="text-gray-500 italic text-xs">
               {formatLevel(item.level)}
             </span>
+          )}{" "}
+          {longText && (
+            <span className="text-gray-500 italic text-xs">{longText}</span>
           )}
         </span>
       </Link>
