@@ -156,14 +156,6 @@ function SentencePage() {
     }
   };
 
-  const handleShowAnswer = () => {
-    updateItem({ ...item, revealed: true, status: "completed" });
-  };
-
-  const handleHideAnswer = () => {
-    updateItem({ ...item, revealed: false, status: "in_progress" });
-  };
-
   return (
     <PageMain>
       <BackToListLink />
@@ -226,10 +218,7 @@ function SentencePage() {
           englishToTranslate={item.englishTranslation}
           attempts={item.attempts}
           status={item.status}
-          revealed={item.revealed}
           onSubmitAttempt={handleSubmitAttempt}
-          onShowAnswer={handleShowAnswer}
-          onHideAnswer={handleHideAnswer}
         />
       )}
 

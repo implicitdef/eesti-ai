@@ -19,12 +19,9 @@ interface Props {
   targetEstonian: string;
   attempts: SentencePracticeAttempt[];
   status: "in_progress" | "completed";
-  revealed: boolean;
   hideTheme: boolean;
   onHideThemeChange: (hideTheme: boolean) => void;
   onSubmitAttempt: (userAnswer: string, wordValues: string[]) => void;
-  onShowAnswer: () => void;
-  onHideAnswer: () => void;
 }
 
 function CharComparison({
@@ -120,12 +117,9 @@ function TranslationExerciseView({
   targetEstonian,
   attempts,
   status,
-  revealed,
   hideTheme,
   onHideThemeChange,
   onSubmitAttempt,
-  onShowAnswer,
-  onHideAnswer,
 }: Props) {
   const tokens = useMemo(
     () => tokenizeSentence(targetEstonian),
@@ -252,23 +246,6 @@ function TranslationExerciseView({
         </div>
       )}
 
-      {revealed && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-baseline gap-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
-              Correct answer
-            </p>
-            <button
-              onClick={onHideAnswer}
-              className="text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
-            >
-              Hide
-            </button>
-          </div>
-          <p className="font-bold text-gray-900">{targetEstonian}</p>
-        </div>
-      )}
-
       {!isCompleted && (
         <div className="flex flex-col gap-3">
           <form
@@ -301,12 +278,6 @@ function TranslationExerciseView({
             Tip: press Ctrl+Enter (Cmd+Enter on Mac) while in a word to reveal
             it.
           </p>
-          <button
-            onClick={onShowAnswer}
-            className="self-start text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
-          >
-            Show me the correct answer
-          </button>
         </div>
       )}
     </div>

@@ -1,17 +1,9 @@
-import {
-  Check,
-  CircleAlert,
-  Dot,
-  Eye,
-  PencilLine,
-  RefreshCcw,
-} from "lucide-react";
+import { Check, CircleAlert, Dot, PencilLine, RefreshCcw } from "lucide-react";
 import type { ThemePracticeItem } from "./types";
 
 export type ItemStatus =
   | "not_started"
   | "in_progress"
-  | "revealed"
   | "solved"
   | "generating"
   | "error";
@@ -19,7 +11,6 @@ export type ItemStatus =
 export function itemStatus(item: ThemePracticeItem): ItemStatus {
   if (item.status === "generating") return "generating";
   if (item.status === "error") return "error";
-  if (item.revealed) return "revealed";
   if (item.status === "completed") return "solved";
   if (item.attempts.length > 0) return "in_progress";
   return "not_started";
@@ -50,14 +41,6 @@ export function StatusIcon({ status }: { status: ItemStatus }) {
           strokeWidth={4}
           className="shrink-0 text-green-500"
           aria-label="Solved"
-        />
-      );
-    case "revealed":
-      return (
-        <Eye
-          size={14}
-          className="shrink-0 text-red-500"
-          aria-label="Answer revealed"
         />
       );
     case "in_progress":

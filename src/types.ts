@@ -19,7 +19,6 @@ export interface ThemePracticeItem {
   englishTranslation: string;
   attempts: SentencePracticeAttempt[];
   status: "generating" | "error" | "in_progress" | "completed";
-  revealed: boolean;
   createdAt: number;
   level?: SentenceLevel;
   // Set only when status === "error".

@@ -21,7 +21,6 @@ const DEMO_ITEMS: ThemePracticeItem[] = DEMO_SENTENCES.map((demo, i) => ({
   level: demo.level,
   attempts: [],
   status: "in_progress",
-  revealed: false,
   createdAt: DEMO_SENTENCES.length - i,
 }));
 
@@ -210,7 +209,6 @@ function FromThemeProvider() {
         englishTranslation: "",
         attempts: [],
         status: "generating",
-        revealed: false,
         createdAt: now + i,
         level: itemLevel,
       }),
@@ -285,7 +283,6 @@ function FromThemeProvider() {
           englishTranslation: "",
           attempts: [],
           status: "generating",
-          revealed: false,
           createdAt: now + placeholders.length,
           level: itemLevel,
         });
@@ -353,7 +350,6 @@ function FromThemeProvider() {
       englishTranslation: "",
       attempts: [],
       status: "generating",
-      revealed: false,
       createdAt: Date.now(),
       level: undefined,
       manual: true,

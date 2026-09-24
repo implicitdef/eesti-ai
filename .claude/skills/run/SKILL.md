@@ -76,7 +76,6 @@ await page.evaluate(
     englishTranslation: "Maybe he will come tomorrow, but I'm not sure.",
     attempts: [],
     status: "in_progress",
-    revealed: false,
     createdAt: Date.now(),
   },
 );
