@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
 import { visibleFeatures } from "./features";
 import { useOwnerMode } from "./OwnerModeContext";
 
@@ -8,7 +9,7 @@ function WelcomePage() {
 
   return (
     <main className="flex-1 overflow-y-auto px-6 py-8">
-      <div className="max-w-4xl mx-auto flex flex-col gap-8">
+      <div className="max-w-3xl mx-auto flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h2 className="text-3xl font-bold text-gray-900">
             Learn Estonian with AI
@@ -20,36 +21,47 @@ function WelcomePage() {
           </p>
         </div>
 
-        <Link
-          to={translation.to}
-          className="group flex flex-col gap-3 rounded-2xl border-2 border-blue-700 bg-blue-50 p-6 sm:p-8 hover:bg-blue-100 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <translation.icon size={32} className="text-blue-700 shrink-0" />
-            <h3 className="text-2xl font-bold text-blue-900">
-              {translation.welcomeCardLabel}
-            </h3>
-          </div>
-          <p className="text-gray-700 max-w-2xl">{translation.description}</p>
-        </Link>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {otherFeatures.map((feature) => (
-            <Link
-              key={feature.to}
-              to={feature.to}
-              className="group flex flex-col gap-2 rounded-xl border border-gray-300 bg-white p-5 hover:border-blue-400 hover:bg-blue-50 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <feature.icon size={20} className="text-blue-700 shrink-0" />
-                <h3 className="text-lg font-bold text-gray-900">
-                  {feature.welcomeCardLabel}
-                </h3>
-              </div>
-              <p className="text-sm text-gray-600">{feature.description}</p>
-            </Link>
-          ))}
-        </div>
+        <ul className="border-t border-gray-900">
+          {[translation, ...otherFeatures].map((feature) => {
+            const isMain = feature === translation;
+            return (
+              <li key={feature.to} className="border-b border-gray-200">
+                <Link
+                  to={feature.to}
+                  className="group grid grid-cols-[1.5rem_1fr_auto] items-start gap-x-4 px-1 py-5 hover:bg-gray-50 transition-colors"
+                >
+                  <feature.icon
+                    size={isMain ? 22 : 18}
+                    className={`shrink-0 text-gray-500 group-hover:text-blue-700 transition-colors ${isMain ? "mt-1" : "mt-0.5"}`}
+                  />
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      <h3
+                        className={`font-semibold text-gray-900 group-hover:text-blue-800 transition-colors ${isMain ? "text-xl" : "text-base"}`}
+                      >
+                        {feature.welcomeCardLabel}
+                      </h3>
+                      {isMain && (
+                        <span className="text-xs uppercase tracking-wide text-gray-500">
+                          Main exercise
+                        </span>
+                      )}
+                    </div>
+                    <p
+                      className={`text-gray-600 max-w-2xl ${isMain ? "text-base" : "text-sm"}`}
+                    >
+                      {feature.description}
+                    </p>
+                  </div>
+                  <ArrowRight
+                    size={18}
+                    className="mt-1 shrink-0 text-gray-300 group-hover:text-blue-700 group-hover:translate-x-0.5 transition"
+                  />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </main>
   );
