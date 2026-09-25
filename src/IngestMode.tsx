@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import FeatureLink from "./FeatureLink";
 import IngestPractice from "./IngestPractice";
+import { PREGENERATED_LISTS } from "./pregeneratedVocab";
 import SettingsBox from "./SettingsBox";
 import TabDescription from "./TabDescription";
 import type { VocabList, VocabPair } from "./types";
@@ -21,6 +22,10 @@ import {
   parseVocabPaste,
   type Difficulty,
 } from "./vocabIngest";
+
+type ListProgress = Pick<VocabList, "correctIndices" | "failedIndices">;
+
+const EMPTY_PROGRESS: ListProgress = { correctIndices: [], failedIndices: [] };
 
 interface ListDraft {
   name: string;
@@ -36,6 +41,11 @@ const selectClassName =
 const INGEST_LISTS_KEY = "opimasin-ingest-lists";
 const INGEST_REVERSED_KEY = "opimasin-ingest-reversed";
 const INGEST_DIFFICULTY_KEY = "opimasin-ingest-difficulty";
+// Only the progress is stored for pregenerated lists: their words come from
+// the files in pregeneratedVocab/, keyed by list id.
+const INGEST_PREGENERATED_PROGRESS_KEY =
+  "opimasin-ingest-pregenerated-progress";
+const PREGENERATED_IDS = new Set(PREGENERATED_LISTS.map((l) => l.id));
 // Superseded when the group/sublist feature was removed; a stale key from
 // that era is cleaned up rather than read.
 const LEGACY_INGEST_GROUPS_KEY = "opimasin-ingest-groups";
@@ -227,17 +237,18 @@ function EditableListName({
 
 function IngestListCard({
   list,
-  nameEditable,
+  pregenerated,
   reversed,
   onRename,
   onRemove,
   onPractice,
 }: {
   list: VocabList;
-  nameEditable: boolean;
+  pregenerated: boolean;
   reversed: boolean;
-  onRename: (name: string) => void;
-  onRemove: () => void;
+  // Omitted for pregenerated lists, which can't be renamed or removed.
+  onRename?: (name: string) => void;
+  onRemove?: () => void;
   onPractice: (indices: number[], resetStats: boolean) => void;
 }) {
   const correctCount = list.correctIndices.length;
@@ -258,11 +269,20 @@ function IngestListCard({
     <div className="flex flex-col gap-4 border border-gray-300 rounded-lg px-5 py-4 bg-white">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          {nameEditable ? (
-            <EditableListName name={list.name} onRename={onRename} />
-          ) : (
-            <span className="text-lg font-bold text-gray-900">{list.name}</span>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {onRename ? (
+              <EditableListName name={list.name} onRename={onRename} />
+            ) : (
+              <span className="text-lg font-bold text-gray-900">
+                {list.name}
+              </span>
+            )}
+            {pregenerated && (
+              <span className="text-xs font-semibold text-gray-600 bg-gray-200 rounded-full px-2 py-0.5">
+                Pregenerated
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-500">
             {list.pairs.length} word{list.pairs.length === 1 ? "" : "s"}
           </p>
@@ -293,13 +313,15 @@ function IngestListCard({
             </p>
           )}
         </div>
-        <button
-          onClick={onRemove}
-          title="Remove this list"
-          className="shrink-0 text-gray-300 hover:text-red-500 transition-colors"
-        >
-          <Trash2 size={16} />
-        </button>
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            title="Remove this list"
+            className="shrink-0 text-gray-300 hover:text-red-500 transition-colors"
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
       </div>
       {reversalBlocked ? (
         <p className="text-sm text-red-500">
@@ -359,6 +381,21 @@ function IngestMode() {
     INGEST_DIFFICULTY_KEY,
     "very-easy",
   );
+  const [pregeneratedProgress, setPregeneratedProgress] = usePersistedState<
+    Record<string, ListProgress>
+  >(INGEST_PREGENERATED_PROGRESS_KEY, {});
+
+  const pregeneratedLists: VocabList[] = PREGENERATED_LISTS.map((l) => {
+    const progress = pregeneratedProgress[l.id] ?? EMPTY_PROGRESS;
+    // The list files may have been edited since the progress was recorded.
+    const inRange = (i: number) => i < l.pairs.length;
+    return {
+      ...l,
+      createdAt: 0,
+      correctIndices: progress.correctIndices.filter(inRange),
+      failedIndices: progress.failedIndices.filter(inRange),
+    };
+  });
 
   useEffect(() => {
     localStorage.setItem(INGEST_LISTS_KEY, JSON.stringify(lists));
@@ -386,30 +423,42 @@ function IngestMode() {
     setLists((prev) => prev.filter((l) => l.id !== id));
   }
 
+  function updateProgress(
+    listId: string,
+    update: (progress: ListProgress) => ListProgress,
+  ) {
+    if (PREGENERATED_IDS.has(listId)) {
+      setPregeneratedProgress((prev) => ({
+        ...prev,
+        [listId]: update(prev[listId] ?? EMPTY_PROGRESS),
+      }));
+    } else {
+      setLists((prev) =>
+        prev.map((l) => (l.id === listId ? { ...l, ...update(l) } : l)),
+      );
+    }
+  }
+
   function recordAnswer(
     listId: string,
     originalIndex: number,
     correct: boolean,
   ) {
-    setLists((prev) =>
-      prev.map((l) => {
-        if (l.id !== listId) return l;
-        const nextCorrect = new Set(l.correctIndices);
-        const nextFailed = new Set(l.failedIndices);
-        if (correct) {
-          nextCorrect.add(originalIndex);
-          nextFailed.delete(originalIndex);
-        } else {
-          nextFailed.add(originalIndex);
-          nextCorrect.delete(originalIndex);
-        }
-        return {
-          ...l,
-          correctIndices: [...nextCorrect],
-          failedIndices: [...nextFailed],
-        };
-      }),
-    );
+    updateProgress(listId, (progress) => {
+      const nextCorrect = new Set(progress.correctIndices);
+      const nextFailed = new Set(progress.failedIndices);
+      if (correct) {
+        nextCorrect.add(originalIndex);
+        nextFailed.delete(originalIndex);
+      } else {
+        nextFailed.add(originalIndex);
+        nextCorrect.delete(originalIndex);
+      }
+      return {
+        correctIndices: [...nextCorrect],
+        failedIndices: [...nextFailed],
+      };
+    });
   }
 
   function startPractice(
@@ -417,18 +466,12 @@ function IngestMode() {
     indices: number[],
     resetStats: boolean,
   ) {
-    if (resetStats) {
-      setLists((prev) =>
-        prev.map((l) =>
-          l.id === listId ? { ...l, correctIndices: [], failedIndices: [] } : l,
-        ),
-      );
-    }
+    if (resetStats) updateProgress(listId, () => EMPTY_PROGRESS);
     setPracticing({ listId, indices });
   }
 
   const activeList = practicing
-    ? lists.find((l) => l.id === practicing.listId)
+    ? [...lists, ...pregeneratedLists].find((l) => l.id === practicing.listId)
     : undefined;
 
   if (practicing && activeList) {
@@ -487,34 +530,32 @@ function IngestMode() {
           Paste a vocabulary list and practice guessing the translations.
         </TabDescription>
 
-        {lists.length > 0 && (
-          <SettingsBox storageKey="opimasin-ingest-settings-open">
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <Gauge size={16} className="text-gray-500" />
-              Difficulty
-              <select
-                value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                className={selectClassName}
-              >
-                {DIFFICULTIES.map((d) => (
-                  <option key={d} value={d}>
-                    {DIFFICULTY_LABELS[d]}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={reversed}
-                onChange={(e) => setReversed(e.target.checked)}
-                className="h-4 w-4 accent-blue-700"
-              />
-              Practice in reverse (show English, guess the Estonian word)
-            </label>
-          </SettingsBox>
-        )}
+        <SettingsBox storageKey="opimasin-ingest-settings-open">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Gauge size={16} className="text-gray-500" />
+            Difficulty
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+              className={selectClassName}
+            >
+              {DIFFICULTIES.map((d) => (
+                <option key={d} value={d}>
+                  {DIFFICULTY_LABELS[d]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={reversed}
+              onChange={(e) => setReversed(e.target.checked)}
+              className="h-4 w-4 accent-blue-700"
+            />
+            Practice in reverse (show English, guess the Estonian word)
+          </label>
+        </SettingsBox>
 
         {showPasteForm ? (
           <IngestPasteForm
@@ -531,23 +572,32 @@ function IngestMode() {
           </button>
         )}
 
-        {lists.length > 0 && (
-          <div className="flex flex-col gap-4">
-            {lists.map((list) => (
-              <IngestListCard
-                key={list.id}
-                list={list}
-                nameEditable
-                reversed={reversed}
-                onRename={(name) => renameList(list.id, name)}
-                onRemove={() => removeList(list.id)}
-                onPractice={(indices, resetStats) =>
-                  startPractice(list.id, indices, resetStats)
-                }
-              />
-            ))}
-          </div>
-        )}
+        <div className="flex flex-col gap-4">
+          {lists.map((list) => (
+            <IngestListCard
+              key={list.id}
+              list={list}
+              pregenerated={false}
+              reversed={reversed}
+              onRename={(name) => renameList(list.id, name)}
+              onRemove={() => removeList(list.id)}
+              onPractice={(indices, resetStats) =>
+                startPractice(list.id, indices, resetStats)
+              }
+            />
+          ))}
+          {pregeneratedLists.map((list) => (
+            <IngestListCard
+              key={list.id}
+              list={list}
+              pregenerated
+              reversed={reversed}
+              onPractice={(indices, resetStats) =>
+                startPractice(list.id, indices, resetStats)
+              }
+            />
+          ))}
+        </div>
       </div>
     </main>
   );
