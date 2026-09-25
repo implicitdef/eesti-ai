@@ -13,7 +13,7 @@ import TranslationExerciseView from "./TranslationExerciseView";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
 import { usePersistedState } from "./usePersistedState";
 
-const HIDE_THEME_KEY = "eesti-ai-translation-hide-theme";
+const HIDE_THEME_KEY = "opimasin-translation-hide-theme";
 
 function GeneratingDetailView({
   theme,

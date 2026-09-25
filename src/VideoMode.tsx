@@ -24,7 +24,7 @@ interface SubtitleTrack {
   fileName: string;
 }
 
-const VIDEO_POSITIONS_KEY = "eesti-ai-video-positions";
+const VIDEO_POSITIONS_KEY = "opimasin-video-positions";
 const MAX_VIDEO_POSITIONS = 50;
 const RESUME_END_GUARD_SECONDS = 2;
 

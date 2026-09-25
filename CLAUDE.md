@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**eesti-ai** is a Vite + React + TypeScript + Tailwind CSS SPA for learning Estonian with AI. It deploys to GitHub Pages at the base path `/eesti-ai/`.
+**Õpimasin** (`opimasin` in code) is a Vite + React + TypeScript + Tailwind CSS SPA for learning Estonian with AI. It deploys to GitHub Pages at the base path `/eesti-ai/` (the GitHub repo name).
 
 ## Development Commands
 

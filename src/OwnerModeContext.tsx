@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import { usePersistedState } from "./usePersistedState";
 
-const OWNER_MODE_KEY = "eesti-ai-owner-mode";
+const OWNER_MODE_KEY = "opimasin-owner-mode";
 
 interface OwnerModeContextValue {
   ownerMode: boolean;

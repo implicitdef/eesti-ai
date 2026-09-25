@@ -10,7 +10,7 @@ import SettingsBox from "./SettingsBox";
 import type { SentencePracticeAttempt } from "./types";
 import { usePersistedState } from "./usePersistedState";
 
-const REVEAL_ENDINGS_KEY = "eesti-ai-translation-reveal-endings";
+const REVEAL_ENDINGS_KEY = "opimasin-translation-reveal-endings";
 
 interface Props {
   header: React.ReactNode;

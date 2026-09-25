@@ -32,15 +32,15 @@ const fieldClassName =
 const selectClassName =
   "border-2 border-black rounded-md px-2 py-1 text-sm bg-slate-100 text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
-const INGEST_LISTS_KEY = "eesti-ai-ingest-lists";
-const INGEST_REVERSED_KEY = "eesti-ai-ingest-reversed";
-const INGEST_DIFFICULTY_KEY = "eesti-ai-ingest-difficulty";
+const INGEST_LISTS_KEY = "opimasin-ingest-lists";
+const INGEST_REVERSED_KEY = "opimasin-ingest-reversed";
+const INGEST_DIFFICULTY_KEY = "opimasin-ingest-difficulty";
 // Superseded when the group/sublist feature was removed; a stale key from
 // that era is cleaned up rather than read.
-const LEGACY_INGEST_GROUPS_KEY = "eesti-ai-ingest-groups";
+const LEGACY_INGEST_GROUPS_KEY = "opimasin-ingest-groups";
 // Superseded by INGEST_LISTS_KEY once multiple lists were supported; read
 // once to migrate anyone's single in-progress list rather than lose it.
-const LEGACY_INGEST_LIST_KEY = "eesti-ai-ingest-list";
+const LEGACY_INGEST_LIST_KEY = "opimasin-ingest-list";
 const PREVIEW_HEAD_COUNT = 3;
 const PREVIEW_TAIL_COUNT = 2;
 

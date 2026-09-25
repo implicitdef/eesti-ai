@@ -1,9 +1,9 @@
 ---
 name: run
-description: Launch and drive eesti-ai (Vite dev server) in headless Chromium via Playwright to smoke-test UI changes, including how to bypass the Anthropic API key gate without spending real API calls, and how to avoid disturbing a dev server the user may already have running.
+description: Launch and drive Õpimasin (Vite dev server) in headless Chromium via Playwright to smoke-test UI changes, including how to bypass the Anthropic API key gate without spending real API calls, and how to avoid disturbing a dev server the user may already have running.
 ---
 
-# Running eesti-ai
+# Running Õpimasin
 
 This is a Vite + React SPA (see repo `CLAUDE.md`). To actually see a change
 work, launch a headless browser against the Vite dev server and drive it —
@@ -21,8 +21,8 @@ if curl -sf http://localhost:5173/eesti-ai/ >/dev/null; then
   DEV_URL="http://localhost:5173/eesti-ai/"
   STARTED_BY_ME=0
 else
-  npm run dev -- --port 5174 > /tmp/eesti-ai-vite-test.log 2>&1 &
-  echo $! > /tmp/eesti-ai-vite-test.pid
+  npm run dev -- --port 5174 > /tmp/opimasin-vite-test.log 2>&1 &
+  echo $! > /tmp/opimasin-vite-test.pid
   for i in $(seq 1 30); do
     curl -sf http://localhost:5174/eesti-ai/ >/dev/null && break
     sleep 1
@@ -36,7 +36,7 @@ If you started your own instance (`STARTED_BY_ME=1`), stop only that
 specific PID when done — never a broad port-kill:
 
 ```bash
-kill "$(cat /tmp/eesti-ai-vite-test.pid)" 2>/dev/null
+kill "$(cat /tmp/opimasin-vite-test.pid)" 2>/dev/null
 ```
 
 If you reused the existing server, leave it running.
@@ -44,28 +44,28 @@ If you reused the existing server, leave it running.
 ## Bypassing the API-key gate (don't spend real API calls)
 
 `RootLayout` gates the whole app behind an Anthropic API key stored in
-`localStorage` under `eesti-ai-api-key` (see `src/RootLayout.tsx`). For a UI
+`localStorage` under `opimasin-api-key` (see `src/RootLayout.tsx`). For a UI
 smoke test you almost never need a real key or a real API call — seed
 `localStorage` directly instead:
 
 ```js
 await page.goto(DEV_URL);
 await page.evaluate(() => {
-  localStorage.setItem("eesti-ai-api-key", "sk-ant-smoke-test-fake-key");
+  localStorage.setItem("opimasin-api-key", "sk-ant-smoke-test-fake-key");
 });
 await page.reload();
 ```
 
 To test a specific screen without triggering a real `generateThemeSentence`
 API call, also seed that mode's history directly. E.g. for "From theme or
-words" (`FromThemeMode.tsx`), the key is `eesti-ai-from-theme-v2-history`,
+words" (`FromThemeMode.tsx`), the key is `opimasin-from-theme-v2-history`,
 holding a JSON array of `ThemePracticeItem` (see `src/types.ts`):
 
 ```js
 await page.evaluate(
   (item) => {
     localStorage.setItem(
-      "eesti-ai-from-theme-v2-history",
+      "opimasin-from-theme-v2-history",
       JSON.stringify([item]),
     );
   },
@@ -83,7 +83,7 @@ await page.reload();
 ```
 
 `VideoMode.tsx` similarly persists watch positions under
-`eesti-ai-video-positions` (grep the source for the exact shape before
+`opimasin-video-positions` (grep the source for the exact shape before
 relying on it — it may drift).
 
 ## Driving the browser

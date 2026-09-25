@@ -33,7 +33,7 @@ export const CREDENTIALS = {
       {
         name: "apiKey",
         label: "API key",
-        storageKey: "eesti-ai-api-key",
+        storageKey: "opimasin-api-key",
         placeholder: "sk-ant-...",
         secret: true,
       },
@@ -50,14 +50,14 @@ export const CREDENTIALS = {
       {
         name: "token",
         label: "Database token",
-        storageKey: "eesti-ai-baserow-token",
+        storageKey: "opimasin-baserow-token",
         placeholder: "Database token",
         secret: true,
       },
       {
         name: "tableId",
         label: "Table ID",
-        storageKey: "eesti-ai-baserow-table-id",
+        storageKey: "opimasin-baserow-table-id",
         placeholder: "e.g. 123456",
         secret: false,
       },

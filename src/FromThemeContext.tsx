@@ -10,9 +10,9 @@ import { shuffle } from "./shuffle";
 import { translateToEnglish } from "./translation-api";
 import type { SentenceLevel, ThemePracticeItem } from "./types";
 
-const USER_HISTORY_KEY = "eesti-ai-from-theme-v2-history";
-const DEMO_STATE_KEY = "eesti-ai-from-theme-demo-state";
-const LEVEL_KEY = "eesti-ai-from-theme-level";
+const USER_HISTORY_KEY = "opimasin-from-theme-v2-history";
+const DEMO_STATE_KEY = "opimasin-from-theme-demo-state";
+const LEVEL_KEY = "opimasin-from-theme-level";
 
 const DEMO_ITEMS: ThemePracticeItem[] = DEMO_SENTENCES.map((demo, i) => ({
   id: `demo-${i}`,

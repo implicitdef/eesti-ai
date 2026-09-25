@@ -110,7 +110,7 @@ function RootLayoutContent() {
             <div>
               <Link to="/" className="no-underline">
                 <h1 className="text-2xl font-bold uppercase inline text-white">
-                  Eesti AI
+                  Õpimasin
                 </h1>
               </Link>
               <span className="text-sm text-blue-200 ml-2">{pageTitle}</span>
