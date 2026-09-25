@@ -1,13 +1,13 @@
 import { Link, Navigate, Outlet, useLocation } from "@tanstack/react-router";
-import { useRef } from "react";
 import { X } from "lucide-react";
+import { useRef } from "react";
+import type { CredentialKind } from "./CredentialsContext";
 import {
   CREDENTIALS,
   CredentialsProvider,
   useCredential,
   useSetCredentialKinds,
 } from "./CredentialsContext";
-import type { CredentialKind } from "./CredentialsContext";
 import { FEATURES, visibleFeatures } from "./features";
 import { OwnerModeProvider, useOwnerMode } from "./OwnerModeContext";
 
@@ -95,7 +95,7 @@ function RootLayoutContent() {
   const { pathname } = useLocation();
   const { ownerMode } = useOwnerMode();
   const activeFeature = FEATURES.find((feature) => feature.isActive(pathname));
-  const pageTitle = pathname === "/" ? "Welcome" : activeFeature?.pageTitle;
+  const pageTitle = pathname === "/" ? null : activeFeature?.pageTitle;
   const otherFeatures = visibleFeatures(ownerMode).filter(
     (feature) => feature !== activeFeature,
   );
@@ -113,7 +113,11 @@ function RootLayoutContent() {
                   Õpimasin
                 </h1>
               </Link>
-              <span className="text-sm text-blue-200 ml-2">{pageTitle}</span>
+              {pageTitle && (
+                <span className="text-sm text-blue-200 ml-2 font-bold">
+                  {pageTitle}
+                </span>
+              )}
             </div>
 
             <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end flex-wrap gap-x-2 gap-y-1 w-full sm:w-auto">
