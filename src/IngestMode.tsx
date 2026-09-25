@@ -457,26 +457,31 @@ function IngestMode() {
   return (
     <main className="flex-1 overflow-y-auto px-6 py-4">
       <div className="max-w-2xl mx-auto flex flex-col gap-6">
-        <TabDescription>
-          Paste a vocabulary list and practice guessing the translations. <br />
-          <br />
-          <b>Expected format</b> : Estonian word, one tab, English translation.
-          One pair per line. If you copy/paste directly from a spreadsheet (or
-          Baserow table, or from the "Vocabulary extraction" page), it should be
-          in the right format.
-          <br />
-          <br />
-          <b>When is it useful</b> : when you have a bunch of new vocabulary
-          that you want to quickly familiarize yourself with. Or a bunch of old
-          vocabulary that you want to refresh up on. It's quick (especially in
-          the <i>Very easy</i> difficulty), so you can drill a hundred words
-          rapidly.
-          <br />
-          <br />
-          <b>When is it not</b> : when you want the words to be more deeply
-          commited in your memory. For this, I find the{" "}
-          <u>Translation exercise</u> to be more useful - but it takes a lot
-          more time per word.
+        <TabDescription
+          storageKey="opimasin-ingest-description-open"
+          details={
+            <>
+              <b>Expected format</b> : Estonian word, one tab, English
+              translation. One pair per line. If you copy/paste directly from a
+              spreadsheet (or Baserow table, or from the "Vocabulary extraction"
+              page), it should be in the right format.
+              <br />
+              <br />
+              <b>When is it useful</b> : when you have a bunch of new vocabulary
+              that you want to quickly familiarize yourself with. Or a bunch of
+              old vocabulary that you want to refresh up on. It's quick
+              (especially in the <i>Very easy</i> difficulty), so you can drill
+              a hundred words rapidly.
+              <br />
+              <br />
+              <b>When is it not</b> : when you want the words to be more deeply
+              commited in your memory. For this, I find the{" "}
+              <u>Translation exercise</u> to be more useful - but it takes a lot
+              more time per word.
+            </>
+          }
+        >
+          Paste a vocabulary list and practice guessing the translations.
         </TabDescription>
 
         {lists.length > 0 && (
