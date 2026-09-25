@@ -488,7 +488,7 @@ function IngestMode() {
         </TabDescription>
 
         {lists.length > 0 && (
-          <SettingsBox title="Practice settings">
+          <SettingsBox storageKey="opimasin-ingest-settings-open">
             <label className="flex items-center gap-2 text-sm text-gray-700">
               <Gauge size={16} className="text-gray-500" />
               Difficulty
