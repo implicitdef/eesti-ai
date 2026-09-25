@@ -95,7 +95,8 @@ function RootLayoutContent() {
   const { pathname } = useLocation();
   const { ownerMode } = useOwnerMode();
   const activeFeature = FEATURES.find((feature) => feature.isActive(pathname));
-  const pageTitle = pathname === "/" ? null : activeFeature?.headerTitle;
+  const isHome = pathname === "/";
+  const pageTitle = isHome ? null : activeFeature?.headerTitle;
   const otherFeatures = visibleFeatures(ownerMode).filter(
     (feature) => feature !== activeFeature,
   );
@@ -122,28 +123,31 @@ function RootLayoutContent() {
 
             <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end flex-wrap gap-x-2 gap-y-1 w-full sm:w-auto">
               <VersionLabel />
-              <nav className="flex items-center gap-1.5 text-xs text-blue-200 flex-wrap">
-                <span className="text-blue-300">{otherFeaturesLabel}</span>
-                {otherFeatures.flatMap((feature, i) => [
-                  ...(i > 0
-                    ? [
-                        <span
-                          key={`${feature.to}-sep`}
-                          className="text-blue-400"
-                        >
-                          /
-                        </span>,
-                      ]
-                    : []),
-                  <Link
-                    key={feature.to}
-                    to={feature.to}
-                    className="text-blue-100 underline decoration-blue-500 hover:text-white transition-colors"
-                  >
-                    {feature.navLabel}
-                  </Link>,
-                ])}
-              </nav>
+              {/* The home page already lists every feature. */}
+              {!isHome && (
+                <nav className="flex items-center gap-1.5 text-xs text-blue-200 flex-wrap">
+                  <span className="text-blue-300">{otherFeaturesLabel}</span>
+                  {otherFeatures.flatMap((feature, i) => [
+                    ...(i > 0
+                      ? [
+                          <span
+                            key={`${feature.to}-sep`}
+                            className="text-blue-400"
+                          >
+                            /
+                          </span>,
+                        ]
+                      : []),
+                    <Link
+                      key={feature.to}
+                      to={feature.to}
+                      className="text-blue-100 underline decoration-blue-500 hover:text-white transition-colors"
+                    >
+                      {feature.navLabel}
+                    </Link>,
+                  ])}
+                </nav>
+              )}
             </div>
           </div>
         </header>
