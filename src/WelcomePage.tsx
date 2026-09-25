@@ -27,7 +27,7 @@ function WelcomePage() {
           <div className="flex items-center gap-3">
             <translation.icon size={32} className="text-blue-700 shrink-0" />
             <h3 className="text-2xl font-bold text-blue-900">
-              {translation.label}
+              {translation.welcomeCardLabel}
             </h3>
           </div>
           <p className="text-gray-700 max-w-2xl">{translation.description}</p>
@@ -43,7 +43,7 @@ function WelcomePage() {
               <div className="flex items-center gap-2">
                 <feature.icon size={20} className="text-blue-700 shrink-0" />
                 <h3 className="text-lg font-bold text-gray-900">
-                  {feature.label}
+                  {feature.welcomeCardLabel}
                 </h3>
               </div>
               <p className="text-sm text-gray-600">{feature.description}</p>

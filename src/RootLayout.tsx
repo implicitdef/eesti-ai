@@ -95,7 +95,7 @@ function RootLayoutContent() {
   const { pathname } = useLocation();
   const { ownerMode } = useOwnerMode();
   const activeFeature = FEATURES.find((feature) => feature.isActive(pathname));
-  const pageTitle = pathname === "/" ? null : activeFeature?.pageTitle;
+  const pageTitle = pathname === "/" ? null : activeFeature?.headerTitle;
   const otherFeatures = visibleFeatures(ownerMode).filter(
     (feature) => feature !== activeFeature,
   );
@@ -140,7 +140,7 @@ function RootLayoutContent() {
                     to={feature.to}
                     className="text-blue-100 underline decoration-blue-500 hover:text-white transition-colors"
                   >
-                    {feature.label}
+                    {feature.navLabel}
                   </Link>,
                 ])}
               </nav>
