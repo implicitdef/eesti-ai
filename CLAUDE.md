@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Õpimasin** (`opimasin` in code) is a Vite + React + TypeScript + Tailwind CSS SPA for learning Estonian with AI. It deploys to GitHub Pages at the base path `/eesti-ai/` (the GitHub repo name).
+**Õpimasin** (`opimasin` in code) is a Vite + React + TypeScript + Tailwind CSS SPA for learning Estonian with AI. It deploys to GitHub Pages at the base path `/opimasin/` (must match the GitHub repo name).
 
 ## Development Commands
 
@@ -36,7 +36,7 @@ npm run checktypes       # Typescript check
 
 ### Configuration
 
-- `vite.config.ts` — Sets base to `/eesti-ai/` for GitHub Pages
+- `vite.config.ts` — Sets base to `/opimasin/` for GitHub Pages
 - `tsconfig.json` — Base config referencing app and build tool configs
 - `tsconfig.app.json` — Strict settings for `src/` (ES2020 target)
 - `tsconfig.node.json` — Build tool config (ES2022 target)

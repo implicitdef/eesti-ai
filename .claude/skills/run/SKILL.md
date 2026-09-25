@@ -16,18 +16,18 @@ kills their session and they have to manually restart it.
 
 ```bash
 # Is something already serving on 5173?
-if curl -sf http://localhost:5173/eesti-ai/ >/dev/null; then
+if curl -sf http://localhost:5173/opimasin/ >/dev/null; then
   echo "reusing existing dev server on 5173"
-  DEV_URL="http://localhost:5173/eesti-ai/"
+  DEV_URL="http://localhost:5173/opimasin/"
   STARTED_BY_ME=0
 else
   npm run dev -- --port 5174 > /tmp/opimasin-vite-test.log 2>&1 &
   echo $! > /tmp/opimasin-vite-test.pid
   for i in $(seq 1 30); do
-    curl -sf http://localhost:5174/eesti-ai/ >/dev/null && break
+    curl -sf http://localhost:5174/opimasin/ >/dev/null && break
     sleep 1
   done
-  DEV_URL="http://localhost:5174/eesti-ai/"
+  DEV_URL="http://localhost:5174/opimasin/"
   STARTED_BY_ME=1
 fi
 ```
@@ -122,5 +122,5 @@ local devDependency, no extra install needed).
 - Controlled inputs: use `fill`/`type`/`press`, not
   `page.evaluate(el => el.value = ...)` — the latter skips React's
   `onChange` and the UI won't update.
-- Base path is `/eesti-ai/` (`vite.config.ts`) — always include it in the
+- Base path is `/opimasin/` (`vite.config.ts`) — always include it in the
   URL, `http://localhost:5173/` alone will 404 in some setups.

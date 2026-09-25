@@ -12,7 +12,7 @@ function getCommitHash() {
 }
 
 export default defineConfig({
-  base: "/eesti-ai/",
+  base: "/opimasin/",
   plugins: [react(), tailwindcss()],
   define: {
     __APP_VERSION__: JSON.stringify(getCommitHash()),
