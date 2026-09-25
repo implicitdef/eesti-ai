@@ -1,4 +1,5 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import { Link, Navigate, Outlet, useLocation } from "@tanstack/react-router";
+import { useRef } from "react";
 import { X } from "lucide-react";
 import {
   CREDENTIALS,
@@ -7,7 +8,8 @@ import {
   useSetCredentialKinds,
 } from "./CredentialsContext";
 import type { CredentialKind } from "./CredentialsContext";
-import { FEATURES } from "./features";
+import { FEATURES, visibleFeatures } from "./features";
+import { OwnerModeProvider, useOwnerMode } from "./OwnerModeContext";
 
 function CredentialChip({ kind }: { kind: CredentialKind }) {
   const { values, clear } = useCredential(kind);
@@ -52,13 +54,52 @@ function CredentialsBar() {
   );
 }
 
-function RootLayout() {
+const OWNER_MODE_CLICKS = 5;
+const OWNER_MODE_CLICK_WINDOW_MS = 1500;
+
+/** Build version; clicking it 5 times in a row secretly toggles owner mode. */
+function VersionLabel() {
+  const { ownerMode, toggleOwnerMode } = useOwnerMode();
+  const clicks = useRef({ count: 0, last: 0 });
+
+  function handleClick() {
+    const now = Date.now();
+    const c = clicks.current;
+    c.count = now - c.last > OWNER_MODE_CLICK_WINDOW_MS ? 1 : c.count + 1;
+    c.last = now;
+    if (c.count >= OWNER_MODE_CLICKS) {
+      c.count = 0;
+      toggleOwnerMode();
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {ownerMode && (
+        <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-950">
+          owner mode
+        </span>
+      )}
+      <div
+        onClick={handleClick}
+        className="font-mono text-[11px] text-blue-300 select-none"
+        title="Build version"
+      >
+        version: {__APP_VERSION__}
+      </div>
+    </div>
+  );
+}
+
+function RootLayoutContent() {
   const { pathname } = useLocation();
+  const { ownerMode } = useOwnerMode();
   const activeFeature = FEATURES.find((feature) => feature.isActive(pathname));
   const pageTitle = pathname === "/" ? "Welcome" : activeFeature?.pageTitle;
-  const otherFeatures = activeFeature
-    ? FEATURES.filter((feature) => feature !== activeFeature)
-    : FEATURES;
+  const otherFeatures = visibleFeatures(ownerMode).filter(
+    (feature) => feature !== activeFeature,
+  );
+  const isHidden = activeFeature?.ownerOnly && !ownerMode;
   const otherFeaturesLabel = activeFeature ? "other features:" : "features:";
 
   return (
@@ -76,12 +117,7 @@ function RootLayout() {
             </div>
 
             <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end flex-wrap gap-x-2 gap-y-1 w-full sm:w-auto">
-              <div
-                className="font-mono text-[11px] text-blue-300"
-                title="Build version"
-              >
-                version: {__APP_VERSION__}
-              </div>
+              <VersionLabel />
               <nav className="flex items-center gap-1.5 text-xs text-blue-200 flex-wrap">
                 <span className="text-blue-300">{otherFeaturesLabel}</span>
                 {otherFeatures.flatMap((feature, i) => [
@@ -110,9 +146,17 @@ function RootLayout() {
 
         <CredentialsBar />
 
-        <Outlet />
+        {isHidden ? <Navigate to="/" /> : <Outlet />}
       </div>
     </CredentialsProvider>
+  );
+}
+
+function RootLayout() {
+  return (
+    <OwnerModeProvider>
+      <RootLayoutContent />
+    </OwnerModeProvider>
   );
 }
 

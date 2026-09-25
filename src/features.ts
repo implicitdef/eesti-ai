@@ -8,6 +8,8 @@ export interface Feature {
   description: string;
   icon: ComponentType<{ size?: number; className?: string }>;
   isActive: (pathname: string) => boolean;
+  /** Hidden unless owner mode is on (not ready, or only useful to the owner). */
+  ownerOnly?: boolean;
 }
 
 export const FEATURES: Feature[] = [
@@ -40,6 +42,7 @@ export const FEATURES: Feature[] = [
       "Watch an Estonian video with dual subtitles plus an optional vocabulary cheatsheet, so tricky words are explained right when you hear them.",
     icon: Video,
     isActive: (path) => path.startsWith("/video"),
+    ownerOnly: true,
   },
   {
     label: "Vocab extract",
@@ -58,5 +61,10 @@ export const FEATURES: Feature[] = [
       "Paste new vocabulary and add it to your Baserow vocabulary table, choosing which translation to keep for words that are already there.",
     icon: Database,
     isActive: (path) => path.startsWith("/baserow-vocab"),
+    ownerOnly: true,
   },
 ];
+
+export function visibleFeatures(ownerMode: boolean): Feature[] {
+  return ownerMode ? FEATURES : FEATURES.filter((f) => !f.ownerOnly);
+}

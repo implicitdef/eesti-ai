@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { FEATURES } from "./features";
-
-const [translation, ...otherFeatures] = FEATURES;
+import { visibleFeatures } from "./features";
+import { useOwnerMode } from "./OwnerModeContext";
 
 function WelcomePage() {
+  const { ownerMode } = useOwnerMode();
+  const [translation, ...otherFeatures] = visibleFeatures(ownerMode);
+
   return (
     <main className="flex-1 overflow-y-auto px-6 py-8">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
@@ -13,8 +15,8 @@ function WelcomePage() {
           </h2>
           <p className="text-gray-600 max-w-2xl">
             A handful of small tools to practice Estonian: translate sentences,
-            drill vocabulary, watch videos with a cheatsheet, and pull new words
-            out of any text. Pick a feature below to get started.
+            drill vocabulary, and pull new words out of any text. Pick a feature
+            below to get started.
           </p>
         </div>
 
