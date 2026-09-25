@@ -15,7 +15,7 @@ type Props = {
 
 function TabDescription(props: Props) {
   return (
-    <div className="flex items-start gap-2  text-sm text-gray-800 italic my-2 bg-lime-200 p-2 w-fit">
+    <div className="flex items-start gap-2  text-sm text-gray-800 italic my-2 bg-yellow-200 p-2 w-fit">
       <Info size={16} className="mt-0.5 shrink-0" />
       {props.details === undefined ? (
         <p>{props.children}</p>
