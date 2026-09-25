@@ -48,7 +48,7 @@ function FoldableText({
           type="button"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
-          className="inline-flex items-center not-italic text-xs text-gray-600 hover:text-gray-900 underline"
+          className="inline-flex items-center not-italic text-xs text-blue-600 hover:text-gray-900 underline font-bold "
         >
           <Chevron size={14} />
           {open ? "less" : "more"}
