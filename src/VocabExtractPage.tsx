@@ -101,20 +101,31 @@ function VocabExtractPage() {
 
   return (
     <PageMain gap={4}>
-      <TabDescription>
+      <TabDescription
+        storageKey="opimasin-vocab-extract-description-open"
+        details={
+          <>
+            <b>Output :</b> it will produce a tab-separated list, ready to paste
+            into a spreadsheet. Or into the <FeatureLink id="vocabPractice" />{" "}
+            exercise. The words are always in their base form (first form
+            singular, -ma infinitive for verbs, etc.)
+            <br />
+            <br />
+            <b>Note :</b> this will try to extract the non-obvious vocabulary.
+            i.e. it will ignore "mina", "läheb", "kus", etc. It should be mostly
+            useful for a A2 or B1-level student.
+            <br />
+            <br />
+            <b>
+              This uses the Anthropic API and requires an Anthropic API key.
+            </b>{" "}
+            It's very cheap, in my experience. Around 3 cents for a text of 250
+            words.
+          </>
+        }
+      >
         Paste an Estonian text and extract the vocabulary, with English
         translations.
-        <br />
-        <br />
-        <b>Output :</b> it will produce a tab-separated list, ready to paste
-        into a spreadsheet. Or into the <FeatureLink id="vocabPractice" />{" "}
-        exercise. The words are always in their base form (first form singular,
-        -ma infinitive for verbs, etc.)
-        <br />
-        <br />
-        <b>Note :</b> this will try to extract the non-obvious vocabulary. i.e.
-        it will ignore "mina", "läheb", "kus", etc. It should be mostly useful
-        for a A2 or B1-level student.
       </TabDescription>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
