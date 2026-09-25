@@ -31,9 +31,9 @@ export const FEATURES: Feature[] = [
       path.startsWith("/generate"),
   },
   {
-    welcomeCardLabel: "Vocab practice",
+    welcomeCardLabel: "Vocabulary practice",
     navLabel: "Vocab practice",
-    headerTitle: "Vocab practice",
+    headerTitle: "Vocabulary practice",
     to: "/vocab-practice",
     description:
       "Paste vocabulary lists copied from a spreadsheet and drill them with multiple-choice quizzes. Track which words you've missed and practice them again.",
@@ -52,9 +52,9 @@ export const FEATURES: Feature[] = [
     ownerOnly: true,
   },
   {
-    welcomeCardLabel: "Vocab extract",
+    welcomeCardLabel: "Vocabulary extraction",
     navLabel: "Vocab extract",
-    headerTitle: "Vocab extract",
+    headerTitle: "Vocabulary extraction",
     to: "/vocab-extract",
     description:
       "Paste an Estonian text and extract the vocabulary that isn't obvious for a B1 learner, with English translations, ready to paste into a spreadsheet.",
