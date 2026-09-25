@@ -270,16 +270,16 @@ function IngestListCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
+            {pregenerated && (
+              <span className="text-xs font-semibold text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">
+                Demo list
+              </span>
+            )}
             {onRename ? (
               <EditableListName name={list.name} onRename={onRename} />
             ) : (
               <span className="text-lg font-bold text-gray-900">
                 {list.name}
-              </span>
-            )}
-            {pregenerated && (
-              <span className="text-xs font-semibold text-gray-600 bg-gray-200 rounded-full px-2 py-0.5">
-                Demo list
               </span>
             )}
           </div>

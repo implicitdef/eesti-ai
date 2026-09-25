@@ -2,11 +2,12 @@ import { Check, Copy, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 import ApiKeyModal from "./ApiKeyModal";
 import { useApiKey } from "./CredentialsContext";
+import FeatureLink from "./FeatureLink";
 import PageMain from "./PageMain";
 import TabDescription from "./TabDescription";
+import type { VocabPair } from "./types";
 import { extractVocabFromChunk } from "./vocab-extract-api";
 import { chunkText, dedupeVocabPairs, toTsv } from "./vocabExtract";
-import type { VocabPair } from "./types";
 
 type ExtractState =
   | { status: "idle" }
@@ -101,9 +102,19 @@ function VocabExtractPage() {
   return (
     <PageMain gap={4}>
       <TabDescription>
-        Paste an Estonian text and extract the vocabulary that isn't obvious for
-        a B1 learner, with English translations, as a tab-separated list you can
-        paste into a spreadsheet.
+        Paste an Estonian text and extract the vocabulary, with English
+        translations.
+        <br />
+        <br />
+        <b>Output :</b> it will produce a tab-separated list, ready to paste
+        into a spreadsheet. Or into the <FeatureLink id="vocabPractice" />{" "}
+        exercise. The words are always in their base form (first form singular,
+        -ma infinitive for verbs, etc.)
+        <br />
+        <br />
+        <b>Note :</b> this will try to extract the non-obvious vocabulary. i.e.
+        it will ignore "mina", "läheb", "kus", etc. It should be mostly useful
+        for a A2 or B1-level student.
       </TabDescription>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
