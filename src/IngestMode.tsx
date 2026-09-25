@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import FeatureLink from "./FeatureLink";
 import IngestPractice from "./IngestPractice";
 import SettingsBox from "./SettingsBox";
 import TabDescription from "./TabDescription";
@@ -470,14 +471,15 @@ function IngestMode() {
               <br />
               <b>When is it not</b> : when you want the words to be more deeply
               commited in your memory. For this, I find the{" "}
-              <u>Translation exercise</u> to be more useful - but it takes a lot
-              more time per word.
+              <FeatureLink id="translation" /> to be more useful - but it takes
+              a lot more time per word.
               <br />
               <br />
               <b>Expected format</b> : Estonian word, one tab, English
               translation. One pair per line. If you copy/paste directly from a
-              spreadsheet (or Baserow table, or from the "Vocabulary extraction"
-              page), it should be in the right format.
+              spreadsheet (or Baserow table, or from the{" "}
+              <FeatureLink id="vocabExtract" /> page), it should be in the right
+              format.
               <br />
             </>
           }
