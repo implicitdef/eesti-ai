@@ -461,12 +461,6 @@ function IngestMode() {
           storageKey="opimasin-ingest-description-open"
           details={
             <>
-              <b>Expected format</b> : Estonian word, one tab, English
-              translation. One pair per line. If you copy/paste directly from a
-              spreadsheet (or Baserow table, or from the "Vocabulary extraction"
-              page), it should be in the right format.
-              <br />
-              <br />
               <b>When is it useful</b> : when you have a bunch of new vocabulary
               that you want to quickly familiarize yourself with. Or a bunch of
               old vocabulary that you want to refresh up on. It's quick
@@ -478,6 +472,13 @@ function IngestMode() {
               commited in your memory. For this, I find the{" "}
               <u>Translation exercise</u> to be more useful - but it takes a lot
               more time per word.
+              <br />
+              <br />
+              <b>Expected format</b> : Estonian word, one tab, English
+              translation. One pair per line. If you copy/paste directly from a
+              spreadsheet (or Baserow table, or from the "Vocabulary extraction"
+              page), it should be in the right format.
+              <br />
             </>
           }
         >
@@ -524,7 +525,7 @@ function IngestMode() {
             className="self-start flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-800 underline"
           >
             <Plus size={16} />
-            Add a new list
+            Add a new list of words
           </button>
         )}
 
