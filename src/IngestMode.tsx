@@ -462,11 +462,11 @@ function IngestMode() {
           storageKey="opimasin-ingest-description-open"
           details={
             <>
-              <b>When is it useful</b> : when you have a bunch of new vocabulary
-              that you want to quickly familiarize yourself with. Or a bunch of
-              old vocabulary that you want to refresh up on. It's quick
-              (especially in the <i>Very easy</i> difficulty), so you can drill
-              a hundred words rapidly.
+              <b>When is it useful</b> : when you have a bunch of new
+              vocabulary, in a spreadsheet, that you want to quickly familiarize
+              yourself with. Or a bunch of old vocabulary that you want to
+              refresh up on. It's quick (especially in the <i>Very easy</i>{" "}
+              difficulty), so you can drill a hundred words rapidly.
               <br />
               <br />
               <b>When is it not</b> : when you want the words to be more deeply
@@ -490,15 +490,6 @@ function IngestMode() {
         {lists.length > 0 && (
           <SettingsBox title="Practice settings">
             <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={reversed}
-                onChange={(e) => setReversed(e.target.checked)}
-                className="h-4 w-4 accent-blue-700"
-              />
-              Practice in reverse (show English, guess the Estonian word)
-            </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
               <Gauge size={16} className="text-gray-500" />
               Difficulty
               <select
@@ -512,6 +503,15 @@ function IngestMode() {
                   </option>
                 ))}
               </select>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={reversed}
+                onChange={(e) => setReversed(e.target.checked)}
+                className="h-4 w-4 accent-blue-700"
+              />
+              Practice in reverse (show English, guess the Estonian word)
             </label>
           </SettingsBox>
         )}
