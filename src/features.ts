@@ -75,7 +75,7 @@ export const FEATURES: Feature[] = [
     inTextLabel: "Vocabulary extraction",
     to: "/vocab-extract",
     description:
-      "Paste an Estonian text and extract the vocabulary that isn't obvious for a B1 learner, with English translations, ready to paste into a spreadsheet.",
+      "Given an Estonian text, extracts the key vocabulary, with English translations, ready to paste into a vocabulary spreadsheet.",
     icon: FileSearch,
     isActive: (path) => path.startsWith("/vocab-extract"),
   },
