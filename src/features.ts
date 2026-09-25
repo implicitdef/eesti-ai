@@ -36,7 +36,7 @@ export const FEATURES: Feature[] = [
     headerTitle: "Vocabulary practice",
     to: "/vocab-practice",
     description:
-      "Paste vocabulary lists copied from a spreadsheet and drill them with multiple-choice quizzes. Track which words you've missed and practice them again.",
+      "Paste vocabulary lists copied from a spreadsheet and drill them with multiple-choice quizzes.",
     icon: BookOpen,
     isActive: (path) => path.startsWith("/vocab-practice"),
   },

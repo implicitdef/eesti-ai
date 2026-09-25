@@ -140,7 +140,7 @@ function IngestPasteForm({
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="New list"
+        placeholder="Name for this list"
         className={fieldClassName}
       />
       <textarea
@@ -151,15 +151,7 @@ function IngestPasteForm({
         className={`${fieldClassName} font-mono resize-y`}
       />
       {error && <p className="text-sm text-red-500">{error}</p>}
-      <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={!text.trim()}
-          className="self-start flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <BookOpen size={16} />
-          Load list
-        </button>
+      <div className="flex items-center justify-end gap-3">
         {onCancel && (
           <button
             type="button"
@@ -169,6 +161,14 @@ function IngestPasteForm({
             Cancel
           </button>
         )}
+        <button
+          type="submit"
+          disabled={!text.trim()}
+          className="flex items-center gap-1.5 bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <BookOpen size={16} />
+          Load list
+        </button>
       </div>
     </form>
   );
@@ -356,7 +356,7 @@ function IngestMode() {
   const [reversed, setReversed] = usePersistedState(INGEST_REVERSED_KEY, false);
   const [difficulty, setDifficulty] = usePersistedState<Difficulty>(
     INGEST_DIFFICULTY_KEY,
-    "medium",
+    "very-easy",
   );
 
   useEffect(() => {
@@ -465,32 +465,34 @@ function IngestMode() {
           translations.
         </TabDescription>
 
-        <SettingsBox title="Practice settings">
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={reversed}
-              onChange={(e) => setReversed(e.target.checked)}
-              className="h-4 w-4 accent-blue-700"
-            />
-            Practice in reverse (show English, guess the Estonian word)
-          </label>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <Gauge size={16} className="text-gray-500" />
-            Difficulty
-            <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-              className={selectClassName}
-            >
-              {DIFFICULTIES.map((d) => (
-                <option key={d} value={d}>
-                  {DIFFICULTY_LABELS[d]}
-                </option>
-              ))}
-            </select>
-          </label>
-        </SettingsBox>
+        {lists.length > 0 && (
+          <SettingsBox title="Practice settings">
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={reversed}
+                onChange={(e) => setReversed(e.target.checked)}
+                className="h-4 w-4 accent-blue-700"
+              />
+              Practice in reverse (show English, guess the Estonian word)
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <Gauge size={16} className="text-gray-500" />
+              Difficulty
+              <select
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+                className={selectClassName}
+              >
+                {DIFFICULTIES.map((d) => (
+                  <option key={d} value={d}>
+                    {DIFFICULTY_LABELS[d]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </SettingsBox>
+        )}
 
         {pasteFormVisible ? (
           <IngestPasteForm
