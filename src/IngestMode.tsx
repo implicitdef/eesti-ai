@@ -454,8 +454,6 @@ function IngestMode() {
     );
   }
 
-  const pasteFormVisible = showPasteForm || lists.length === 0;
-
   return (
     <main className="flex-1 overflow-y-auto px-6 py-4">
       <div className="max-w-2xl mx-auto flex flex-col gap-6">
@@ -510,12 +508,10 @@ function IngestMode() {
           </SettingsBox>
         )}
 
-        {pasteFormVisible ? (
+        {showPasteForm ? (
           <IngestPasteForm
             onLoad={addLists}
-            onCancel={
-              lists.length > 0 ? () => setShowPasteForm(false) : undefined
-            }
+            onCancel={() => setShowPasteForm(false)}
           />
         ) : (
           <button
